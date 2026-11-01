@@ -28,7 +28,7 @@
                 Occupancy, revenue, and booking trends.
             </x-module-card>
 
-            <x-module-card title="Chatbot audit log" tone="coral" status="Step 6">
+            <x-module-card title="Chatbot audit log" tone="coral" :href="route('admin.chatbot.index')">
                 <x-slot name="icon">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5h16v11H9l-5 4V5Z" /><path stroke-linecap="round" d="M8 9h8M8 12h5" /></svg>
                 </x-slot>

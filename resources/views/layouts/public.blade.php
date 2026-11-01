@@ -48,5 +48,7 @@
                 <p>&copy; {{ date('Y') }} Labnasan Resort · Basey, Samar</p>
             </div>
         </footer>
+
+        <x-chatbot-widget />
     </body>
 </html>

@@ -7,6 +7,7 @@
         UserRole::Admin => [
             ['admin.dashboard', 'Owner console', 'admin.dashboard'],
             ['admin.cottages.index', 'Cottages', 'admin.cottages.*'],
+            ['admin.chatbot.index', 'Chatbot log', 'admin.chatbot.*'],
             ['staff.dashboard', 'Front desk', 'staff.dashboard'],
             ['staff.bookings.index', 'Bookings', 'staff.bookings.*'],
         ],

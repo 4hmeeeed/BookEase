@@ -35,6 +35,15 @@ return [
         'webhook_secret' => env('PAYMONGO_WEBHOOK_SECRET'),
     ],
 
+    // Inquiry chatbot. The key is sent in the x-goog-api-key header, never in the URL.
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-3.8-flash'),
+        'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
+        'timeout' => (int) env('GEMINI_TIMEOUT', 20),
+        'max_output_tokens' => (int) env('GEMINI_MAX_OUTPUT_TOKENS', 1024),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

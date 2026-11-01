@@ -2,8 +2,10 @@ import './bootstrap';
 
 import Alpine from 'alpinejs';
 import stayCalendar from './stay-calendar';
+import chatbot from './chatbot';
 
 Alpine.data('stayCalendar', stayCalendar);
+Alpine.data('chatbot', chatbot);
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;

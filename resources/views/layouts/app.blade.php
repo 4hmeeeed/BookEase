@@ -25,5 +25,10 @@
                 {{ $slot }}
             </main>
         </div>
+
+        {{-- Guests get the inquiry assistant; staff and the owner review its log instead. --}}
+        @if (auth()->user()?->isGuest())
+            <x-chatbot-widget />
+        @endif
     </body>
 </html>

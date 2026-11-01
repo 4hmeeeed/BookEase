@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\ChatInquiryController;
 use App\Http\Controllers\Admin\CottageController as AdminCottageController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\CottageAvailabilityController;
 use App\Http\Controllers\CottageController;
 use App\Http\Controllers\DashboardController;
@@ -31,6 +33,9 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/cottages/{cottage}/availability', [CottageAvailabilityController::class, 'month'])->name('cottages.availability');
     Route::get('/cottages/{cottage}/quote', [CottageAvailabilityController::class, 'quote'])->name('cottages.quote');
 });
+
+// Inquiry chatbot: open to visitors, CSRF-protected, rate limited, logged.
+Route::post('/chatbot', ChatbotController::class)->middleware('throttle:chatbot')->name('chatbot.ask');
 
 /*
 |--------------------------------------------------------------------------
@@ -123,6 +128,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
 
         Route::resource('cottages', AdminCottageController::class)->except('show');
         Route::patch('cottages/{cottage}/toggle', [AdminCottageController::class, 'toggle'])->name('cottages.toggle');
+
+        Route::get('chatbot', [ChatInquiryController::class, 'index'])->name('chatbot.index');
+        Route::get('chatbot/{inquiry}', [ChatInquiryController::class, 'show'])->name('chatbot.show');
     });
 
 require __DIR__.'/auth.php';

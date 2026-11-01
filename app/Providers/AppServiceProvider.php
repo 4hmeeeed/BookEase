@@ -2,10 +2,17 @@
 
 namespace App\Providers;
 
+use App\Chatbot\GeminiClient;
+use App\Models\Booking;
+use App\Models\Cottage;
 use App\Payments\FakeGateway;
 use App\Payments\PaymentGateway;
 use App\Payments\PayMongoGateway;
+use App\Services\ChatbotService;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use RuntimeException;
 
@@ -35,10 +42,36 @@ class AppServiceProvider extends ServiceProvider
                 default => throw new RuntimeException("Unknown payment driver [{$cfg['driver']}]."),
             };
         });
+
+        $this->app->bind(GeminiClient::class, fn () => new GeminiClient(
+            apiKey: config('services.gemini.api_key'),
+            model: (string) config('services.gemini.model'),
+            baseUrl: (string) config('services.gemini.base_url'),
+            timeout: (int) config('services.gemini.timeout', 20),
+            maxOutputTokens: (int) config('services.gemini.max_output_tokens', 1024),
+        ));
     }
 
     public function boot(): void
     {
-        //
+        // Chatbot: 10 questions a minute (thesis security plan) plus a daily cap,
+        // keyed by account when signed in, otherwise by IP address.
+        RateLimiter::for('chatbot', function (Request $request) {
+            $key = $request->user() ? 'user:'.$request->user()->id : 'ip:'.$request->ip();
+            $tooMany = fn () => response()->json([
+                'message' => 'You’re sending questions quickly. Please wait a moment and try again.',
+            ], 429);
+
+            return [
+                Limit::perMinute((int) config('bookease.chatbot.per_minute', 10))->by('min:'.$key)->response($tooMany),
+                Limit::perDay((int) config('bookease.chatbot.per_day', 150))->by('day:'.$key)->response($tooMany),
+            ];
+        });
+
+        // The chatbot must never quote stale rates or availability.
+        foreach ([Cottage::class, Booking::class] as $model) {
+            $model::saved(fn () => ChatbotService::forgetContext());
+            $model::deleted(fn () => ChatbotService::forgetContext());
+        }
     }
 }

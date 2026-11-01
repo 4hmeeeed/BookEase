@@ -45,4 +45,44 @@ return [
         'fake_webhook_secret' => env('FAKE_GATEWAY_WEBHOOK_SECRET'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Inquiry chatbot (RAG over live resort records)
+    |--------------------------------------------------------------------------
+    | Without GEMINI_API_KEY every question gets the fixed contact message.
+    */
+    'chatbot' => [
+        'enabled' => (bool) env('CHATBOT_ENABLED', true),
+
+        'max_question_length' => 500,
+
+        // Per signed-in user, or per IP address for visitors.
+        'per_minute' => (int) env('CHATBOT_PER_MINUTE', 10),
+        'per_day' => (int) env('CHATBOT_PER_DAY', 150),
+
+        // How many days of booked nights (from today) go into the context.
+        'availability_days' => (int) env('CHATBOT_AVAILABILITY_DAYS', 120),
+
+        // Earlier exchanges of the same chat sent back to the model for follow-ups.
+        'history_turns' => 3,
+        'history_minutes' => 30,
+
+        // The assembled context is cached briefly and cleared whenever a
+        // cottage or booking changes, so availability is never minutes stale.
+        'cache_minutes' => 5,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resort contact details
+    |--------------------------------------------------------------------------
+    | Shown in the chatbot's fallback message and given to the model. Leave a
+    | value empty rather than guessing; the chatbot never invents contacts.
+    */
+    'contact' => [
+        'phone' => env('RESORT_CONTACT_PHONE'),
+        'email' => env('RESORT_CONTACT_EMAIL'),
+        'facebook' => env('RESORT_CONTACT_FACEBOOK'),
+    ],
+
 ];

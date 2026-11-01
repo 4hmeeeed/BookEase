@@ -65,6 +65,11 @@ class User extends Authenticatable
         return $this->hasMany(Booking::class);
     }
 
+    public function chatInquiries(): HasMany
+    {
+        return $this->hasMany(ChatInquiry::class);
+    }
+
     public function hasRole(UserRole ...$roles): bool
     {
         return in_array($this->role, $roles, true);
