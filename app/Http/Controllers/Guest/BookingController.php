@@ -6,6 +6,7 @@ use App\Exceptions\InvalidBookingTransitionException;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Services\BookingLifecycleService;
+use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -31,13 +32,17 @@ class BookingController extends Controller
         ]);
     }
 
-    public function show(Booking $booking): View
+    public function show(Booking $booking, PaymentService $payments): View
     {
         $this->authorize('view', $booking);
 
-        $booking->load(['cottage', 'statusChanges']);
+        $booking->load(['cottage', 'statusChanges', 'payments']);
 
-        return view('guest.bookings.show', ['booking' => $booking]);
+        return view('guest.bookings.show', [
+            'booking' => $booking,
+            'paymentOptions' => $payments->onlineOptions($booking),
+            'downPercent' => (int) config('bookease.payments.down_payment_percent'),
+        ]);
     }
 
     public function cancel(Request $request, Booking $booking): RedirectResponse

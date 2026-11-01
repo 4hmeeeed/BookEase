@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
+use App\Support\Money;
 use Carbon\CarbonImmutable;
 use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -92,6 +93,17 @@ class Booking extends Model
     public function cottage(): BelongsTo
     {
         return $this->belongsTo(Cottage::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->latest('id');
+    }
+
+    /** total_price − amount_paid, never below zero. */
+    public function balance(): string
+    {
+        return Money::max(Money::sub($this->total_price, $this->amount_paid), '0.00');
     }
 
     public function statusChanges(): HasMany

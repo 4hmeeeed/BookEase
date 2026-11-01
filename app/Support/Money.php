@@ -46,6 +46,50 @@ final class Money
         return bccomp($a, $b, self::SCALE);
     }
 
+    public static function isPositive(string $amount): bool
+    {
+        return bccomp($amount, '0', self::SCALE) > 0;
+    }
+
+    public static function min(string $a, string $b): string
+    {
+        return self::compare($a, $b) <= 0 ? self::normalize($a) : self::normalize($b);
+    }
+
+    public static function max(string $a, string $b): string
+    {
+        return self::compare($a, $b) >= 0 ? self::normalize($a) : self::normalize($b);
+    }
+
+    /**
+     * $percent % of $amount, rounded half-up to centavos. percent("7501.50", 50) → "3750.75"
+     */
+    public static function percentOf(string $amount, string|int $percent): string
+    {
+        $raw = bcdiv(bcmul($amount, (string) $percent, 6), '100', 6);
+
+        return self::roundHalfUp($raw);
+    }
+
+    /** "1500.50" → 150050 (gateways take integer centavos). */
+    public static function toCentavos(string $amount): int
+    {
+        return (int) bcmul(self::normalize($amount), '100', 0);
+    }
+
+    /** 150050 → "1500.50" */
+    public static function fromCentavos(int|string $centavos): string
+    {
+        return bcdiv((string) $centavos, '100', self::SCALE);
+    }
+
+    private static function roundHalfUp(string $value): string
+    {
+        $offset = str_starts_with($value, '-') ? '-0.005' : '0.005';
+
+        return bcadd(bcadd($value, $offset, 6), '0', self::SCALE);
+    }
+
     /**
      * Format for display without converting to float: "1234567.5" → "₱1,234,567.50".
      */

@@ -19,6 +19,7 @@
         $canCancel = $status->canTransitionTo(BookingStatus::Cancelled);
         $canCheckOut = $status->canTransitionTo(BookingStatus::CheckedOut);
         $checkInAllowed = $booking->canCheckInToday();
+        $canTakeCash = app(\App\Services\PaymentService::class)->isPayable($booking);
     @endphp
 
     <div class="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_24rem] lg:px-8" x-data>
@@ -93,6 +94,30 @@
             </section>
 
             <section class="card p-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-display text-xl font-semibold text-lagoon-950">Payments</h2>
+                        <p class="text-sm text-gray-600">
+                            Paid <strong class="text-lagoon-900">{{ \App\Support\Money::format($booking->amount_paid) }}</strong>
+                            of {{ \App\Support\Money::format($booking->total_price) }}
+                            · Balance <strong class="text-coral-700">{{ \App\Support\Money::format($booking->balance()) }}</strong>
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        @if ($canTakeCash)
+                            <button type="button" class="btn-primary" @click="$dispatch('open-modal', 'cash')">Record cash payment</button>
+                        @endif
+                        @if (\App\Support\Money::isPositive($booking->amount_paid))
+                            <button type="button" class="btn-ghost" @click="$dispatch('open-modal', 'refund')">Record refund</button>
+                        @endif
+                    </div>
+                </div>
+                <x-input-error :messages="$errors->get('amount')" class="mt-3" />
+                <x-input-error :messages="$errors->get('refund_amount')" class="mt-3" />
+                <div class="mt-4"><x-payments-list :payments="$booking->payments" show-recorder /></div>
+            </section>
+
+            <section class="card p-6">
                 <h2 class="mb-5 font-display text-xl font-semibold text-lagoon-950">Audit trail</h2>
                 <x-status-timeline :changes="$booking->statusChanges" show-actor />
             </section>
@@ -102,6 +127,46 @@
             <x-stay-summary :cottage="$booking->cottage" :check-in="$booking->check_in" :check-out="$booking->check_out"
                             :nights="$booking->nights()" :total="$booking->total_price" :guests="$booking->guests_count" />
         </aside>
+
+        <x-modal name="cash" maxWidth="md" focusable>
+            <form method="POST" action="{{ route('staff.payments.cash', $booking) }}" class="p-6">
+                @csrf
+                <h2 class="font-display text-2xl font-semibold text-lagoon-950">Record cash payment</h2>
+                <p class="mt-2 text-sm text-gray-600">For walk-in or front-desk cash. Balance due: <strong>{{ \App\Support\Money::format($booking->balance()) }}</strong>.</p>
+                <label for="cash-amount" class="mt-4 block text-sm font-semibold text-lagoon-900">Amount received</label>
+                <div class="relative mt-1.5">
+                    <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-gray-500">₱</span>
+                    <input id="cash-amount" name="amount" inputmode="decimal" required class="field pl-8" value="{{ old('amount', $booking->balance()) }}">
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <x-secondary-button x-on:click="$dispatch('close')">Cancel</x-secondary-button>
+                    <x-primary-button>Record &amp; issue receipt</x-primary-button>
+                </div>
+            </form>
+        </x-modal>
+
+        <x-modal name="refund" maxWidth="md" focusable>
+            <form method="POST" action="{{ route('staff.payments.refund', $booking) }}" class="p-6">
+                @csrf
+                <h2 class="font-display text-2xl font-semibold text-lagoon-950">Record refund</h2>
+                <p class="mt-2 text-sm text-gray-600">Record money already returned to the guest. Up to <strong>{{ \App\Support\Money::format($booking->amount_paid) }}</strong>.</p>
+                <label for="refund-amount" class="mt-4 block text-sm font-semibold text-lagoon-900">Amount refunded</label>
+                <div class="relative mt-1.5">
+                    <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-gray-500">₱</span>
+                    <input id="refund-amount" name="refund_amount" inputmode="decimal" required class="field pl-8" value="{{ old('refund_amount') }}">
+                </div>
+                <label for="refund-method" class="mt-4 block text-sm font-semibold text-lagoon-900">Sent via</label>
+                <select id="refund-method" name="refund_method" class="field mt-1.5">
+                    <option value="gcash">GCash</option>
+                    <option value="maya">Maya</option>
+                    <option value="cash">Cash</option>
+                </select>
+                <div class="mt-6 flex justify-end gap-3">
+                    <x-secondary-button x-on:click="$dispatch('close')">Cancel</x-secondary-button>
+                    <x-danger-button>Record refund</x-danger-button>
+                </div>
+            </form>
+        </x-modal>
 
         @foreach (['reject' => ['Reject', 'staff.bookings.reject', 'The dates are released right away. The guest will see your reason.', 'Reject request'],
                    'cancel' => ['Cancel', 'staff.bookings.cancel', 'The dates are released right away. The guest will see your reason.', 'Cancel booking']] as $name => [$verb, $route, $help, $cta])

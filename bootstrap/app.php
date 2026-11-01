@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
         ]);
+
+        // Authenticated by the gateway's HMAC signature instead of a CSRF token.
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/payments',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

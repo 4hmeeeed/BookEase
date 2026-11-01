@@ -7,7 +7,12 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Guest\BookingController as GuestBookingController;
 use App\Http\Controllers\Guest\DashboardController as GuestDashboardController;
 use App\Http\Controllers\Guest\ReservationController;
+use App\Http\Controllers\FakeCheckoutController;
+use App\Http\Controllers\Guest\PaymentController as GuestPaymentController;
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\Staff\BookingController as StaffBookingController;
+use App\Http\Controllers\Staff\PaymentController as StaffPaymentController;
+use App\Http\Controllers\Webhooks\PaymentWebhookController;
 use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -60,8 +65,29 @@ Route::middleware(['auth', 'verified', 'role:guest'])->name('guest.')->group(fun
         Route::get('/bookings', [GuestBookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/{booking}', [GuestBookingController::class, 'show'])->name('bookings.show');
         Route::post('/bookings/{booking}/cancel', [GuestBookingController::class, 'cancel'])->name('bookings.cancel');
+
+        Route::post('/bookings/{booking}/pay', [GuestPaymentController::class, 'store'])
+            ->middleware('throttle:10,1')->name('payments.store');
+        Route::get('/bookings/{booking}/payments/{payment}/return', [GuestPaymentController::class, 'returned'])->name('payments.return');
+        Route::get('/bookings/{booking}/payments/{payment}/status', [GuestPaymentController::class, 'status'])
+            ->middleware('throttle:60,1')->name('payments.status');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Payments: receipts, gateway webhook, sandbox checkout
+|--------------------------------------------------------------------------
+*/
+Route::get('/receipts/{payment}', ReceiptController::class)->middleware('auth')->name('receipts.show');
+
+// Signed by the gateway (HMAC); CSRF-exempt in bootstrap/app.php.
+Route::post('/webhooks/payments', PaymentWebhookController::class)
+    ->middleware('throttle:120,1')->name('webhooks.payments');
+
+// Local simulator for the hosted checkout page (404 unless PAYMENT_DRIVER=fake).
+Route::get('/sandbox/checkout/{session}', [FakeCheckoutController::class, 'show'])->name('payments.fake.show');
+Route::post('/sandbox/checkout/{session}', [FakeCheckoutController::class, 'complete'])->name('payments.fake.complete');
 
 /*
 |--------------------------------------------------------------------------
@@ -80,6 +106,9 @@ Route::middleware(['auth', 'verified', 'role:staff,admin'])
         Route::post('/bookings/{booking}/check-in', [StaffBookingController::class, 'checkIn'])->name('bookings.check-in');
         Route::post('/bookings/{booking}/check-out', [StaffBookingController::class, 'checkOut'])->name('bookings.check-out');
         Route::post('/bookings/{booking}/cancel', [StaffBookingController::class, 'cancel'])->name('bookings.cancel');
+
+        Route::post('/bookings/{booking}/cash', [StaffPaymentController::class, 'storeCash'])->name('payments.cash');
+        Route::post('/bookings/{booking}/refund', [StaffPaymentController::class, 'storeRefund'])->name('payments.refund');
     });
 
 /*

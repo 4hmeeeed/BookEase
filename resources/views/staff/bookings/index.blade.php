@@ -54,6 +54,12 @@
                             <span class="text-sm text-gray-700">
                                 {{ $booking->check_in->format('M j') }} → {{ $booking->check_out->format('M j, Y') }}
                                 <span class="block text-xs text-gray-500">{{ $booking->nights() }} {{ Str::plural('night', $booking->nights()) }} · {{ \App\Support\Money::format($booking->total_price) }}</span>
+                                <span @class(['block text-xs font-semibold',
+                                              'text-lagoon-700' => $booking->payment_status->value === 'paid',
+                                              'text-sand-700' => $booking->payment_status->value === 'partially_paid',
+                                              'text-gray-400' => ! in_array($booking->payment_status->value, ['paid', 'partially_paid'], true)])>
+                                    {{ $booking->payment_status->label() }}
+                                </span>
                             </span>
                             <x-booking-status :status="$booking->status" class="justify-self-start sm:justify-self-end" />
                         </a>

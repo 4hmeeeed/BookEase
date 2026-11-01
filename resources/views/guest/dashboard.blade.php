@@ -49,7 +49,7 @@
                 Follow each one from <em>pending</em> to <em>confirmed</em>.
             </x-module-card>
 
-            <x-module-card title="Payments & receipts" tone="ocean" status="Coming soon">
+            <x-module-card title="Payments & receipts" tone="ocean" :href="route('guest.bookings.index')">
                 <x-slot name="icon">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2.5" /><path stroke-linecap="round" d="M3 10h18M7 15h4" /></svg>
                 </x-slot>

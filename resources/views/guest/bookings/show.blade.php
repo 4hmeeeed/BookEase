@@ -31,7 +31,7 @@
                 </h2>
                 <p class="mt-1.5 text-gray-700">
                     @switch($booking->status->value)
-                        @case('pending') Your dates are held while the front desk reviews your request. Online payment with GCash or Maya is coming soon. @break
+                        @case('pending') Your dates are held while the front desk reviews your request. You can pay your down payment below with GCash or Maya. @break
                         @case('confirmed') Check-in opens at 2:00 PM on {{ $booking->check_in->format('l, F j') }}. Keep your reference code handy. @break
                         @case('checked_in') Check-out is by 12:00 NN on {{ $booking->check_out->format('l, F j') }}. @break
                         @case('checked_out') We hope to welcome you back to Labnasan soon. @break
@@ -50,6 +50,21 @@
                         <div class="sm:col-span-2"><dt class="text-gray-500">Special requests</dt><dd class="whitespace-pre-line text-gray-800">{{ $booking->notes }}</dd></div>
                     @endif
                 </dl>
+            </div>
+
+            @if ($paymentOptions)
+                @include('guest.bookings._pay')
+            @endif
+
+            <div class="card p-6">
+                <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <h2 class="font-display text-xl font-semibold text-lagoon-950">Payments</h2>
+                    <p class="text-sm text-gray-600">
+                        Paid <strong class="text-lagoon-900">{{ \App\Support\Money::format($booking->amount_paid) }}</strong>
+                        · Balance <strong class="text-coral-700">{{ \App\Support\Money::format($booking->balance()) }}</strong>
+                    </p>
+                </div>
+                <div class="mt-3"><x-payments-list :payments="$booking->payments" /></div>
             </div>
 
             <div class="card p-6">
