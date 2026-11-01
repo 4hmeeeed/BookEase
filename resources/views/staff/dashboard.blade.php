@@ -1,39 +1,61 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-page-header eyebrow="Front desk" title="Today at Labnasan">
-            Approve reservations, verify payments, and handle check-ins and check-outs.
+        <x-page-header eyebrow="Front desk · {{ now()->format('l, F j') }}" title="Today at Labnasan">
+            Approve reservations and handle check-ins and check-outs.
+            <x-slot name="actions">
+                <a href="{{ route('staff.bookings.index') }}" class="btn-primary">Open booking queue</a>
+            </x-slot>
         </x-page-header>
     </x-slot>
 
-    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" x-reveal.stagger>
-            <x-module-card title="Pending requests" tone="sand" status="Step 4">
-                <x-slot name="icon">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5" /><path stroke-linecap="round" d="M12 7.5V12l3 2" /></svg>
-                </x-slot>
-                New reservations waiting for approval or rejection.
-            </x-module-card>
+    <div class="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+        {{-- Stat tiles --}}
+        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4" x-reveal.stagger>
+            @foreach ([
+                ['pending', 'Pending requests', 'sand', 'Waiting for a decision'],
+                ['arrivals', 'Arrivals', 'lagoon', 'Confirmed, ready to check in'],
+                ['in_house', 'In house', 'ocean', 'Guests checked in now'],
+                ['departures', 'Departures', 'coral', 'Due to check out by 12:00 NN'],
+            ] as [$key, $label, $tone, $hint])
+                <a href="{{ route('staff.bookings.index', ['tab' => $key]) }}" x-tilt="6"
+                   class="card tilt group block p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-lagoon-400">
+                    <p class="text-sm font-semibold text-gray-600">{{ $label }}</p>
+                    <p @class(['tilt-pop mt-2 font-display text-5xl font-semibold tabular-nums',
+                               'text-sand-700' => $tone === 'sand', 'text-lagoon-700' => $tone === 'lagoon',
+                               'text-ocean-700' => $tone === 'ocean', 'text-coral-600' => $tone === 'coral'])>{{ $stats[$key] }}</p>
+                    <p class="mt-1 text-xs text-gray-500">{{ $hint }}</p>
+                </a>
+            @endforeach
+        </div>
 
-            <x-module-card title="Arrivals" tone="lagoon" status="Step 4">
-                <x-slot name="icon">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l4-4-4-4M14 12H4" /></svg>
-                </x-slot>
-                Confirmed guests checking in today (from 2:00 PM).
-            </x-module-card>
-
-            <x-module-card title="Departures" tone="coral" status="Step 4">
-                <x-slot name="icon">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M16 16l4-4-4-4M20 12H10" /></svg>
-                </x-slot>
-                Guests due to check out by 12:00 NN.
-            </x-module-card>
-
-            <x-module-card title="Payments" tone="ocean" status="Step 5">
-                <x-slot name="icon">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2.5" /><path stroke-linecap="round" d="M3 10h18M7 15h4" /></svg>
-                </x-slot>
-                GCash and Maya payments confirmed by the gateway.
-            </x-module-card>
+        <div class="grid gap-6 lg:grid-cols-3">
+            @foreach ([
+                ['Waiting for approval', $pending, 'pending', 'No requests waiting. Nice!'],
+                ['Arriving', $arrivals, 'arrivals', 'No arrivals today.'],
+                ['Departing', $departures, 'departures', 'No departures due.'],
+            ] as [$title, $list, $tab, $empty])
+                <section class="card p-5" x-reveal>
+                    <div class="flex items-center justify-between">
+                        <h2 class="font-display text-lg font-semibold text-lagoon-950">{{ $title }}</h2>
+                        <a href="{{ route('staff.bookings.index', ['tab' => $tab]) }}" class="link-underline text-sm">See all</a>
+                    </div>
+                    <ul class="mt-4 divide-y divide-sand-200">
+                        @forelse ($list as $booking)
+                            <li>
+                                <a href="{{ route('staff.bookings.show', $booking) }}" class="-mx-2 flex items-center justify-between gap-3 rounded-xl px-2 py-3 transition hover:bg-sand-50">
+                                    <span class="min-w-0">
+                                        <span class="block truncate font-semibold text-gray-800">{{ $booking->user->name }}</span>
+                                        <span class="block truncate text-xs text-gray-500">{{ $booking->cottage->name }} · {{ $booking->check_in->format('M j') }}–{{ $booking->check_out->format('M j') }}</span>
+                                    </span>
+                                    <span class="shrink-0 font-mono text-xs text-sand-700">{{ $booking->reference_code }}</span>
+                                </a>
+                            </li>
+                        @empty
+                            <li class="py-6 text-center text-sm text-gray-500">{{ $empty }}</li>
+                        @endforelse
+                    </ul>
+                </section>
+            @endforeach
         </div>
     </div>
 </x-app-layout>

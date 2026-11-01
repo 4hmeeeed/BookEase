@@ -7,13 +7,16 @@
         UserRole::Admin => [
             ['admin.dashboard', 'Owner console', 'admin.dashboard'],
             ['admin.cottages.index', 'Cottages', 'admin.cottages.*'],
-            ['staff.dashboard', 'Front desk', 'staff.*'],
+            ['staff.dashboard', 'Front desk', 'staff.dashboard'],
+            ['staff.bookings.index', 'Bookings', 'staff.bookings.*'],
         ],
         UserRole::Staff => [
-            ['staff.dashboard', 'Front desk', 'staff.*'],
+            ['staff.dashboard', 'Front desk', 'staff.dashboard'],
+            ['staff.bookings.index', 'Bookings', 'staff.bookings.*'],
         ],
         default => [
-            ['guest.dashboard', 'My stays', 'guest.*'],
+            ['guest.dashboard', 'My stays', 'guest.dashboard'],
+            ['guest.bookings.index', 'My bookings', 'guest.bookings.*'],
             ['cottages.index', 'Browse cottages', 'cottages.*'],
         ],
     };

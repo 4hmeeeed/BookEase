@@ -30,6 +30,36 @@ enum BookingStatus: string
         return array_map(fn (self $s) => $s->value, self::blocking());
     }
 
+    /**
+     * The lifecycle state machine.
+     *
+     *   pending ──approve──▶ confirmed ──check in──▶ checked_in ──check out──▶ checked_out
+     *      │                     │
+     *      ├──reject──▶ rejected │
+     *      └──cancel──▶ cancelled ◀──cancel──┘
+     *
+     * @return list<self>
+     */
+    public function allowedTransitions(): array
+    {
+        return match ($this) {
+            self::Pending => [self::Confirmed, self::Rejected, self::Cancelled],
+            self::Confirmed => [self::CheckedIn, self::Cancelled],
+            self::CheckedIn => [self::CheckedOut],
+            self::Rejected, self::Cancelled, self::CheckedOut => [],
+        };
+    }
+
+    public function canTransitionTo(self $to): bool
+    {
+        return in_array($to, $this->allowedTransitions(), true);
+    }
+
+    public function isFinal(): bool
+    {
+        return $this->allowedTransitions() === [];
+    }
+
     public function holdsDates(): bool
     {
         return in_array($this, self::blocking(), true);

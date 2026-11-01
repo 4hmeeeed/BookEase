@@ -4,6 +4,11 @@ use App\Http\Controllers\Admin\CottageController as AdminCottageController;
 use App\Http\Controllers\CottageAvailabilityController;
 use App\Http\Controllers\CottageController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Guest\BookingController as GuestBookingController;
+use App\Http\Controllers\Guest\DashboardController as GuestDashboardController;
+use App\Http\Controllers\Guest\ReservationController;
+use App\Http\Controllers\Staff\BookingController as StaffBookingController;
+use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,11 +48,20 @@ Route::middleware('auth')->group(function () {
 | Guest (resort customer) area
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified', 'role:guest'])
-    ->prefix('my')->name('guest.')
-    ->group(function () {
-        Route::view('/', 'guest.dashboard')->name('dashboard');
+Route::middleware(['auth', 'verified', 'role:guest'])->name('guest.')->group(function () {
+    // Reservation form lives next to the cottage URL; logged-out visitors are
+    // sent to log in and then returned here with their dates intact.
+    Route::get('/cottages/{cottage}/book', [ReservationController::class, 'create'])->name('reservations.create');
+    Route::post('/cottages/{cottage}/book', [ReservationController::class, 'store'])
+        ->middleware('throttle:10,1')->name('reservations.store');
+
+    Route::prefix('my')->group(function () {
+        Route::get('/', GuestDashboardController::class)->name('dashboard');
+        Route::get('/bookings', [GuestBookingController::class, 'index'])->name('bookings.index');
+        Route::get('/bookings/{booking}', [GuestBookingController::class, 'show'])->name('bookings.show');
+        Route::post('/bookings/{booking}/cancel', [GuestBookingController::class, 'cancel'])->name('bookings.cancel');
     });
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -57,7 +71,15 @@ Route::middleware(['auth', 'verified', 'role:guest'])
 Route::middleware(['auth', 'verified', 'role:staff,admin'])
     ->prefix('staff')->name('staff.')
     ->group(function () {
-        Route::view('/', 'staff.dashboard')->name('dashboard');
+        Route::get('/', StaffDashboardController::class)->name('dashboard');
+
+        Route::get('/bookings', [StaffBookingController::class, 'index'])->name('bookings.index');
+        Route::get('/bookings/{booking}', [StaffBookingController::class, 'show'])->name('bookings.show');
+        Route::post('/bookings/{booking}/approve', [StaffBookingController::class, 'approve'])->name('bookings.approve');
+        Route::post('/bookings/{booking}/reject', [StaffBookingController::class, 'reject'])->name('bookings.reject');
+        Route::post('/bookings/{booking}/check-in', [StaffBookingController::class, 'checkIn'])->name('bookings.check-in');
+        Route::post('/bookings/{booking}/check-out', [StaffBookingController::class, 'checkOut'])->name('bookings.check-out');
+        Route::post('/bookings/{booking}/cancel', [StaffBookingController::class, 'cancel'])->name('bookings.cancel');
     });
 
 /*

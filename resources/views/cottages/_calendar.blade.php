@@ -93,8 +93,19 @@
             <p x-show="quoteError" x-text="quoteError" class="mt-3 rounded-xl bg-coral-50 px-3 py-2 text-sm text-coral-800"></p>
 
             <div class="mt-5 flex flex-wrap items-center gap-3">
-                <button type="button" class="btn-coral px-7 py-3 text-base" disabled>Reserve these dates</button>
-                <span class="text-sm text-gray-500">Online reservations open soon.</span>
+                @if ($calendar['canBook'])
+                    <a :href="quote?.available ? `${@js($calendar['bookUrl'])}?check_in=${checkIn}&check_out=${checkOut}` : null"
+                       :aria-disabled="! quote?.available"
+                       :class="{ 'pointer-events-none opacity-50': ! quote?.available }"
+                       class="btn-coral px-7 py-3 text-base">
+                        Reserve these dates
+                    </a>
+                    @guest
+                        <span class="text-sm text-gray-500">You'll be asked to log in or create an account first.</span>
+                    @endguest
+                @else
+                    <span class="text-sm text-gray-500">Staff accounts can't make online reservations.</span>
+                @endif
             </div>
         </div>
     </div>

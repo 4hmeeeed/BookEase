@@ -77,6 +77,8 @@ class CottageController extends Controller
             'calendar' => [
                 'availabilityUrl' => route('cottages.availability', $cottage),
                 'quoteUrl' => route('cottages.quote', $cottage),
+                'bookUrl' => route('guest.reservations.create', $cottage),
+                'canBook' => ! $request->user() || $request->user()->isGuest(),
                 'today' => CarbonImmutable::today()->toDateString(),
                 'maxNights' => (int) config('bookease.max_nights'),
                 'windowDays' => (int) config('bookease.booking_window_days'),

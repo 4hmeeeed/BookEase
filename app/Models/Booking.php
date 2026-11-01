@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -91,6 +92,52 @@ class Booking extends Model
     public function cottage(): BelongsTo
     {
         return $this->belongsTo(Cottage::class);
+    }
+
+    public function statusChanges(): HasMany
+    {
+        return $this->hasMany(BookingStatusChange::class)->latest('created_at')->latest('id');
+    }
+
+    /** Route-model binding for guest/staff URLs uses the public reference code. */
+    public function getRouteKeyName(): string
+    {
+        return 'reference_code';
+    }
+
+    /**
+     * A guest may cancel their own booking while it is pending or confirmed
+     * and the check-in day hasn't arrived yet.
+     */
+    public function isCancellableByGuest(): bool
+    {
+        return in_array($this->status, [BookingStatus::Pending, BookingStatus::Confirmed], true)
+            && CarbonImmutable::today()->lt($this->check_in);
+    }
+
+    /** Staff may check a confirmed guest in from the check-in day until the check-out day. */
+    public function canCheckInToday(): bool
+    {
+        $today = CarbonImmutable::today();
+
+        return $this->status === BookingStatus::Confirmed
+            && $today->gte($this->check_in)
+            && $today->lt($this->check_out);
+    }
+
+    public function scopeArrivingOn(Builder $query, string $date): void
+    {
+        $query->where('check_in', $date);
+    }
+
+    public function scopeDepartingOn(Builder $query, string $date): void
+    {
+        $query->where('check_out', $date);
+    }
+
+    public function scopeUpcoming(Builder $query): void
+    {
+        $query->where('check_out', '>', CarbonImmutable::today()->toDateString());
     }
 
     /** Bookings that currently hold their dates. */
