@@ -1,0 +1,241 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------
+ | Page transitions — cross-document View Transitions (progressive:
+ | browsers without support simply navigate normally).
+ * ------------------------------------------------------------------ */
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root) {
+    animation: 220ms cubic-bezier(0.4, 0, 1, 1) both vt-out;
+}
+
+::view-transition-new(root) {
+    animation: 420ms cubic-bezier(0.22, 1, 0.36, 1) both vt-in;
+}
+
+@keyframes vt-out {
+    to { opacity: 0; transform: translateY(-6px); }
+}
+
+@keyframes vt-in {
+    from { opacity: 0; transform: translateY(10px); }
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        @apply bg-cream text-gray-800;
+        font-feature-settings: 'ss01', 'cv11';
+    }
+
+    /* Subtle paper/sand grain over everything. */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        pointer-events: none;
+        opacity: 0.045;
+        mix-blend-mode: multiply;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    h1, h2, h3, .font-display {
+        font-variation-settings: 'SOFT' 100, 'WONK' 0;
+        letter-spacing: -0.015em;
+    }
+
+    ::selection {
+        @apply bg-coral-200 text-lagoon-950;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+    /* ---------------- Buttons: press feedback (scale + shadow) -------- */
+    .btn {
+        @apply relative inline-flex select-none items-center justify-center gap-2 rounded-full px-5 py-2.5
+               text-sm font-semibold tracking-wide
+               transition-[transform,box-shadow,background-color,color] duration-200 ease-out-soft
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-cream
+               disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn:active {
+        transform: translateY(1px) scale(0.97);
+        @apply shadow-press;
+        transition-duration: 80ms;
+    }
+
+    .btn-primary {
+        @apply btn bg-lagoon-700 text-cream shadow-lagoon-glow hover:bg-lagoon-600 focus-visible:ring-lagoon-500;
+    }
+
+    .btn-coral {
+        @apply btn bg-coral-500 text-white shadow-coral-glow hover:bg-coral-600 focus-visible:ring-coral-400;
+    }
+
+    .btn-ghost {
+        @apply btn border border-sand-300 bg-cream/70 text-lagoon-900 shadow-soft hover:border-lagoon-300 hover:bg-white focus-visible:ring-lagoon-400;
+    }
+
+    .btn-danger {
+        @apply btn bg-coral-700 text-white hover:bg-coral-800 focus-visible:ring-coral-500;
+    }
+
+    /* ---------------- Cards with 3D tilt + lift ----------------------- *
+     | JS (x-tilt) writes --rx / --ry from the pointer position.          */
+    .card {
+        @apply relative rounded-3xl border border-sand-200/80 bg-white/80 shadow-soft;
+    }
+
+    .tilt {
+        --rx: 0deg;
+        --ry: 0deg;
+        --lift: 0px;
+        transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(var(--lift));
+        transform-style: preserve-3d;
+        transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 450ms cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: transform;
+    }
+
+    .tilt:hover {
+        --lift: -6px;
+        @apply shadow-lift;
+    }
+
+    .tilt.is-tilting {
+        transition-duration: 120ms, 450ms;
+    }
+
+    /* Moving glare highlight that follows the pointer. */
+    .tilt::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 300ms ease;
+        background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 50%), rgb(255 250 242 / 0.55), transparent 45%);
+    }
+
+    .tilt:hover::after {
+        opacity: 1;
+    }
+
+    /* Children that pop forward in 3D space while tilting. */
+    .tilt-pop {
+        transform: translateZ(28px);
+    }
+
+    /* ---------------- Scroll reveal + stagger ------------------------ */
+    .reveal {
+        opacity: 0;
+        transform: translateY(22px);
+        transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1), transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+        transition-delay: calc(var(--i, 0) * 80ms);
+    }
+
+    .reveal.is-visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    /* ---------------- Form inputs: micro-interactions ---------------- */
+    .field {
+        @apply block w-full rounded-xl border-sand-300 bg-white/90 px-4 py-2.5 text-gray-900 shadow-sm
+               placeholder:text-gray-400
+               transition-[border-color,box-shadow,transform] duration-200 ease-out-soft
+               focus:border-lagoon-500 focus:ring-4 focus:ring-lagoon-500/15;
+    }
+
+    .field:focus {
+        transform: translateY(-1px);
+    }
+
+    .field[aria-invalid='true'] {
+        @apply border-coral-400 focus:border-coral-500 focus:ring-coral-500/15;
+        animation: nudge 320ms ease;
+    }
+
+    @keyframes nudge {
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+
+    /* ---------------- Status badges ---------------------------------- */
+    .badge {
+        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold
+               ring-1 ring-inset transition-transform duration-200 ease-spring hover:scale-105;
+    }
+
+    .badge-dot {
+        @apply relative inline-flex h-1.5 w-1.5 rounded-full bg-current;
+    }
+
+    .badge-dot.is-live::after {
+        content: '';
+        @apply absolute inset-0 rounded-full bg-current;
+        animation: ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    .badge-pending   { @apply bg-sand-100 text-sand-800 ring-sand-300; }
+    .badge-confirmed { @apply bg-lagoon-50 text-lagoon-800 ring-lagoon-200; }
+    .badge-checked-in { @apply bg-ocean-50 text-ocean-800 ring-ocean-200; }
+    .badge-checked-out { @apply bg-gray-100 text-gray-600 ring-gray-300; }
+    .badge-rejected,
+    .badge-cancelled { @apply bg-coral-50 text-coral-800 ring-coral-200; }
+
+    /* ---------------- Misc ------------------------------------------- */
+    .eyebrow {
+        @apply text-xs font-semibold uppercase tracking-[0.2em] text-coral-600;
+    }
+
+    .link-underline {
+        @apply relative text-lagoon-700 transition-colors hover:text-lagoon-900;
+        background-image: linear-gradient(currentColor, currentColor);
+        background-size: 0% 1px;
+        background-position: 0 100%;
+        background-repeat: no-repeat;
+        transition: background-size 300ms cubic-bezier(0.22, 1, 0.36, 1), color 200ms;
+    }
+
+    .link-underline:hover {
+        background-size: 100% 1px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+    }
+
+    .tilt {
+        transform: none !important;
+    }
+
+    .reveal {
+        opacity: 1;
+        transform: none;
+    }
+}
