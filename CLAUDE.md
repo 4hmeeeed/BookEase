@@ -1,154 +1,110 @@
-# BookEase – Project Instructions for Claude Code
+# BookEase – Project Instructions
 
 ## Project Overview
-BookEase is a web-based booking and management system for **Labnasan Resort** (Basey, Samar).  
-It replaces manual notebook + Messenger workflows with:
+BookEase is a web-based booking and management system with AI chatbot and e-wallet payment for Labnasan Resort (Basey, Samar). Built as a thesis project (ITP 414L Software Engineering).
 
-- Real-time availability and booking (prevents double-booking)
-- Automated rate calculation
-- Verified e-wallet payment (GCash / Maya via Philippine gateway + webhook)
-- RAG-powered AI chatbot grounded only on live database records
-- Staff & Admin dashboards with operational reports
-
-Target users: Guests, Staff, Administrator (Owner).
-
-This is a real production-oriented system for a thesis (ITP 414L Software Engineering). Quality, security, and polish matter.
+**Goal:** Replace manual reservation, payment, and inquiry processes with a modern, reliable system that prevents double-booking, verifies e-wallet payments, and answers guest questions accurately from live resort data.
 
 ## Tech Stack (Strict)
 - PHP 8.2
 - Laravel 12
 - MySQL / MariaDB
-- Blade templates
-- Tailwind CSS 4 + Alpine.js
-- Google Gemini API (for RAG chatbot)
-- Philippine Payment Gateway (sandbox first – GCash & Maya)
-- Vite for assets
+- Blade + Tailwind CSS + Alpine.js
+- Laravel Breeze (Blade stack) for authentication
+- Google Gemini API (RAG chatbot)
+- Philippine payment gateway (GCash + Maya) – sandbox first
+- No React, Vue, Livewire, or Inertia unless explicitly requested later
 
-Do **not** introduce Next.js, React, Vue, or other frameworks unless explicitly asked.
+## Design System (Very Important)
+Create a warm, tropical, beach-resort aesthetic that does **not** look AI-generated.
 
-## Design System – Make It Feel Premium & Local
+### Visual Direction
+- Warm coastal palette: soft sand, deep teal, ocean blue, coral accents, creamy whites
+- Natural textures and subtle grain where appropriate
+- Clean but distinctive typography (avoid generic Inter / system fonts)
+- Generous whitespace mixed with intentional density
+- Soft shadows and layered depth
 
-### Visual Identity
-- Warm tropical / Filipino provincial resort aesthetic
-- Primary colors: deep teal (#0F766E), warm sand (#F5E6C8), soft coral accents, cream backgrounds
-- Avoid generic SaaS blue, purple gradients, and “AI starter kit” looks
-- Use natural textures, soft shadows, and organic shapes where appropriate
-- Typography: clean, readable, slightly elegant (prefer Inter or similar modern sans + a refined serif for headings if needed)
+### Transitions & 3D Effects (Must implement heavily)
+- Card hover: 3D tilt + lift (perspective + rotateX/rotateY + translateY)
+- Smooth page transitions and section reveals
+- Staggered entrance animations on lists and cards
+- Button press feedback (scale + shadow)
+- Modal scale + fade transitions
+- Smooth availability calendar interactions
+- Micro-interactions on form inputs and status badges
+- Floating chatbot widget with soft entrance animation
+- Use Tailwind + Alpine.js + pure CSS for all effects (no heavy JS libraries)
 
-### Motion & 3D Effects (Very Important)
-Apply generous, high-quality motion throughout the system. Prefer smoothness over minimalism.
-
-Required effects:
-- Page transitions (fade + slight upward slide)
-- Card hover: lift (translateY + scale) + stronger shadow + subtle 3D tilt (perspective + rotateX/rotateY on mouse move if possible)
-- Booking cards and cottage cards: 3D hover tilt + soft glow
-- Buttons: smooth scale + shadow lift on hover, active press-down effect
-- Modal / drawer: scale + fade with backdrop blur
-- Form focus states: gentle glow and border color transition
-- Loading states: elegant skeleton loaders or subtle pulse
-- Success / error toasts: slide-in + fade with slight bounce
-- Dashboard cards: staggered entrance animations
-- Chatbot messages: smooth fade-up + slight scale
-- Availability calendar: smooth date selection transitions
-- Image galleries: gentle zoom + overlay on hover
-
-Implementation preference:
-- Use Tailwind transition classes heavily (`transition-all duration-300`, `ease-out`, etc.)
-- Prefer Alpine.js or pure CSS for interactions
-- Add `transform-style: preserve-3d` and perspective where 3D tilt is used
-- Keep performance good (prefer `transform` and `opacity` for animations)
-
-### UI Patterns
-- Soft rounded corners (rounded-2xl / rounded-3xl for cards)
-- Generous whitespace but not empty
-- Clear visual hierarchy
-- High-quality cottage images with overlay text on hover
-- Status badges with soft colors and subtle animations
-- Mobile-first responsive design that still feels premium on desktop
+Avoid generic purple gradients, overused glassmorphism, and cookie-cutter AI layouts.
 
 ## Core Business Rules
+1. **Availability uses half-open date intervals**
+   - A booking holds dates from check_in (inclusive) to check_out (exclusive)
+   - Same-day changeover is allowed (12:00 NN checkout → 2:00 PM check-in)
 
-### Availability & Booking
-- Use **half-open date intervals** (check-out day is free for new check-in)
-- Never allow double-booking of the same unit
-- Single authoritative availability source = database
-- Reservation lifecycle: Pending → Confirmed → Checked-in → Checked-out (and Cancelled / Rejected)
-- Auto-calculate total cost based on nights × rate (and any extra fees defined)
+2. **Blocking statuses:** pending, confirmed, checked_in
+   - rejected, cancelled, checked_out release the dates
 
-### Payment
-- Guests pay via Philippine e-wallet gateway (GCash / Maya)
-- Never store e-wallet credentials
-- Rely on cryptographically signed webhook for confirmation
-- Issue digital receipt linked to the booking
-- Support partial (down payment) and full payment
-- Sandbox mode first
+3. **Payment**
+   - Only accept GCash and Maya through the payment gateway
+   - Never store wallet credentials
+   - Confirm payments only via signed webhook/callback
+   - Support down payment + balance
+   - Issue electronic receipt after successful payment
 
-### AI Chatbot (Critical Constraints)
-- Retrieval-Augmented Generation only
-- Before every response, retrieve live data from the database (cottages, rates, availability, policies)
-- Answer **only** from the retrieved grounding context
-- If the answer is not in the context → politely direct the guest to contact the resort
-- Chatbot must **never** create, modify, or cancel bookings
-- Strong prompt-injection defenses:
-  - Fixed system instruction
-  - Fence user input as pure data
-  - Treat all user messages as untrusted
-- Log every chatbot interaction (question + answer + context used) for audit
+4. **Roles (RBAC)**
+   - Guest
+   - Staff
+   - Admin (Owner)
+   - Strict middleware separation
 
-### Roles & Access
-- Guest
-- Staff
-- Administrator
-Use Laravel middleware + policies for strict RBAC.
+5. **Chatbot (RAG)**
+   - Answers **only** from live database records (cottages, rates, availability, policies)
+   - Never invent rates, availability, or policies
+   - If answer is not in the context → politely redirect to contact the resort
+   - Cannot create or modify bookings
+   - Log every inquiry (question + context + answer)
+   - Rate limit requests
+   - Strong prompt injection defenses
 
-## Architecture Guidelines
-- Clean Laravel structure (Controllers thin, logic in Services / Actions)
-- Form Requests for validation
-- Eloquent relationships properly defined
-- Database migrations must be clear and complete
-- Prefer queues for non-critical work (email, webhook processing if needed)
-- Secure by default (CSRF, XSS protection, hashed passwords, rate limiting on chatbot & payment endpoints)
+## Key Modules
+1. Authentication + Role-based access
+2. Cottage browsing & filtering
+3. Availability & pricing engine
+4. Reservation submission
+5. E-wallet payment + verification
+6. Booking lifecycle management (approve/reject/check-in/check-out)
+7. Cottage & staff management
+8. AI Inquiry Chatbot (RAG)
+9. Chatbot audit logging
+10. Reports & dashboard
 
-## Code Quality
-- Follow Laravel best practices and PSR standards
-- Meaningful names, clear comments only when necessary
-- Prefer simple, readable solutions over clever ones
-- Write tests for critical paths (booking conflict, payment webhook, chatbot grounding)
-- After generating a feature, clean it up (Code Simplifier style)
+## Coding Standards
+- Prefer Laravel conventions and `php artisan make:` commands
+- Use Form Requests for validation
+- Keep controllers thin – put business logic in Services
+- Use Eloquent relationships properly
+- Write feature tests for availability and payment logic
+- Use `bcmath` for all money calculations (no floating point)
+- Keep the design system consistent across all pages
 
-## Anti-AI Design Rules (Strict)
-Never produce:
-- Generic blue/purple SaaS look
-- Overused “eyebrow” labels + tracked uppercase text
-- One random colored word in every heading
-- Empty state illustrations that look stock
-- Cards with no personality
-- Flat, lifeless interfaces
-- Overly perfect, sterile layouts
+## Development Order
+1. Authentication + Roles + basic layout
+2. Cottages CRUD + seeder
+3. Availability service + tests
+4. Booking flow
+5. Payment integration (sandbox)
+6. Chatbot (RAG)
+7. Admin dashboard & reports
+8. Polish transitions, 3D effects, and responsiveness
 
-Always aim for:
-- Warm, inviting, slightly organic resort feeling
-- Clear visual hierarchy with personality
-- Smooth, delightful micro-interactions
-- Professional but not corporate
+## Important Constraints
+- Responsive (mobile-first)
+- No offline mode
+- Payment stays in sandbox until explicitly moved to live
+- Chatbot must never hallucinate resort data
+- Follow Data Privacy Act principles (collect only necessary data)
 
-## Preferred Development Order
-1. Project setup + authentication + roles
-2. Cottage management (CRUD + images)
-3. Availability engine + booking flow
-4. Payment integration + webhook + receipts
-5. Staff & Admin dashboards + reports
-6. RAG chatbot (with grounding + logging + security)
-7. Polish: animations, 3D effects, responsive refinements, loading states
-
-## When Starting a New Feature
-- First understand the exact requirement from this file
-- Plan the database changes and routes
-- Implement cleanly
-- Add the required transitions and 3D/hover effects
-- Make sure it feels premium and local to a Samar beach resort
-
----
-
-You are building a real system for a real resort.  
-Make it reliable, secure, beautiful, and pleasant to use.
+Always read this file before starting any major task.
+When in doubt, prioritize correctness of availability logic and payment verification over visual features.
