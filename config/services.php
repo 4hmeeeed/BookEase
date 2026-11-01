@@ -44,6 +44,14 @@ return [
         'max_output_tokens' => (int) env('GEMINI_MAX_OUTPUT_TOKENS', 1024),
     ],
 
+    // "Continue with Google" (guests only). Free OAuth client from Google Cloud Console.
+    // Leave the id/secret empty to hide the button.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

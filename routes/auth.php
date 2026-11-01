@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -27,6 +28,12 @@ Route::middleware('guest')->group(function () {
         ->name('staff.login');
 
     Route::post('staff/login', [AuthenticatedSessionController::class, 'storeStaff']);
+
+    // "Continue with Google" for resort clients (guest role) only.
+    Route::middleware('throttle:10,1')->group(function () {
+        Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+        Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+    });
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');

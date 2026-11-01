@@ -7,6 +7,13 @@
         <p class="mt-1 text-sm text-gray-600">
             {{ __('Ensure your account is using a long, random password to stay secure.') }}
         </p>
+
+        @if (auth()->user()->google_id)
+            <p class="mt-3 rounded-md border border-lagoon-950/10 bg-lagoon-50 px-4 py-3 text-sm text-lagoon-900">
+                You sign in with Google. If you never set a BookEase password, log out and use
+                “Forgot your password?” on the sign-in page to create one. You need it to change your password or delete your account here.
+            </p>
+        @endif
     </header>
 
     <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
