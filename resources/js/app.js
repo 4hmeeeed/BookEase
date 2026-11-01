@@ -1,6 +1,9 @@
 import './bootstrap';
 
 import Alpine from 'alpinejs';
+import stayCalendar from './stay-calendar';
+
+Alpine.data('stayCalendar', stayCalendar);
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;

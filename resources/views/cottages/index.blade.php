@@ -12,7 +12,22 @@
             {{-- Filters --}}
             <form method="GET" action="{{ route('cottages.index') }}"
                   x-data="{ guests: {{ (int) ($guests ?? 0) }} }"
-                  class="card mt-8 flex animate-fade-up flex-col gap-5 p-4 [animation-delay:100ms] sm:p-5 lg:flex-row lg:items-end">
+                  class="card mt-8 flex animate-fade-up flex-col gap-5 p-4 [animation-delay:100ms] sm:p-5 lg:flex-row lg:flex-wrap lg:items-end">
+
+                <div class="grid grid-cols-2 gap-3 sm:w-auto"
+                     x-data="{ checkIn: @js($rawCheckIn ?? ''), checkOut: @js($rawCheckOut ?? '') }">
+                    <label class="block">
+                        <span class="mb-1.5 block text-sm font-semibold text-lagoon-900">Check-in</span>
+                        <input type="date" name="check_in" x-model="checkIn" min="{{ $today }}"
+                               @change="if (checkOut && checkOut <= checkIn) checkOut = ''"
+                               class="field !py-2" @if($stayError) aria-invalid="true" @endif>
+                    </label>
+                    <label class="block">
+                        <span class="mb-1.5 block text-sm font-semibold text-lagoon-900">Check-out</span>
+                        <input type="date" name="check_out" x-model="checkOut" :min="checkIn || @js($today)"
+                               class="field !py-2" @if($stayError) aria-invalid="true" @endif>
+                    </label>
+                </div>
 
                 <div>
                     <span class="mb-1.5 block text-sm font-semibold text-lagoon-900">Guests</span>
@@ -41,15 +56,23 @@
 
                 <div class="flex gap-2">
                     <button class="btn-primary">Show cottages</button>
-                    @if ($guests || $type)
+                    @if ($guests || $type || $rawCheckIn || $rawCheckOut)
                         <a href="{{ route('cottages.index') }}" class="btn-ghost">Clear</a>
                     @endif
                 </div>
             </form>
 
-            <p class="mt-4 text-sm text-gray-500">
-                Picking stay dates is coming soon. For now, filter by party size and type.
-            </p>
+            @if ($stayError)
+                <p class="mt-4 animate-fade-up rounded-2xl bg-coral-50 px-4 py-3 text-sm font-medium text-coral-800" role="alert">{{ $stayError }}</p>
+            @elseif ($checkIn)
+                <p class="mt-4 text-sm text-gray-600">
+                    Showing units free from <strong class="text-lagoon-900">{{ $checkIn->format('D, M j') }}</strong> (2:00 PM)
+                    to <strong class="text-lagoon-900">{{ $checkOut->format('D, M j') }}</strong> (12:00 NN)
+                    · {{ $nights }} {{ Str::plural('night', $nights) }}
+                </p>
+            @else
+                <p class="mt-4 text-sm text-gray-500">Add your dates to see only the units that are free, with the total for your stay.</p>
+            @endif
         </div>
     </section>
 
@@ -58,7 +81,9 @@
             <div class="card mx-auto mt-6 max-w-lg animate-pop-in p-10 text-center">
                 <p class="font-display text-2xl font-semibold text-lagoon-950">No units match</p>
                 <p class="mt-2 text-gray-600">
-                    @if ($guests)
+                    @if ($checkIn)
+                        Every unit that fits your search is already booked for those dates.
+                    @elseif ($guests)
                         None of our listed units fit {{ $guests }} {{ Str::plural('guest', $guests) }}{{ $type ? ' as a '.Str::lower($type->label()) : '' }}.
                     @else
                         Nothing is listed here right now.
@@ -68,10 +93,16 @@
                 <a href="{{ route('cottages.index') }}" class="btn-ghost mt-6">See all units</a>
             </div>
         @else
-            <p class="mb-4 text-sm font-medium text-gray-500">{{ $cottages->count() }} {{ Str::plural('unit', $cottages->count()) }} · sorted by nightly rate</p>
+            <p class="mb-4 text-sm font-medium text-gray-500">
+                {{ $cottages->count() }} {{ Str::plural('unit', $cottages->count()) }}{{ $checkIn ? ' available' : '' }} · sorted by nightly rate
+            </p>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" x-reveal.stagger>
                 @foreach ($cottages as $cottage)
-                    <x-cottage-card :cottage="$cottage" />
+                    <x-cottage-card :cottage="$cottage"
+                                    :total="$quotes[$cottage->id] ?? null"
+                                    :nights="$nights"
+                                    :check-in="$checkIn?->toDateString()"
+                                    :check-out="$checkOut?->toDateString()" />
                 @endforeach
             </div>
         @endif

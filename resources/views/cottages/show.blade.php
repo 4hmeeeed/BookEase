@@ -28,14 +28,7 @@
                     <div class="mt-6 whitespace-pre-line leading-relaxed text-gray-700">{{ $cottage->description }}</div>
                 @endif
 
-                <div class="mt-6 rounded-2xl border border-dashed border-sand-300 bg-sand-50 p-4 text-sm text-gray-600">
-                    <p><strong class="text-lagoon-900">Check-in</strong> from 2:00 PM · <strong class="text-lagoon-900">Check-out</strong> by 12:00 NN</p>
-                </div>
-
-                <div class="mt-8 flex flex-wrap items-center gap-3">
-                    <button type="button" class="btn-coral px-7 py-3 text-base" disabled>Reserve these dates</button>
-                    <span class="text-sm text-gray-500">Online reservations open soon.</span>
-                </div>
+                @include('cottages._calendar')
             </div>
         </div>
     </section>

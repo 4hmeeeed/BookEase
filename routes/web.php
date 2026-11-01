@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CottageController as AdminCottageController;
+use App\Http\Controllers\CottageAvailabilityController;
 use App\Http\Controllers\CottageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -15,6 +16,11 @@ Route::view('/', 'welcome')->name('home');
 
 Route::get('/cottages', [CottageController::class, 'index'])->name('cottages.index');
 Route::get('/cottages/{cottage}', [CottageController::class, 'show'])->name('cottages.show');
+
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/cottages/{cottage}/availability', [CottageAvailabilityController::class, 'month'])->name('cottages.availability');
+    Route::get('/cottages/{cottage}/quote', [CottageAvailabilityController::class, 'quote'])->name('cottages.quote');
+});
 
 /*
 |--------------------------------------------------------------------------
