@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Admin\ChatInquiryController;
 use App\Http\Controllers\Admin\CottageController as AdminCottageController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\CottageAvailabilityController;
 use App\Http\Controllers\CottageController;
@@ -124,10 +127,17 @@ Route::middleware(['auth', 'verified', 'role:staff,admin'])
 Route::middleware(['auth', 'verified', 'role:admin'])
     ->prefix('admin')->name('admin.')
     ->group(function () {
-        Route::view('/', 'admin.dashboard')->name('dashboard');
+        Route::get('/', AdminDashboardController::class)->name('dashboard');
 
         Route::resource('cottages', AdminCottageController::class)->except('show');
         Route::patch('cottages/{cottage}/toggle', [AdminCottageController::class, 'toggle'])->name('cottages.toggle');
+
+        Route::resource('staff', StaffController::class)->except(['show', 'destroy'])->parameters(['staff' => 'staff']);
+        Route::patch('staff/{staff}/toggle', [StaffController::class, 'toggle'])->name('staff.toggle');
+
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/bookings.csv', [ReportController::class, 'bookingsCsv'])->name('reports.bookings');
+        Route::get('reports/payments.csv', [ReportController::class, 'paymentsCsv'])->name('reports.payments');
 
         Route::get('chatbot', [ChatInquiryController::class, 'index'])->name('chatbot.index');
         Route::get('chatbot/{inquiry}', [ChatInquiryController::class, 'show'])->name('chatbot.show');

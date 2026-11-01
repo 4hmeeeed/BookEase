@@ -5,9 +5,11 @@
 
     $links = match ($user->role) {
         UserRole::Admin => [
-            ['admin.dashboard', 'Owner console', 'admin.dashboard'],
+            ['admin.dashboard', 'Overview', 'admin.dashboard'],
             ['admin.cottages.index', 'Cottages', 'admin.cottages.*'],
-            ['admin.chatbot.index', 'Chatbot log', 'admin.chatbot.*'],
+            ['admin.reports.index', 'Reports', 'admin.reports.*'],
+            ['admin.staff.index', 'Staff', 'admin.staff.*'],
+            ['admin.chatbot.index', 'Chatbot', 'admin.chatbot.*'],
             ['staff.dashboard', 'Front desk', 'staff.dashboard'],
             ['staff.bookings.index', 'Bookings', 'staff.bookings.*'],
         ],
@@ -21,22 +23,25 @@
             ['cottages.index', 'Browse cottages', 'cottages.*'],
         ],
     };
+
+    // The owner has many links: keep the hamburger menu up to xl so nothing overflows.
+    $wide = count($links) > 5;
 @endphp
 
-<nav x-data="{ open: false }" class="sticky top-0 z-40 border-b border-sand-200/70 bg-cream/85 backdrop-blur-md">
+<nav x-data="{ open: false }" class="sticky top-0 z-40 print:hidden border-b border-sand-200/70 bg-cream/85 backdrop-blur-md">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
             <div class="flex items-center gap-10">
                 <x-brand :href="route('dashboard')" />
 
-                <div class="hidden items-center gap-1 sm:flex">
+                <div @class(['hidden items-center gap-1', 'lg:flex' => ! $wide, 'xl:flex' => $wide])>
                     @foreach ($links as [$route, $label, $pattern])
                         <x-nav-link :href="route($route)" :active="request()->routeIs($pattern)">{{ $label }}</x-nav-link>
                     @endforeach
                 </div>
             </div>
 
-            <div class="hidden sm:flex sm:items-center sm:gap-3">
+            <div @class(['hidden items-center gap-3', 'lg:flex' => ! $wide, 'xl:flex' => $wide])>
                 <span class="badge {{ $user->isGuest() ? 'badge-checked-in' : ($user->isAdmin() ? 'badge-rejected' : 'badge-confirmed') }}">
                     <span class="badge-dot"></span>{{ $user->role->label() }}
                 </span>
@@ -67,7 +72,7 @@
 
             {{-- Hamburger --}}
             <button @click="open = ! open" :aria-expanded="open" aria-label="Toggle menu"
-                    class="inline-flex items-center justify-center rounded-full p-2 text-lagoon-800 transition hover:bg-sand-100 active:scale-95 focus:outline-none sm:hidden">
+                    class="inline-flex items-center justify-center rounded-full p-2 text-lagoon-800 transition hover:bg-sand-100 active:scale-95 focus:outline-none {{ $wide ? 'xl:hidden' : 'lg:hidden' }}">
                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                     <path :class="{ 'hidden': open }" stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h10M4 17h16" />
                     <path :class="{ 'hidden': ! open }" class="hidden" stroke-linecap="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -80,7 +85,7 @@
     <div x-show="open" x-cloak
          x-transition:enter="transition ease-out-soft duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-         class="border-t border-sand-200 sm:hidden">
+         class="border-t border-sand-200 {{ $wide ? 'xl:hidden' : 'lg:hidden' }}">
         <div class="space-y-1 py-3">
             @foreach ($links as [$route, $label, $pattern])
                 <x-responsive-nav-link :href="route($route)" :active="request()->routeIs($pattern)">{{ $label }}</x-responsive-nav-link>

@@ -70,6 +70,18 @@ class User extends Authenticatable
         return $this->hasMany(ChatInquiry::class);
     }
 
+    /** Cash payments and refunds this staff member entered. */
+    public function recordedPayments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'recorded_by');
+    }
+
+    /** Approvals, rejections, check-ins, etc. this user performed. */
+    public function bookingDecisions(): HasMany
+    {
+        return $this->hasMany(BookingStatusChange::class);
+    }
+
     public function hasRole(UserRole ...$roles): bool
     {
         return in_array($this->role, $roles, true);
