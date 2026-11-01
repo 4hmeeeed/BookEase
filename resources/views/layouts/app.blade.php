@@ -11,6 +11,8 @@
 
             @include('layouts.navigation')
 
+            <x-flash />
+
             @isset($header)
                 <header class="relative">
                     <div class="mx-auto max-w-7xl px-4 pb-2 pt-8 animate-fade-up sm:px-6 lg:px-8">

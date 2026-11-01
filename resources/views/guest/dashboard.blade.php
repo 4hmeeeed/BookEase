@@ -7,7 +7,7 @@
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" x-reveal.stagger>
-            <x-module-card title="Browse cottages" tone="lagoon" status="Coming soon">
+            <x-module-card title="Browse cottages" tone="lagoon" :href="route('cottages.index')">
                 <x-slot name="icon">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 11 12 4l9 7M5 10v10h14V10M10 20v-5h4v5" /></svg>
                 </x-slot>

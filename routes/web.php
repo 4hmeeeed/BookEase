@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\CottageController as AdminCottageController;
+use App\Http\Controllers\CottageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::view('/', 'welcome')->name('home');
+
+Route::get('/cottages', [CottageController::class, 'index'])->name('cottages.index');
+Route::get('/cottages/{cottage}', [CottageController::class, 'show'])->name('cottages.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -58,6 +63,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])
     ->prefix('admin')->name('admin.')
     ->group(function () {
         Route::view('/', 'admin.dashboard')->name('dashboard');
+
+        Route::resource('cottages', AdminCottageController::class)->except('show');
+        Route::patch('cottages/{cottage}/toggle', [AdminCottageController::class, 'toggle'])->name('cottages.toggle');
     });
 
 require __DIR__.'/auth.php';

@@ -1,27 +1,4 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
-    <head>
-        @include('layouts.partials.head')
-    </head>
-    <body class="font-sans antialiased">
-        {{-- ============ Header ============ --}}
-        <header class="absolute inset-x-0 top-0 z-30">
-            <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
-                <x-brand />
-
-                <nav class="flex items-center gap-2 sm:gap-3">
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="btn-primary">My dashboard</a>
-                    @else
-                        <a href="{{ route('login') }}" class="btn-ghost hidden sm:inline-flex">Log in</a>
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="btn-coral">Create account</a>
-                        @endif
-                    @endauth
-                </nav>
-            </div>
-        </header>
-
+<x-public-layout overlay>
         {{-- ============ Hero ============ --}}
         <section class="relative overflow-hidden pb-10 pt-28 sm:pt-36">
             <div class="pointer-events-none absolute -right-32 -top-24 h-[34rem] w-[34rem] rounded-full bg-coral-200/50 blur-3xl" aria-hidden="true"></div>
@@ -38,7 +15,7 @@
                     </p>
 
                     <div class="mt-8 flex animate-fade-up flex-wrap gap-3 [animation-delay:240ms]">
-                        <a href="{{ route('register') }}" class="btn-coral px-7 py-3 text-base">Start a booking</a>
+                        <a href="{{ route('cottages.index') }}" class="btn-coral px-7 py-3 text-base">Browse cottages</a>
                         <a href="#how-it-works" class="btn-ghost px-7 py-3 text-base">How it works</a>
                     </div>
                 </div>
@@ -121,11 +98,4 @@
             </div>
         </section>
 
-        <footer class="border-t border-sand-200">
-            <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-gray-500 sm:flex-row sm:px-6 lg:px-8">
-                <x-brand />
-                <p>&copy; {{ date('Y') }} Labnasan Resort · Basey, Samar</p>
-            </div>
-        </footer>
-    </body>
-</html>
+</x-public-layout>

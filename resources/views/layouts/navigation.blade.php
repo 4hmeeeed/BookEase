@@ -5,7 +5,8 @@
 
     $links = match ($user->role) {
         UserRole::Admin => [
-            ['admin.dashboard', 'Owner console', 'admin.*'],
+            ['admin.dashboard', 'Owner console', 'admin.dashboard'],
+            ['admin.cottages.index', 'Cottages', 'admin.cottages.*'],
             ['staff.dashboard', 'Front desk', 'staff.*'],
         ],
         UserRole::Staff => [
@@ -13,6 +14,7 @@
         ],
         default => [
             ['guest.dashboard', 'My stays', 'guest.*'],
+            ['cottages.index', 'Browse cottages', 'cottages.*'],
         ],
     };
 @endphp
