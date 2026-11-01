@@ -94,7 +94,10 @@
                     <h2 class="mt-2 font-display text-3xl font-semibold text-lagoon-950">Ask about cottages, rates, and open dates any time.</h2>
                     <p class="mt-2 text-gray-600">Our resort assistant answers from up-to-date resort information. For anything else, the front desk will help you directly.</p>
                 </div>
-                <a href="{{ route('register') }}" class="btn-primary shrink-0 px-7 py-3">Get started</a>
+                <button type="button" x-data @click="$dispatch('open-chatbot')" class="btn-primary shrink-0 px-7 py-3">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4A1.5 1.5 0 0 1 4 14.5v-9Z" /></svg>
+                    Ask the assistant
+                </button>
             </div>
         </section>
 

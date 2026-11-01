@@ -48,29 +48,29 @@
                 <dl class="mt-3 grid grid-cols-2 gap-4" x-reveal.stagger>
                     <div class="card p-5">
                         <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Occupancy</dt>
-                        <dd class="mt-2 font-display text-3xl font-semibold text-lagoon-900">{{ $month['occupancy']['rate'] !== null ? $month['occupancy']['rate'].'%' : '—' }}</dd>
+                        <dd class="mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ $month['occupancy']['rate'] !== null ? $month['occupancy']['rate'].'%' : '—' }}</dd>
                         <dd class="mt-1 text-xs text-gray-600">{{ $month['occupancy']['occupied'] }} of {{ $month['occupancy']['available'] }} unit-nights</dd>
                     </div>
                     <div class="card p-5">
                         <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Collected</dt>
-                        <dd class="mt-2 font-display text-3xl font-semibold text-lagoon-900">{{ Money::format($month['revenue']['net']) }}</dd>
+                        <dd class="mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ Money::format($month['revenue']['net']) }}</dd>
                         <dd class="mt-1 text-xs text-gray-600">net of refunds</dd>
                     </div>
                     <div class="card p-5">
                         <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Still owed</dt>
-                        <dd @class(['mt-2 font-display text-3xl font-semibold', 'text-coral-700' => $today['owing_count'], 'text-lagoon-900' => ! $today['owing_count']])>{{ Money::format($today['owing_total']) }}</dd>
+                        <dd @class(['mt-2 font-display text-2xl font-semibold sm:text-3xl', 'text-coral-700' => $today['owing_count'], 'text-lagoon-900' => ! $today['owing_count']])>{{ Money::format($today['owing_total']) }}</dd>
                         <dd class="mt-1 text-xs text-gray-600">{{ $today['owing_count'] }} confirmed or in-house {{ Str::plural('booking', $today['owing_count']) }}</dd>
                     </div>
                     <div class="card p-5">
                         <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">New requests</dt>
-                        <dd class="mt-2 font-display text-3xl font-semibold text-lagoon-900">{{ $month['bookings']['received'] }}</dd>
+                        <dd class="mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ $month['bookings']['received'] }}</dd>
                         <dd class="mt-1 text-xs text-gray-600">received this month</dd>
                     </div>
                 </dl>
             </div>
 
             <x-report-bars class="self-end" title="Money collected, last 30 days" caption="Per day · net of refunds"
-                           :bars="$trendBars" :ticks="[Money::format($trendMax), '', '₱0']" value-heading="Collected" />
+                           :bars="$trendBars" :ticks="[Money::isPositive($trendMax) ? Money::format($trendMax) : '', '', '₱0']" value-heading="Collected" />
         </section>
 
         {{-- Modules --}}

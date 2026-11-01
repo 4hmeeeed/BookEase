@@ -21,7 +21,7 @@
                 </header>
             @endisset
 
-            <main class="relative animate-fade-up [animation-delay:80ms]">
+            <main @class(['relative animate-fade-up [animation-delay:80ms]', 'pb-24' => auth()->user()?->isGuest()])>
                 {{ $slot }}
             </main>
         </div>

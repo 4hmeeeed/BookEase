@@ -48,7 +48,7 @@
 
         {{-- Period picker --}}
         <div class="card flex flex-col gap-4 p-4 print:hidden lg:flex-row lg:items-center lg:justify-between">
-            <nav class="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1 lg:pb-0" aria-label="Report period">
+            <nav class="flex flex-wrap gap-1" aria-label="Report period">
                 @foreach (\App\Support\ReportPeriod::PRESETS as $key => $label)
                     <a href="{{ route('admin.reports.index', ['period' => $key]) }}"
                        @class(['shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
@@ -76,12 +76,12 @@
         <dl class="grid grid-cols-2 gap-4 lg:grid-cols-4" x-reveal.stagger>
             <div class="card tilt p-5" x-tilt="4">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Occupancy</dt>
-                <dd class="tilt-pop mt-2 font-display text-3xl font-semibold text-lagoon-900">{{ $occupancy['rate'] !== null ? $occupancy['rate'].'%' : '—' }}</dd>
+                <dd class="tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ $occupancy['rate'] !== null ? $occupancy['rate'].'%' : '—' }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">{{ number_format($occupancy['occupied']) }} of {{ number_format($occupancy['available']) }} unit-nights sold</dd>
             </div>
             <div class="card tilt p-5" x-tilt="4">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Collected (net)</dt>
-                <dd class="tilt-pop mt-2 font-display text-3xl font-semibold text-lagoon-900">{{ Money::format($revenue['net']) }}</dd>
+                <dd class="tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ Money::format($revenue['net']) }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">
                     {{ $revenue['count'] }} {{ Str::plural('payment', $revenue['count']) }}
                     @if (Money::isPositive($revenue['refunded'])) · {{ Money::format($revenue['refunded']) }} refunded @endif
@@ -89,12 +89,12 @@
             </div>
             <div class="card tilt p-5" x-tilt="4">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Outstanding</dt>
-                <dd @class(['tilt-pop mt-2 font-display text-3xl font-semibold', 'text-coral-700' => $outstanding['count'], 'text-lagoon-900' => ! $outstanding['count']])>{{ Money::format($outstanding['total']) }}</dd>
+                <dd @class(['tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl', 'text-coral-700' => $outstanding['count'], 'text-lagoon-900' => ! $outstanding['count']])>{{ Money::format($outstanding['total']) }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">{{ $outstanding['count'] }} {{ Str::plural('booking', $outstanding['count']) }} with a balance</dd>
             </div>
             <div class="card tilt p-5" x-tilt="4">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Stays starting</dt>
-                <dd class="tilt-pop mt-2 font-display text-3xl font-semibold text-lagoon-900">{{ number_format($bookings['arriving']) }}</dd>
+                <dd class="tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ number_format($bookings['arriving']) }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">{{ number_format($bookings['received']) }} new {{ Str::plural('request', $bookings['received']) }} received</dd>
             </div>
         </dl>
@@ -104,7 +104,7 @@
             <x-report-bars title="Occupancy" :caption="'By '.$bucketWord.' · % of unit-nights sold'.($bucketWord === 'day' ? ' · weekends lighter' : '')"
                            :bars="$occupancyBars" :ticks="['100%', '50%', '0%']" value-heading="Occupancy" />
             <x-report-bars title="Money collected" :caption="'By '.$bucketWord.' · net of refunds'"
-                           :bars="$revenueBars" :ticks="[Money::format($series['max_collected']), '', '₱0']" value-heading="Collected" />
+                           :bars="$revenueBars" :ticks="[Money::isPositive($series['max_collected']) ? Money::format($series['max_collected']) : '', '', '₱0']" value-heading="Collected" />
         </div>
 
         <div class="grid gap-6 lg:grid-cols-[1fr_1fr]">
@@ -153,7 +153,26 @@
                 <h2 class="font-display text-lg font-semibold text-lagoon-950">Unit performance</h2>
                 <p class="mt-1 text-sm text-gray-600">Sold nights and money collected per unit in this period.</p>
             </div>
-            <div class="overflow-x-auto">
+            {{-- Phones: one card per unit so every figure stays visible --}}
+            <ul class="divide-y divide-sand-100 border-t border-sand-200 sm:hidden">
+                @foreach ($cottages as $row)
+                    <li class="px-5 py-4">
+                        <div class="flex items-baseline justify-between gap-3">
+                            <span class="font-semibold text-gray-900">{{ $row['cottage']->name }}</span>
+                            <span class="shrink-0 font-semibold tabular-nums text-gray-900">{{ Money::format($row['collected']) }}</span>
+                        </div>
+                        <p class="text-xs text-gray-500">{{ $row['cottage']->type->label() }} · {{ $row['cottage']->formatted_price }}/night @unless ($row['cottage']->is_active) · delisted @endunless</p>
+                        <div class="mt-2 flex items-center gap-3 text-xs text-gray-600">
+                            <div class="h-2 flex-1 overflow-hidden rounded-full bg-sand-100">
+                                <div class="h-full rounded-full bg-lagoon-600" style="width: {{ $row['rate'] ?? 0 }}%"></div>
+                            </div>
+                            <span class="shrink-0 tabular-nums">{{ $row['rate'] ?? '0.0' }}% · {{ $row['nights'] }}/{{ $period->days() }} nights · {{ $row['stays'] }} {{ Str::plural('stay', $row['stays']) }}</span>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+
+            <div class="hidden overflow-x-auto sm:block">
                 <table class="w-full min-w-[40rem] text-left text-sm">
                     <thead class="border-y border-sand-200 bg-sand-50 text-xs uppercase tracking-wider text-gray-500">
                         <tr>
@@ -200,7 +219,25 @@
             @if ($outstanding['bookings']->isEmpty())
                 <p class="border-t border-sand-200 px-6 py-8 text-center text-gray-500">Nothing owed for stays in this period.</p>
             @else
-                <div class="overflow-x-auto">
+                <ul class="divide-y divide-sand-100 border-t border-sand-200 sm:hidden">
+                    @foreach ($outstanding['bookings'] as $booking)
+                        <li>
+                            <a href="{{ route('staff.bookings.show', $booking) }}" class="block px-5 py-4 transition-colors active:bg-sand-50">
+                                <div class="flex items-baseline justify-between gap-3">
+                                    <span class="font-mono text-sm font-semibold text-sand-700">{{ $booking->reference_code }}</span>
+                                    <span class="font-semibold tabular-nums text-coral-700">{{ Money::format($booking->balance()) }}</span>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-800">{{ $booking->user?->name }} · {{ $booking->cottage?->name }}</p>
+                                <div class="mt-1.5 flex items-center justify-between gap-3 text-xs text-gray-500">
+                                    <span>Check-in {{ $booking->check_in->format('M j, Y') }} · paid {{ Money::format($booking->amount_paid) }} of {{ Money::format($booking->total_price) }}</span>
+                                    <x-booking-status :status="$booking->status" />
+                                </div>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+
+                <div class="hidden overflow-x-auto sm:block">
                     <table class="w-full min-w-[44rem] text-left text-sm">
                         <thead class="border-y border-sand-200 bg-sand-50 text-xs uppercase tracking-wider text-gray-500">
                             <tr>

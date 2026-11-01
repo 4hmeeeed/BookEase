@@ -13,6 +13,7 @@
 
 <div x-data="chatbot({ endpoint: @js(route('chatbot.ask')), maxLength: @js((int) config('bookease.chatbot.max_question_length', 500)) })"
      @keydown.escape.window="open && close()"
+     @open-chatbot.window="show()"
      class="fixed bottom-4 right-4 z-40 print:hidden sm:bottom-6 sm:right-6">
 
     {{-- Panel --}}
@@ -128,7 +129,8 @@
     {{-- Launcher --}}
     <button type="button" x-ref="launcher" @click="toggle()"
             :aria-expanded="open.toString()" aria-controls="chatbot-panel"
-            class="group relative flex h-14 animate-pop-in items-center gap-2 rounded-full bg-lagoon-800 pl-4 pr-4 text-cream shadow-lagoon-glow transition-all duration-300 ease-out-soft [animation-delay:700ms] hover:-translate-y-1 hover:bg-lagoon-700 hover:shadow-lift active:translate-y-0 active:scale-95 sm:pr-5">
+            :aria-label="open ? 'Close chat' : 'Ask the resort assistant'"
+            class="group relative grid h-14 w-14 animate-pop-in place-items-center rounded-full bg-lagoon-800 text-cream shadow-lagoon-glow transition-all duration-300 ease-out-soft [animation-delay:700ms] hover:-translate-y-1 hover:bg-lagoon-700 hover:shadow-lift active:translate-y-0 active:scale-95">
         <span class="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5" x-show="!open && !messages.length" aria-hidden="true">
             <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-coral-400 opacity-70 motion-reduce:animate-none"></span>
             <span class="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-cream bg-coral-500"></span>
@@ -137,6 +139,10 @@
             <svg x-show="!open" class="h-6 w-6 transition-transform duration-300 group-hover:-rotate-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5v-9Z" /><path stroke-linecap="round" d="M8 9.5c1.3 0 1.3-1 2.7-1s1.3 1 2.6 1 1.4-1 2.7-1" /></svg>
             <svg x-show="open" x-cloak class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" d="M6 9l6 6 6-6" /></svg>
         </span>
-        <span class="hidden text-sm font-semibold sm:inline" x-text="open ? 'Close' : 'Ask us'">Ask us</span>
+        {{-- Label slides out on hover/focus only, so the button never covers page content --}}
+        <span x-show="!open" aria-hidden="true"
+              class="pointer-events-none absolute right-full top-1/2 mr-3 hidden -translate-y-1/2 translate-x-2 whitespace-nowrap rounded-full bg-lagoon-950 px-3 py-1.5 text-xs font-semibold text-cream opacity-0 shadow-lift transition-all duration-200 ease-out-soft group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 sm:block">
+            Ask us
+        </span>
     </button>
 </div>
