@@ -7,7 +7,7 @@
             <span class="font-mono text-xs font-semibold tracking-wider text-sand-700">{{ $booking->reference_code }}</span>
             <x-booking-status :status="$booking->status" class="tilt-pop" />
         </div>
-        <h3 class="tilt-pop mt-1 truncate font-display text-lg font-semibold text-lagoon-950">{{ $booking->cottage->name }}</h3>
+        <h3 class="tilt-pop mt-1 truncate font-serif text-lg font-semibold text-lagoon-950">{{ $booking->cottage->name }}</h3>
         <p class="text-sm text-gray-600">
             {{ $booking->check_in->format('M j') }} – {{ $booking->check_out->format('M j, Y') }}
             · {{ $booking->nights() }} {{ Str::plural('night', $booking->nights()) }}

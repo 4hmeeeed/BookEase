@@ -1,8 +1,7 @@
 <x-guest-layout>
-    <div class="mb-6">
-        <p class="eyebrow">Guest sign-in</p>
-        <h1 class="mt-1 font-display text-2xl font-semibold text-lagoon-950">Welcome back</h1>
-        <p class="mt-1 text-sm text-gray-600">Sign in to see your bookings, pay with GCash or Maya, and download receipts.</p>
+    <div class="mb-8">
+        <h1 class="font-display text-[2.6rem] leading-[1.05] text-lagoon-950">Welcome back</h1>
+        <p class="mt-3 text-sm leading-relaxed text-gray-600">Guest sign-in. See your bookings, pay with GCash or Maya, and download receipts.</p>
     </div>
 
     <!-- Session Status -->
@@ -14,15 +13,20 @@
         <!-- Email Address -->
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <x-text-input id="email" class="mt-1.5 block w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <div class="mt-5">
+            <div class="flex items-baseline justify-between gap-3">
+                <x-input-label for="password" :value="__('Password')" />
+                @if (Route::has('password.request'))
+                    <a class="link-underline text-xs" href="{{ route('password.request') }}">{{ __('Forgot your password?') }}</a>
+                @endif
+            </div>
 
-            <x-text-input id="password" class="block mt-1 w-full"
+            <x-text-input id="password" class="mt-1.5 block w-full"
                             type="password"
                             name="password"
                             required autocomplete="current-password" />
@@ -31,30 +35,22 @@
         </div>
 
         <!-- Remember Me -->
-        <div class="block mt-4">
+        <div class="mt-5 block">
             <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-lagoon-600 shadow-sm focus:ring-lagoon-500" name="remember">
+                <input id="remember_me" type="checkbox" class="rounded-sm border-lagoon-950/25 text-lagoon-800 shadow-sm focus:ring-lagoon-500" name="remember">
                 <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lagoon-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
+        <x-primary-button class="mt-7 w-full py-3">
+            {{ __('Log in') }}
+        </x-primary-button>
     </form>
 
     @if (Route::has('register'))
-        <p class="mt-6 border-t border-sand-200 pt-5 text-center text-sm text-gray-600">
+        <p class="mt-8 border-t border-lagoon-950/10 pt-6 text-sm text-gray-600">
             New to Labnasan?
-            <a href="{{ route('register') }}" class="link-underline font-semibold text-coral-700">Create an account</a>
+            <a href="{{ route('register') }}" class="link-underline font-semibold text-lagoon-900">Create an account <span class="arrow">&rarr;</span></a>
         </p>
     @endif
 </x-guest-layout>

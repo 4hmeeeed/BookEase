@@ -14,7 +14,7 @@
 
 <figure {{ $attributes->merge(['class' => 'card p-5 sm:p-6']) }}>
     <figcaption class="flex flex-wrap items-baseline justify-between gap-2">
-        <span class="font-display text-lg font-semibold text-lagoon-950">{{ $title }}</span>
+        <span class="font-serif text-lg font-semibold text-lagoon-950">{{ $title }}</span>
         @if ($caption)
             <span class="text-xs text-gray-500">{{ $caption }}</span>
         @endif

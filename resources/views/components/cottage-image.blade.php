@@ -1,27 +1,24 @@
-@props(['cottage'])
+@props(['cottage', 'morph' => false])
 
-{{-- Uploaded photo, or an illustrated seaside placeholder tinted by unit type. --}}
-@php
-    $tint = match ($cottage->type?->value) {
-        'room' => 'from-ocean-200 via-ocean-100 to-sand-100',
-        'villa' => 'from-lagoon-300 via-lagoon-100 to-sand-100',
-        'cabana' => 'from-coral-200 via-sand-100 to-sand-200',
-        default => 'from-sand-200 via-coral-100 to-ocean-100',
-    };
-@endphp
-
-<div {{ $attributes->merge(['class' => 'relative overflow-hidden bg-sand-100']) }}>
+{{--
+    Uploaded photo, or a chart-style placeholder (buff "land", hairline contours).
+    `morph` names the image for the cross-page view transition (card → cottage page);
+    use it at most once per page for a given cottage.
+--}}
+<div {{ $attributes->merge(['class' => 'relative overflow-hidden bg-sand-100']) }}
+     @if ($morph) style="view-transition-name: cottage-photo-{{ $cottage->id }}" @endif>
     @if ($cottage->image_url)
-        <img src="{{ $cottage->image_url }}" alt="{{ $cottage->name }}" loading="lazy"
-             class="h-full w-full object-cover transition-transform duration-700 ease-out-soft group-hover:scale-105">
+        <img src="{{ $cottage->image_url }}" alt="{{ $cottage->name }}" loading="lazy" decoding="async"
+             class="tilt-photo h-full w-full object-cover transition-transform duration-[1200ms] ease-expo group-hover:scale-[1.06]">
     @else
-        <div class="absolute inset-0 bg-gradient-to-b {{ $tint }}" aria-hidden="true"></div>
-        <div class="absolute right-[18%] top-[18%] h-12 w-12 rounded-full bg-coral-300/80 blur-[1px]" aria-hidden="true"></div>
-        <svg class="absolute inset-x-0 bottom-[22%] mx-auto h-1/2 text-lagoon-900/25 transition-transform duration-700 ease-out-soft group-hover:-translate-y-1" viewBox="0 0 120 80" fill="currentColor" aria-hidden="true">
-            <path d="M10 44 60 12l50 32h-10v30H20V44z" />
-            <rect x="50" y="52" width="20" height="22" rx="2" class="text-cream" fill="currentColor" opacity=".7" />
+        <div class="absolute inset-0 bg-[linear-gradient(160deg,theme(colors.sand.100),theme(colors.sand.200))]" aria-hidden="true"></div>
+        <svg class="absolute inset-0 h-full w-full text-sand-500/50" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" aria-hidden="true">
+            <path d="M-20 210c60-30 110 10 170-12s90-70 160-58 90 40 110 30" stroke-width="1" />
+            <path d="M-20 236c70-26 120 12 180-8s100-62 170-48 80 34 100 26" stroke-width=".8" />
+            <path d="M-20 262c80-22 130 12 190-4s110-50 180-40 70 26 80 22" stroke-width=".6" />
+            <path d="M120 120c20-26 70-30 96-8s18 52-14 60-96-24-82-52Z" stroke-width=".8" />
+            <path d="M138 122c14-16 50-18 66-4s10 34-10 38-66-16-56-34Z" stroke-width=".6" />
         </svg>
-        <div class="absolute inset-x-0 bottom-0 text-lagoon-700/40"><x-waves class="!h-10" /></div>
-        <span class="absolute bottom-2 left-3 text-[0.65rem] font-semibold uppercase tracking-widest text-lagoon-900/60">No photo yet</span>
+        <span class="sounding absolute bottom-3 left-3 text-sand-700">Photo to come</span>
     @endif
 </div>

@@ -1,13 +1,11 @@
+{{-- `eyebrow` is accepted for older call sites but intentionally not shown: the heading speaks for itself. --}}
 @props(['eyebrow' => null, 'title'])
 
-<div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+<div class="flex flex-col gap-4 border-b border-lagoon-950/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
     <div>
-        @if ($eyebrow)
-            <p class="eyebrow">{{ $eyebrow }}</p>
-        @endif
-        <h1 class="mt-2 font-display text-3xl font-semibold text-lagoon-950 sm:text-4xl">{{ $title }}</h1>
+        <h1 class="font-display text-[2.1rem] leading-[1.05] text-lagoon-950 sm:text-5xl">{{ $title }}</h1>
         @if ($slot->isNotEmpty())
-            <p class="mt-2 max-w-2xl text-gray-600">{{ $slot }}</p>
+            <p class="mt-3 max-w-2xl text-gray-600">{{ $slot }}</p>
         @endif
     </div>
 

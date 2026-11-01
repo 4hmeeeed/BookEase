@@ -6,7 +6,7 @@
 
     <div class="p-5 sm:p-6">
         <p class="eyebrow">{{ $cottage->type->label() }}</p>
-        <h3 class="mt-1 font-display text-2xl font-semibold text-lagoon-950">{{ $cottage->name }}</h3>
+        <h3 class="mt-1 font-serif text-2xl font-semibold text-lagoon-950">{{ $cottage->name }}</h3>
 
         <dl class="mt-5 grid grid-cols-2 gap-3 text-sm">
             <div class="rounded-2xl bg-sand-50 p-3">

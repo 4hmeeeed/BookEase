@@ -21,10 +21,10 @@
             <div>
                 <span class="block text-sm font-semibold text-lagoon-900">Number of guests</span>
                 <div class="mt-2 flex items-center gap-4">
-                    <div class="inline-flex items-center rounded-full border border-sand-300 bg-white p-1 shadow-sm">
-                        <button type="button" @click="guests = Math.max(1, guests - 1)" :disabled="guests <= 1" class="grid h-10 w-10 place-items-center rounded-full text-lg text-lagoon-800 transition hover:bg-sand-100 active:scale-90 disabled:opacity-30" aria-label="Fewer guests">&minus;</button>
+                    <div class="inline-flex items-center rounded-lg border border-sand-300 bg-white p-1 shadow-sm">
+                        <button type="button" @click="guests = Math.max(1, guests - 1)" :disabled="guests <= 1" class="grid h-10 w-10 place-items-center rounded-md text-lg text-lagoon-800 transition hover:bg-sand-100 active:scale-90 disabled:opacity-30" aria-label="Fewer guests">&minus;</button>
                         <span class="w-12 text-center text-lg font-semibold tabular-nums text-lagoon-950" x-text="guests" aria-live="polite"></span>
-                        <button type="button" @click="guests = Math.min(max, guests + 1)" :disabled="guests >= max" class="grid h-10 w-10 place-items-center rounded-full text-lg text-lagoon-800 transition hover:bg-sand-100 active:scale-90 disabled:opacity-30" aria-label="More guests">+</button>
+                        <button type="button" @click="guests = Math.min(max, guests + 1)" :disabled="guests >= max" class="grid h-10 w-10 place-items-center rounded-md text-lg text-lagoon-800 transition hover:bg-sand-100 active:scale-90 disabled:opacity-30" aria-label="More guests">+</button>
                     </div>
                     <span class="text-sm text-gray-500">Up to {{ $cottage->capacity }} in this {{ Str::lower($cottage->type->label()) }}</span>
                 </div>

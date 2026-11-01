@@ -19,7 +19,7 @@
                 'border-lagoon-200 bg-lagoon-50/60' => in_array($booking->status->value, ['confirmed', 'checked_in'], true),
                 'border-coral-200 bg-coral-50/60' => in_array($booking->status->value, ['rejected', 'cancelled'], true),
             ])>
-                <h2 class="font-display text-xl font-semibold text-lagoon-950">
+                <h2 class="font-serif text-xl font-semibold text-lagoon-950">
                     @switch($booking->status->value)
                         @case('pending') Waiting for the resort to confirm @break
                         @case('confirmed') You're confirmed. See you soon! @break
@@ -41,7 +41,7 @@
             </div>
 
             <div class="card p-6">
-                <h2 class="font-display text-xl font-semibold text-lagoon-950">Details</h2>
+                <h2 class="font-serif text-xl font-semibold text-lagoon-950">Details</h2>
                 <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-2">
                     <div><dt class="text-gray-500">Guests</dt><dd class="font-semibold text-gray-800">{{ $booking->guests_count }}</dd></div>
                     <div><dt class="text-gray-500">Payment</dt><dd class="font-semibold text-gray-800">{{ $booking->payment_status->label() }}</dd></div>
@@ -58,7 +58,7 @@
 
             <div class="card p-6">
                 <div class="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 class="font-display text-xl font-semibold text-lagoon-950">Payments</h2>
+                    <h2 class="font-serif text-xl font-semibold text-lagoon-950">Payments</h2>
                     <p class="text-sm text-gray-600">
                         Paid <strong class="text-lagoon-900">{{ \App\Support\Money::format($booking->amount_paid) }}</strong>
                         · Balance <strong class="text-coral-700">{{ \App\Support\Money::format($booking->balance()) }}</strong>
@@ -68,7 +68,7 @@
             </div>
 
             <div class="card p-6">
-                <h2 class="mb-5 font-display text-xl font-semibold text-lagoon-950">History</h2>
+                <h2 class="mb-5 font-serif text-xl font-semibold text-lagoon-950">History</h2>
                 <x-status-timeline :changes="$booking->statusChanges" />
             </div>
 
@@ -80,7 +80,7 @@
                 <x-modal name="cancel-booking" maxWidth="md" focusable>
                     <form method="POST" action="{{ route('guest.bookings.cancel', $booking) }}" class="p-6">
                         @csrf
-                        <h2 class="font-display text-2xl font-semibold text-lagoon-950">Cancel {{ $booking->reference_code }}?</h2>
+                        <h2 class="font-serif text-2xl font-semibold text-lagoon-950">Cancel {{ $booking->reference_code }}?</h2>
                         <p class="mt-2 text-sm text-gray-600">Your dates will be released right away and other guests will be able to book them.</p>
                         <label for="remarks" class="mt-4 block text-sm font-semibold text-lagoon-900">Reason (optional)</label>
                         <textarea id="remarks" name="remarks" rows="2" maxlength="500" class="field mt-1.5" placeholder="Change of plans…"></textarea>

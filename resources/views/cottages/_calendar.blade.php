@@ -1,7 +1,7 @@
 {{-- Availability calendar + server-computed quote. Expects $calendar from CottageController@show. --}}
 <section x-data="stayCalendar(@js($calendar))" class="card mt-8 p-4 sm:p-6" aria-labelledby="calendar-heading">
     <div class="flex items-center justify-between gap-3">
-        <h2 id="calendar-heading" class="font-display text-xl font-semibold text-lagoon-950">Pick your dates</h2>
+        <h2 id="calendar-heading" class="font-serif text-xl font-semibold text-lagoon-950">Pick your dates</h2>
         <button type="button" x-show="checkIn" x-cloak @click="clear()" class="link-underline text-sm">Clear</button>
     </div>
 

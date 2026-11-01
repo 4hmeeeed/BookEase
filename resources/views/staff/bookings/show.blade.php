@@ -27,7 +27,7 @@
             {{-- Actions --}}
             @unless ($status->isFinal())
                 <section class="card p-6">
-                    <h2 class="font-display text-xl font-semibold text-lagoon-950">Next step</h2>
+                    <h2 class="font-serif text-xl font-semibold text-lagoon-950">Next step</h2>
                     <x-input-error :messages="$errors->get('remarks')" class="mt-2" />
 
                     <div class="mt-4 flex flex-wrap gap-3">
@@ -77,7 +77,7 @@
 
             {{-- Guest --}}
             <section class="card p-6">
-                <h2 class="font-display text-xl font-semibold text-lagoon-950">Guest</h2>
+                <h2 class="font-serif text-xl font-semibold text-lagoon-950">Guest</h2>
                 <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-2">
                     <div><dt class="text-gray-500">Name</dt><dd class="font-semibold text-gray-800">{{ $booking->user->name }}</dd></div>
                     <div><dt class="text-gray-500">Mobile</dt><dd class="font-semibold text-gray-800">
@@ -96,7 +96,7 @@
             <section class="card p-6">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 class="font-display text-xl font-semibold text-lagoon-950">Payments</h2>
+                        <h2 class="font-serif text-xl font-semibold text-lagoon-950">Payments</h2>
                         <p class="text-sm text-gray-600">
                             Paid <strong class="text-lagoon-900">{{ \App\Support\Money::format($booking->amount_paid) }}</strong>
                             of {{ \App\Support\Money::format($booking->total_price) }}
@@ -118,7 +118,7 @@
             </section>
 
             <section class="card p-6">
-                <h2 class="mb-5 font-display text-xl font-semibold text-lagoon-950">Audit trail</h2>
+                <h2 class="mb-5 font-serif text-xl font-semibold text-lagoon-950">Audit trail</h2>
                 <x-status-timeline :changes="$booking->statusChanges" show-actor />
             </section>
         </div>
@@ -131,7 +131,7 @@
         <x-modal name="cash" maxWidth="md" focusable>
             <form method="POST" action="{{ route('staff.payments.cash', $booking) }}" class="p-6">
                 @csrf
-                <h2 class="font-display text-2xl font-semibold text-lagoon-950">Record cash payment</h2>
+                <h2 class="font-serif text-2xl font-semibold text-lagoon-950">Record cash payment</h2>
                 <p class="mt-2 text-sm text-gray-600">For walk-in or front-desk cash. Balance due: <strong>{{ \App\Support\Money::format($booking->balance()) }}</strong>.</p>
                 <label for="cash-amount" class="mt-4 block text-sm font-semibold text-lagoon-900">Amount received</label>
                 <div class="relative mt-1.5">
@@ -148,7 +148,7 @@
         <x-modal name="refund" maxWidth="md" focusable>
             <form method="POST" action="{{ route('staff.payments.refund', $booking) }}" class="p-6">
                 @csrf
-                <h2 class="font-display text-2xl font-semibold text-lagoon-950">Record refund</h2>
+                <h2 class="font-serif text-2xl font-semibold text-lagoon-950">Record refund</h2>
                 <p class="mt-2 text-sm text-gray-600">Record money already returned to the guest. Up to <strong>{{ \App\Support\Money::format($booking->amount_paid) }}</strong>.</p>
                 <label for="refund-amount" class="mt-4 block text-sm font-semibold text-lagoon-900">Amount refunded</label>
                 <div class="relative mt-1.5">
@@ -173,7 +173,7 @@
             <x-modal :name="$name" maxWidth="md" focusable>
                 <form method="POST" action="{{ route($route, $booking) }}" class="p-6">
                     @csrf
-                    <h2 class="font-display text-2xl font-semibold text-lagoon-950">{{ $verb }} {{ $booking->reference_code }}?</h2>
+                    <h2 class="font-serif text-2xl font-semibold text-lagoon-950">{{ $verb }} {{ $booking->reference_code }}?</h2>
                     <p class="mt-2 text-sm text-gray-600">{{ $help }}</p>
                     <label for="{{ $name }}-remarks" class="mt-4 block text-sm font-semibold text-lagoon-900">Reason for the guest</label>
                     <textarea id="{{ $name }}-remarks" name="remarks" rows="3" maxlength="500" required class="field mt-1.5"></textarea>

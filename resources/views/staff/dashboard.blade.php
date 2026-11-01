@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-page-header eyebrow="Front desk · {{ now()->format('l, F j') }}" title="Today at Labnasan">
-            Approve reservations and handle check-ins and check-outs.
+        <x-page-header title="Today at Labnasan">
+            {{ now()->format('l, F j') }} · Approve reservations and handle check-ins and check-outs.
             <x-slot name="actions">
                 <a href="{{ route('staff.bookings.index') }}" class="btn-primary">Open booking queue</a>
             </x-slot>
@@ -36,7 +36,7 @@
             ] as [$title, $list, $tab, $empty])
                 <section class="card p-5" x-reveal>
                     <div class="flex items-center justify-between">
-                        <h2 class="font-display text-lg font-semibold text-lagoon-950">{{ $title }}</h2>
+                        <h2 class="font-serif text-lg font-semibold text-lagoon-950">{{ $title }}</h2>
                         <a href="{{ route('staff.bookings.index', ['tab' => $tab]) }}" class="link-underline text-sm">See all</a>
                     </div>
                     <ul class="mt-4 divide-y divide-sand-200">

@@ -3,13 +3,15 @@ import forms from '@tailwindcss/forms';
 
 /*
  * BookEase design tokens — Labnasan Resort, Basey, Samar.
+ * World: a nautical chart of the bay — paper, hairlines, soundings, buff land,
+ * teal water, and one chart-magenta (muted coral) for markers only.
  *
- *  sand    warm beach neutrals (surfaces, borders)
- *  lagoon  deep teal — primary brand / actions
- *  ocean   open-sea blue — info, links, calendar
- *  coral   reef coral — accents, highlights, CTAs
- *  cream   page background
- *  gray    re-tinted warm "driftwood" so stock utilities never look cold
+ *  sand    buff "land" tint (surfaces, borders)
+ *  lagoon  deep teal water — primary brand / actions; lagoon-950 is the ink
+ *  ocean   shallow-water blue — info, calendar
+ *  coral   chart-marker coral — small markers and warnings, never large fills
+ *  cream   chart paper (page background)
+ *  gray    warm "driftwood" neutrals
  */
 
 /** @type {import('tailwindcss').Config} */
@@ -25,12 +27,14 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['"Hanken Grotesk"', ...defaultTheme.fontFamily.sans],
-                display: ['Fraunces', 'Georgia', ...defaultTheme.fontFamily.serif],
+                // Engraved chart roman: Display cut for large headings, Text cut for small ones.
+                display: ['"Libre Caslon Display"', '"Libre Caslon Text"', 'Georgia', ...defaultTheme.fontFamily.serif],
+                serif: ['"Libre Caslon Text"', 'Georgia', ...defaultTheme.fontFamily.serif],
             },
             colors: {
                 cream: {
-                    DEFAULT: '#fffaf2',
-                    deep: '#f7efe1',
+                    DEFAULT: '#faf7f1',
+                    deep: '#f1ebdf',
                 },
                 sand: {
                     50: '#fbf7f0',
@@ -70,16 +74,16 @@ export default {
                     900: '#224364',
                 },
                 coral: {
-                    50: '#fff4f1',
-                    100: '#ffe6df',
-                    200: '#ffcfc3',
-                    300: '#ffad99',
-                    400: '#fc7f62',
-                    500: '#f45d3c',
-                    600: '#e1421f',
-                    700: '#bd3417',
-                    800: '#9c2e17',
-                    900: '#812c19',
+                    50: '#fbf3f0',
+                    100: '#f6e2db',
+                    200: '#ecc3b6',
+                    300: '#df9f8a',
+                    400: '#d17f66',
+                    500: '#c2654b',
+                    600: '#a8513a',
+                    700: '#89412f',
+                    800: '#6f3628',
+                    900: '#5b2e24',
                 },
                 gray: {
                     50: '#faf8f5',
@@ -96,18 +100,29 @@ export default {
                 },
             },
             boxShadow: {
-                soft: '0 1px 2px rgb(54 49 43 / 0.04), 0 8px 24px -12px rgb(54 49 43 / 0.18)',
-                lift: '0 2px 4px rgb(22 58 59 / 0.06), 0 24px 48px -20px rgb(22 58 59 / 0.35)',
-                press: 'inset 0 2px 4px rgb(0 0 0 / 0.12)',
-                'coral-glow': '0 10px 30px -10px rgb(244 93 60 / 0.55)',
-                'lagoon-glow': '0 10px 30px -10px rgb(33 108 105 / 0.55)',
+                soft: '0 1px 0 rgb(11 35 36 / 0.03), 0 1px 3px rgb(11 35 36 / 0.06)',
+                lift: '0 1px 2px rgb(11 35 36 / 0.06), 0 22px 44px -26px rgb(11 35 36 / 0.45)',
+                press: 'inset 0 1px 2px rgb(0 0 0 / 0.18)',
+                // Legacy names kept so older markup stays quiet: no coloured halos.
+                'coral-glow': '0 1px 2px rgb(11 35 36 / 0.14)',
+                'lagoon-glow': '0 1px 2px rgb(11 35 36 / 0.14)',
+                plate: '0 2px 4px rgb(11 35 36 / 0.08), 0 40px 80px -40px rgb(11 35 36 / 0.55)',
             },
+            // Tight, drafted corners everywhere (overrides the stock scale on purpose).
             borderRadius: {
-                '4xl': '2rem',
+                sm: '2px',
+                DEFAULT: '3px',
+                md: '4px',
+                lg: '5px',
+                xl: '6px',
+                '2xl': '7px',
+                '3xl': '8px',
+                '4xl': '10px',
             },
             transitionTimingFunction: {
                 'out-soft': 'cubic-bezier(0.22, 1, 0.36, 1)',
-                spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+                spring: 'cubic-bezier(0.3, 1.15, 0.5, 1)',
+                expo: 'cubic-bezier(0.16, 1, 0.3, 1)',
             },
             keyframes: {
                 'fade-up': {
@@ -115,7 +130,7 @@ export default {
                     '100%': { opacity: '1', transform: 'translateY(0)' },
                 },
                 'pop-in': {
-                    '0%': { opacity: '0', transform: 'scale(0.9) translateY(12px)' },
+                    '0%': { opacity: '0', transform: 'scale(0.98) translateY(10px)' },
                     '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
                 },
                 drift: {

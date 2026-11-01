@@ -17,11 +17,11 @@
             <nav class="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0" aria-label="Booking filters">
                 @foreach ($tabs as $key => $label)
                     <a href="{{ route('staff.bookings.index', array_filter(['tab' => $key, 'q' => $search])) }}"
-                       @class(['inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
-                               'bg-lagoon-700 text-cream shadow-lagoon-glow' => $tab === $key,
+                       @class(['inline-flex shrink-0 items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
+                               'bg-lagoon-950 text-cream' => $tab === $key,
                                'text-gray-600 hover:bg-sand-100 hover:text-lagoon-900' => $tab !== $key])>
                         {{ $label }}
-                        <span @class(['rounded-full px-1.5 text-xs', 'bg-lagoon-600' => $tab === $key, 'bg-sand-200 text-gray-700' => $tab !== $key])>{{ $counts[$key] }}</span>
+                        <span @class(['rounded-md px-1.5 text-xs', 'bg-lagoon-600' => $tab === $key, 'bg-sand-200 text-gray-700' => $tab !== $key])>{{ $counts[$key] }}</span>
                     </a>
                 @endforeach
             </nav>
@@ -29,13 +29,13 @@
             <form method="GET" class="relative w-full lg:w-80">
                 <input type="hidden" name="tab" value="{{ $tab }}">
                 <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7" /><path stroke-linecap="round" d="m20 20-3.5-3.5" /></svg>
-                <input type="search" name="q" value="{{ $search }}" placeholder="Reference, guest name, or email" class="field !rounded-full !py-2 pl-10">
+                <input type="search" name="q" value="{{ $search }}" placeholder="Reference, guest name, or email" class="field !py-2 pl-10">
             </form>
         </div>
 
         @if ($bookings->isEmpty())
             <div class="card mt-8 animate-pop-in p-12 text-center">
-                <p class="font-display text-2xl font-semibold text-lagoon-950">Nothing here</p>
+                <p class="font-serif text-2xl font-semibold text-lagoon-950">Nothing here</p>
                 <p class="mt-1 text-gray-600">{{ $search ? 'No bookings match your search.' : 'There are no bookings in this list right now.' }}</p>
             </div>
         @else

@@ -28,7 +28,7 @@
                 @endif
             </span>
             <p class="flex-1 text-sm font-medium">{{ $message }}</p>
-            <button type="button" @click="show = false" class="rounded-full p-1 opacity-60 transition hover:bg-black/5 hover:opacity-100" aria-label="Dismiss">
+            <button type="button" @click="show = false" class="rounded-md p-1 opacity-60 transition hover:bg-black/5 hover:opacity-100" aria-label="Dismiss">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 6l12 12M18 6 6 18" /></svg>
             </button>
         </div>

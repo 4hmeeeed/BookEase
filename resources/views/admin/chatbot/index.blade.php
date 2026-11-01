@@ -24,8 +24,8 @@
             <nav class="flex gap-1" aria-label="Log filters">
                 @foreach (['all' => 'All questions', 'fallback' => 'Fallback only'] as $key => $label)
                     <a href="{{ route('admin.chatbot.index', array_filter(['filter' => $key === 'all' ? null : $key, 'q' => $search])) }}"
-                       @class(['rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
-                               'bg-lagoon-700 text-cream shadow-lagoon-glow' => $filter === $key,
+                       @class(['rounded-md px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
+                               'bg-lagoon-950 text-cream' => $filter === $key,
                                'text-gray-600 hover:bg-sand-100 hover:text-lagoon-900' => $filter !== $key])>
                         {{ $label }}
                     </a>
@@ -37,13 +37,13 @@
                     <input type="hidden" name="filter" value="{{ $filter }}">
                 @endif
                 <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7" /><path stroke-linecap="round" d="m20 20-3.5-3.5" /></svg>
-                <input type="search" name="q" value="{{ $search }}" placeholder="Search questions or answers" class="field !rounded-full !py-2 pl-10">
+                <input type="search" name="q" value="{{ $search }}" placeholder="Search questions or answers" class="field !py-2 pl-10">
             </form>
         </div>
 
         @if ($inquiries->isEmpty())
             <div class="card mt-6 animate-pop-in p-12 text-center">
-                <p class="font-display text-2xl font-semibold text-lagoon-950">No questions yet</p>
+                <p class="font-serif text-2xl font-semibold text-lagoon-950">No questions yet</p>
                 <p class="mt-1 text-gray-600">{{ $search ? 'Nothing matches your search.' : 'Questions from the website chat will appear here.' }}</p>
             </div>
         @else

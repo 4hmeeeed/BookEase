@@ -5,7 +5,7 @@
 
 <section class="card overflow-hidden" x-data="{ kind: @js($first), method: 'gcash', sending: false }">
     <div class="border-b border-sand-200 bg-gradient-to-r from-lagoon-800 to-lagoon-700 px-6 py-4 text-cream">
-        <h2 class="font-display text-xl font-semibold">Pay securely online</h2>
+        <h2 class="font-serif text-xl font-semibold">Pay securely online</h2>
         <p class="text-sm text-lagoon-100">Your wallet details are entered only on the payment provider's page. BookEase never sees them.</p>
     </div>
 
@@ -27,7 +27,7 @@
                                     @default Remaining balance
                                 @endswitch
                             </span>
-                            <span class="mt-1 block font-display text-2xl font-semibold text-coral-600">{{ Money::format($amount) }}</span>
+                            <span class="mt-1 block font-serif text-2xl font-semibold text-coral-600">{{ Money::format($amount) }}</span>
                         </span>
                     </label>
                 @endforeach

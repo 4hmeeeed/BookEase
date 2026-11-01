@@ -9,7 +9,6 @@
         @if ($next)
             <a href="{{ route('guest.bookings.show', $next) }}" x-tilt="3"
                class="card tilt group relative block overflow-hidden bg-lagoon-900 p-6 text-cream sm:p-8">
-                <div class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-coral-400/30 blur-3xl" aria-hidden="true"></div>
                 <div class="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                     <div class="tilt-pop">
                         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-coral-300">Your next stay</p>

@@ -51,8 +51,8 @@
             <nav class="flex flex-wrap gap-1" aria-label="Report period">
                 @foreach (\App\Support\ReportPeriod::PRESETS as $key => $label)
                     <a href="{{ route('admin.reports.index', ['period' => $key]) }}"
-                       @class(['shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
-                               'bg-lagoon-700 text-cream shadow-lagoon-glow' => $period->preset === $key,
+                       @class(['shrink-0 rounded-md px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
+                               'bg-lagoon-950 text-cream' => $period->preset === $key,
                                'text-gray-600 hover:bg-sand-100 hover:text-lagoon-900' => $period->preset !== $key])>
                         {{ $label }}
                     </a>
@@ -110,7 +110,7 @@
         <div class="grid gap-6 lg:grid-cols-[1fr_1fr]">
             {{-- By payment method --}}
             <section class="card p-5 sm:p-6">
-                <h2 class="font-display text-lg font-semibold text-lagoon-950">Collected by method</h2>
+                <h2 class="font-serif text-lg font-semibold text-lagoon-950">Collected by method</h2>
                 <ul class="mt-5 space-y-4">
                     @foreach (PaymentMethod::cases() as $method)
                         @php $amount = $revenue['by_method'][$method->value]; @endphp
@@ -120,8 +120,8 @@
                                 <span class="font-semibold text-gray-800">{{ $method->label() }}</span>
                                 <span class="tabular-nums text-gray-700">{{ Money::format($amount) }}</span>
                             </div>
-                            <div class="mt-1.5 h-2 overflow-hidden rounded-full bg-sand-100">
-                                <div class="h-full rounded-full bg-lagoon-600 transition-all duration-700 ease-out-soft"
+                            <div class="mt-1.5 h-2 overflow-hidden rounded-sm bg-sand-100">
+                                <div class="h-full bg-lagoon-600 transition-all duration-700 ease-out-soft"
                                      style="width: {{ Money::isPositive($maxMethod) && Money::isPositive($amount) ? bcdiv(bcmul($amount, '100', 2), $maxMethod, 1) : 0 }}%"></div>
                             </div>
                         </li>
@@ -135,7 +135,7 @@
 
             {{-- Bookings by status --}}
             <section class="card p-5 sm:p-6">
-                <h2 class="font-display text-lg font-semibold text-lagoon-950">Stays starting in this period, by status</h2>
+                <h2 class="font-serif text-lg font-semibold text-lagoon-950">Stays starting in this period, by status</h2>
                 <ul class="mt-5 divide-y divide-sand-100">
                     @foreach (BookingStatus::cases() as $status)
                         <li class="flex items-center justify-between py-2.5">
@@ -150,7 +150,7 @@
         {{-- Cottage performance --}}
         <section class="card overflow-hidden">
             <div class="p-5 sm:p-6">
-                <h2 class="font-display text-lg font-semibold text-lagoon-950">Unit performance</h2>
+                <h2 class="font-serif text-lg font-semibold text-lagoon-950">Unit performance</h2>
                 <p class="mt-1 text-sm text-gray-600">Sold nights and money collected per unit in this period.</p>
             </div>
             {{-- Phones: one card per unit so every figure stays visible --}}
@@ -163,8 +163,8 @@
                         </div>
                         <p class="text-xs text-gray-500">{{ $row['cottage']->type->label() }} · {{ $row['cottage']->formatted_price }}/night @unless ($row['cottage']->is_active) · delisted @endunless</p>
                         <div class="mt-2 flex items-center gap-3 text-xs text-gray-600">
-                            <div class="h-2 flex-1 overflow-hidden rounded-full bg-sand-100">
-                                <div class="h-full rounded-full bg-lagoon-600" style="width: {{ $row['rate'] ?? 0 }}%"></div>
+                            <div class="h-2 flex-1 overflow-hidden rounded-sm bg-sand-100">
+                                <div class="h-full bg-lagoon-600" style="width: {{ $row['rate'] ?? 0 }}%"></div>
                             </div>
                             <span class="shrink-0 tabular-nums">{{ $row['rate'] ?? '0.0' }}% · {{ $row['nights'] }}/{{ $period->days() }} nights · {{ $row['stays'] }} {{ Str::plural('stay', $row['stays']) }}</span>
                         </div>
@@ -194,8 +194,8 @@
                                 <td class="px-5 py-3 text-right tabular-nums">{{ $row['nights'] }} / {{ $period->days() }}</td>
                                 <td class="px-5 py-3">
                                     <div class="flex items-center gap-3">
-                                        <div class="h-2 w-24 overflow-hidden rounded-full bg-sand-100">
-                                            <div class="h-full rounded-full bg-lagoon-600" style="width: {{ $row['rate'] ?? 0 }}%"></div>
+                                        <div class="h-2 w-24 overflow-hidden rounded-sm bg-sand-100">
+                                            <div class="h-full bg-lagoon-600" style="width: {{ $row['rate'] ?? 0 }}%"></div>
                                         </div>
                                         <span class="tabular-nums text-gray-700">{{ $row['rate'] ?? '0.0' }}%</span>
                                     </div>
@@ -213,7 +213,7 @@
         {{-- Outstanding balances --}}
         <section class="card overflow-hidden">
             <div class="p-5 sm:p-6">
-                <h2 class="font-display text-lg font-semibold text-lagoon-950">Outstanding balances</h2>
+                <h2 class="font-serif text-lg font-semibold text-lagoon-950">Outstanding balances</h2>
                 <p class="mt-1 text-sm text-gray-600">Active bookings checking in during this period that aren’t fully paid.</p>
             </div>
             @if ($outstanding['bookings']->isEmpty())

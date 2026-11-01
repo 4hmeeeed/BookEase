@@ -14,11 +14,11 @@
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <nav class="inline-flex self-start rounded-full border border-sand-200 bg-white/70 p-1 shadow-sm" aria-label="Staff filters">
+            <nav class="inline-flex self-start rounded-lg border border-sand-200 bg-white/70 p-1 shadow-sm" aria-label="Staff filters">
                 @foreach (['all' => 'All', 'active' => 'Active', 'inactive' => 'Deactivated'] as $key => $label)
                     <a href="{{ route('admin.staff.index', array_filter(['status' => $key === 'all' ? null : $key, 'q' => $search])) }}"
-                       @class(['rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
-                               'bg-lagoon-700 text-cream shadow-lagoon-glow' => $status === $key,
+                       @class(['rounded-md px-4 py-1.5 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
+                               'bg-lagoon-950 text-cream' => $status === $key,
                                'text-gray-600 hover:text-lagoon-900' => $status !== $key])>
                         {{ $label }} <span class="ms-1 opacity-70">{{ $counts[$key] }}</span>
                     </a>
@@ -30,13 +30,13 @@
                     <input type="hidden" name="status" value="{{ $status }}">
                 @endif
                 <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7" /><path stroke-linecap="round" d="m20 20-3.5-3.5" /></svg>
-                <input type="search" name="q" value="{{ $search }}" placeholder="Search by name or email" class="field !rounded-full !py-2 pl-10">
+                <input type="search" name="q" value="{{ $search }}" placeholder="Search by name or email" class="field !py-2 pl-10">
             </form>
         </div>
 
         @if ($staff->isEmpty())
             <div class="card mt-8 animate-pop-in p-12 text-center">
-                <p class="font-display text-2xl font-semibold text-lagoon-950">{{ $search ? 'No matches' : 'No staff accounts yet' }}</p>
+                <p class="font-serif text-2xl font-semibold text-lagoon-950">{{ $search ? 'No matches' : 'No staff accounts yet' }}</p>
                 <p class="mt-2 text-gray-600">{{ $search ? 'Try another name or email.' : 'Add your front-desk team so they can manage bookings.' }}</p>
                 @unless ($search)
                     <a href="{{ route('admin.staff.create') }}" class="btn-primary mt-6">Add staff</a>

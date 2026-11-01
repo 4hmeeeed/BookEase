@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==================================================================
+ | BookEase — "Chart of the bay"
+ | Chart paper, hairline rules, soundings-style numerals, buff land,
+ | teal water, one chart-marker coral. Corners are drafted, not bubbly.
+ * ================================================================== */
+
 /* ------------------------------------------------------------------
  | Page transitions — cross-document View Transitions (progressive:
  | browsers without support simply navigate normally).
@@ -17,50 +23,83 @@
 }
 
 ::view-transition-old(root) {
-    animation: 220ms cubic-bezier(0.4, 0, 1, 1) both vt-out;
+    animation: 260ms cubic-bezier(0.4, 0, 1, 1) both vt-out;
 }
 
 ::view-transition-new(root) {
-    animation: 420ms cubic-bezier(0.22, 1, 0.36, 1) both vt-in;
+    animation: 520ms cubic-bezier(0.16, 1, 0.3, 1) both vt-in;
+}
+
+/* A cottage photo morphs from its card into the cottage page. */
+::view-transition-group(*) {
+    animation-duration: 560ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes vt-out {
-    to { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 0; transform: perspective(1200px) translateZ(-40px); }
 }
 
 @keyframes vt-in {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: perspective(1200px) translateY(14px) rotateX(-2deg); }
 }
 
 @layer base {
     html {
         -webkit-tap-highlight-color: transparent;
+        scrollbar-color: theme('colors.sand.400') theme('colors.cream.deep');
+        scrollbar-width: thin;
     }
 
     body {
         @apply bg-cream text-gray-800;
-        font-feature-settings: 'ss01', 'cv11';
+        font-synthesis-weight: none;
+        caret-color: theme('colors.lagoon.700');
+        text-rendering: optimizeLegibility;
     }
 
-    /* Subtle paper/sand grain over everything. */
+    /* Chart-paper grain over everything. */
     body::before {
         content: '';
         position: fixed;
         inset: 0;
         z-index: 60;
         pointer-events: none;
-        opacity: 0.045;
+        opacity: 0.035;
         mix-blend-mode: multiply;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    h1, h2, h3, .font-display {
-        font-variation-settings: 'SOFT' 100, 'WONK' 0;
-        letter-spacing: -0.015em;
+    h1, h2, h3, .font-display, .font-serif {
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+    }
+
+    /* The engraved serifs ship one weight; never let the browser fake bold. */
+    .font-display {
+        font-weight: 400 !important;
+        letter-spacing: -0.018em;
+    }
+
+    .font-serif {
+        font-weight: 400 !important;
+    }
+
+    a, button, input, select, textarea, summary {
+        text-underline-offset: 0.2em;
+    }
+
+    :focus-visible {
+        outline: 2px solid theme('colors.lagoon.600');
+        outline-offset: 2px;
     }
 
     ::selection {
-        @apply bg-coral-200 text-lagoon-950;
+        @apply bg-lagoon-200 text-lagoon-950;
+    }
+
+    table, .tabular {
+        font-variant-numeric: tabular-nums;
     }
 
     [x-cloak] {
@@ -69,67 +108,80 @@
 }
 
 @layer components {
-    /* ---------------- Buttons: press feedback (scale + shadow) -------- */
+    /* ---------------- Buttons: drafted, press feedback ------------- */
     .btn {
-        @apply relative inline-flex select-none items-center justify-center gap-2 rounded-full px-5 py-2.5
-               text-sm font-semibold tracking-wide
-               transition-[transform,box-shadow,background-color,color] duration-200 ease-out-soft
+        @apply relative inline-flex select-none items-center justify-center gap-2 rounded-md px-4 py-2.5
+               text-sm font-semibold
+               transition-[transform,box-shadow,background-color,color,border-color] duration-200 ease-out-soft
                focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-cream
                disabled:pointer-events-none disabled:opacity-50;
     }
 
-    .btn:hover {
-        transform: translateY(-1px);
-    }
-
     .btn:active {
-        transform: translateY(1px) scale(0.97);
+        transform: translateY(1px) scale(0.98);
         @apply shadow-press;
         transition-duration: 80ms;
     }
 
     .btn-primary {
-        @apply btn bg-lagoon-700 text-cream shadow-lagoon-glow hover:bg-lagoon-600 focus-visible:ring-lagoon-500;
+        @apply btn bg-lagoon-800 text-cream shadow-[inset_0_1px_0_rgb(255_255_255/0.08),0_1px_2px_rgb(11_35_36/0.2)]
+               hover:bg-lagoon-700 focus-visible:ring-lagoon-500;
     }
 
+    /* The strongest call to action: chart ink. (Name kept for older markup.) */
     .btn-coral {
-        @apply btn bg-coral-500 text-white shadow-coral-glow hover:bg-coral-600 focus-visible:ring-coral-400;
+        @apply btn bg-lagoon-950 text-cream shadow-[inset_0_1px_0_rgb(255_255_255/0.08),0_1px_2px_rgb(11_35_36/0.25)]
+               hover:bg-lagoon-900 focus-visible:ring-lagoon-500;
     }
 
     .btn-ghost {
-        @apply btn border border-sand-300 bg-cream/70 text-lagoon-900 shadow-soft hover:border-lagoon-300 hover:bg-white focus-visible:ring-lagoon-400;
+        @apply btn border border-lagoon-950/15 bg-white/60 text-lagoon-950
+               hover:border-lagoon-950/30 hover:bg-white focus-visible:ring-lagoon-400;
+    }
+
+    .btn-light {
+        @apply btn bg-cream text-lagoon-950 hover:bg-white focus-visible:ring-cream;
     }
 
     .btn-danger {
         @apply btn bg-coral-700 text-white hover:bg-coral-800 focus-visible:ring-coral-500;
     }
 
+    /* Arrow that slides on hover inside a button or link. */
+    .arrow {
+        @apply inline-block transition-transform duration-300 ease-expo;
+    }
+
+    a:hover > .arrow, button:hover > .arrow {
+        transform: translateX(3px);
+    }
+
     /* ---------------- Cards with 3D tilt + lift ----------------------- *
      | JS (x-tilt) writes --rx / --ry from the pointer position.          */
     .card {
-        @apply relative rounded-3xl border border-sand-200/80 bg-white/80 shadow-soft;
+        @apply relative rounded-lg border border-lagoon-950/10 bg-white shadow-soft;
     }
 
     .tilt {
         --rx: 0deg;
         --ry: 0deg;
         --lift: 0px;
-        transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(var(--lift));
+        transform: perspective(1100px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(var(--lift));
         transform-style: preserve-3d;
-        transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 450ms cubic-bezier(0.22, 1, 0.36, 1);
+        transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 600ms cubic-bezier(0.16, 1, 0.3, 1), border-color 300ms;
         will-change: transform;
     }
 
     .tilt:hover {
-        --lift: -6px;
-        @apply shadow-lift;
+        --lift: -4px;
+        @apply border-lagoon-950/20 shadow-lift;
     }
 
     .tilt.is-tilting {
-        transition-duration: 120ms, 450ms;
+        transition-duration: 140ms, 600ms, 300ms;
     }
 
-    /* Moving glare highlight that follows the pointer. */
+    /* Low sun-glare that follows the pointer. */
     .tilt::after {
         content: '';
         position: absolute;
@@ -137,58 +189,81 @@
         border-radius: inherit;
         pointer-events: none;
         opacity: 0;
-        transition: opacity 300ms ease;
-        background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 50%), rgb(255 250 242 / 0.55), transparent 45%);
+        transition: opacity 400ms ease;
+        background: radial-gradient(500px circle at var(--gx, 50%) var(--gy, 50%), rgb(255 250 240 / 0.28), transparent 42%);
+        mix-blend-mode: soft-light;
     }
 
     .tilt:hover::after {
         opacity: 1;
     }
 
-    /* Children that pop forward in 3D space while tilting. */
+    /* Children that sit forward in 3D space while tilting. */
     .tilt-pop {
-        transform: translateZ(28px);
+        transform: translateZ(18px);
     }
 
-    /* ---------------- Scroll reveal + stagger ------------------------ */
+    /* Photo inside a tilting card drifts against the tilt (depth). */
+    .tilt .tilt-photo {
+        transform: scale(1.08) translate3d(calc(var(--ry) * -1.1), calc(var(--rx) * 1.1), 0);
+        transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .tilt.is-tilting .tilt-photo {
+        transition-duration: 140ms;
+    }
+
+    /* ---------------- Scroll reveal + stagger ------------------------ *
+     | Uses the individual translate/rotate properties so it never fights
+     | a .tilt transform; JS removes these classes once the entrance ends. */
     .reveal {
         opacity: 0;
-        transform: translateY(22px);
-        transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1), transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
-        transition-delay: calc(var(--i, 0) * 80ms);
+        translate: 0 18px;
+        transition: opacity 900ms cubic-bezier(0.16, 1, 0.3, 1), translate 900ms cubic-bezier(0.16, 1, 0.3, 1), rotate 900ms cubic-bezier(0.16, 1, 0.3, 1);
+        transition-delay: calc(var(--i, 0) * 90ms);
     }
 
     .reveal.is-visible {
         opacity: 1;
-        transform: none;
+        translate: 0 0;
+        rotate: none;
     }
 
-    /* ---------------- Form inputs: micro-interactions ---------------- */
+    /* 3D flip-up entrance for card grids: x-reveal.stagger.rise (parent gets perspective) */
+    .reveal.reveal-rise {
+        translate: 0 46px;
+        rotate: x -16deg;
+        transform-origin: 50% 100%;
+    }
+
+    .reveal.reveal-rise.is-visible {
+        translate: 0 0;
+        rotate: none;
+    }
+
+    /* ---------------- Form inputs ------------------------------------- */
     .field {
-        @apply block w-full rounded-xl border-sand-300 bg-white/90 px-4 py-2.5 text-gray-900 shadow-sm
+        @apply block w-full rounded-md border-lagoon-950/15 bg-white px-3.5 py-2.5 text-gray-900 shadow-[inset_0_1px_1px_rgb(11_35_36/0.04)]
                placeholder:text-gray-400
-               transition-[border-color,box-shadow,transform] duration-200 ease-out-soft
-               focus:border-lagoon-500 focus:ring-4 focus:ring-lagoon-500/15;
-    }
-
-    .field:focus {
-        transform: translateY(-1px);
+               transition-[border-color,box-shadow,background-color] duration-200 ease-out-soft
+               hover:border-lagoon-950/30
+               focus:border-lagoon-600 focus:ring-[3px] focus:ring-lagoon-500/15;
     }
 
     .field[aria-invalid='true'] {
-        @apply border-coral-400 focus:border-coral-500 focus:ring-coral-500/15;
+        @apply border-coral-500 focus:border-coral-600 focus:ring-coral-500/15;
         animation: nudge 320ms ease;
     }
 
     @keyframes nudge {
-        25% { transform: translateX(-4px); }
-        75% { transform: translateX(4px); }
+        25% { transform: translateX(-3px); }
+        75% { transform: translateX(3px); }
     }
 
     /* ---------------- Status badges ---------------------------------- */
     .badge {
-        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold
-               ring-1 ring-inset transition-transform duration-200 ease-spring hover:scale-105;
+        @apply inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-semibold
+               ring-1 ring-inset transition-colors duration-200;
     }
 
     .badge-dot {
@@ -198,28 +273,29 @@
     .badge-dot.is-live::after {
         content: '';
         @apply absolute inset-0 rounded-full bg-current;
-        animation: ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+        animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
     }
 
-    .badge-pending   { @apply bg-sand-100 text-sand-800 ring-sand-300; }
+    .badge-pending   { @apply bg-sand-50 text-sand-800 ring-sand-300; }
     .badge-confirmed { @apply bg-lagoon-50 text-lagoon-800 ring-lagoon-200; }
     .badge-checked-in { @apply bg-ocean-50 text-ocean-800 ring-ocean-200; }
-    .badge-checked-out { @apply bg-gray-100 text-gray-600 ring-gray-300; }
+    .badge-checked-out { @apply bg-gray-50 text-gray-600 ring-gray-300; }
     .badge-rejected,
     .badge-cancelled { @apply bg-coral-50 text-coral-800 ring-coral-200; }
 
     /* ---------------- Availability calendar -------------------------- */
     .cal-day {
         @apply relative grid aspect-square w-full place-items-center text-sm font-medium text-gray-800
-               transition-[background-color,color,transform] duration-200 ease-out-soft focus:outline-none;
+               transition-[background-color,color] duration-200 ease-out-soft focus:outline-none;
+        font-variant-numeric: tabular-nums;
     }
 
     .cal-day > span {
-        @apply relative z-10 grid h-9 w-9 place-items-center rounded-full transition-all duration-200 ease-spring sm:h-10 sm:w-10;
+        @apply relative z-10 grid h-9 w-9 place-items-center rounded-md transition-all duration-200 ease-out-soft sm:h-10 sm:w-10;
     }
 
     .cal-day:not(.is-disabled):hover > span {
-        @apply scale-110 bg-lagoon-50 text-lagoon-900;
+        @apply bg-lagoon-50 text-lagoon-900 ring-1 ring-inset ring-lagoon-200;
     }
 
     .cal-day:not(.is-disabled):active > span {
@@ -227,32 +303,32 @@
     }
 
     .cal-day:focus-visible > span {
-        @apply ring-2 ring-lagoon-400;
+        @apply ring-2 ring-lagoon-500;
     }
 
     .cal-day.is-today > span {
-        @apply ring-1 ring-inset ring-coral-300;
+        @apply font-bold underline decoration-coral-500 decoration-2 underline-offset-4;
     }
 
     .cal-day.is-disabled {
         @apply cursor-not-allowed text-gray-300;
     }
 
-    /* held night: diagonal hatching, struck through */
+    /* held night: chart hatching, struck through */
     .cal-day.is-booked > span {
-        @apply text-gray-400 line-through decoration-coral-300;
-        background: repeating-linear-gradient(-45deg, rgb(255 207 195 / 0.45) 0 3px, transparent 3px 7px);
+        @apply text-gray-400 line-through decoration-coral-400;
+        background: repeating-linear-gradient(-45deg, rgb(194 101 75 / 0.16) 0 1px, transparent 1px 5px);
     }
 
     /* check-out on someone's check-in day: left half free, right half held */
     .cal-day.is-changeover::after {
         content: '';
         @apply absolute inset-y-1 right-0 w-1/2;
-        background: repeating-linear-gradient(-45deg, rgb(255 207 195 / 0.45) 0 3px, transparent 3px 7px);
+        background: repeating-linear-gradient(-45deg, rgb(194 101 75 / 0.16) 0 1px, transparent 1px 5px);
     }
 
     .cal-day.is-in-range {
-        @apply bg-lagoon-100/80 text-lagoon-900;
+        @apply bg-lagoon-50 text-lagoon-900;
     }
 
     .cal-day.is-start,
@@ -262,41 +338,246 @@
 
     .cal-day.is-start > span,
     .cal-day.is-end > span {
-        @apply scale-100 bg-lagoon-700 text-cream shadow-lagoon-glow;
+        @apply scale-100 bg-lagoon-800 text-cream ring-0;
     }
 
-    /* half-band joining the start/end circles to the range */
+    /* half-band joining the start/end squares to the range */
     .cal-day.has-range.is-start::before,
     .cal-day.is-end::before {
         content: '';
-        @apply absolute inset-y-[12%] bg-lagoon-100/80;
+        @apply absolute inset-y-[12%] bg-lagoon-50;
     }
 
     .cal-day.has-range.is-start::before { @apply left-1/2 right-0; }
     .cal-day.is-end::before { @apply left-0 right-1/2; }
 
-    .cal-swap-enter { animation: cal-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .cal-swap-enter { animation: cal-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 
     @keyframes cal-in {
-        from { opacity: 0; transform: translateX(calc(var(--dir, 1) * 18px)); }
+        from { opacity: 0; transform: perspective(800px) translateX(calc(var(--dir, 1) * 16px)) rotateY(calc(var(--dir, 1) * -8deg)); }
     }
 
-    /* ---------------- Misc ------------------------------------------- */
+    /* ---------------- Labels & links ---------------------------------- */
+    /* Section label for dense operate screens (never a kicker over a heading). */
     .eyebrow {
-        @apply text-xs font-semibold uppercase tracking-[0.2em] text-coral-600;
+        @apply text-xs font-semibold uppercase tracking-[0.14em] text-lagoon-700;
     }
 
     .link-underline {
-        @apply relative text-lagoon-700 transition-colors hover:text-lagoon-900;
+        @apply relative text-lagoon-800 transition-colors hover:text-lagoon-950;
         background-image: linear-gradient(currentColor, currentColor);
         background-size: 0% 1px;
         background-position: 0 100%;
         background-repeat: no-repeat;
-        transition: background-size 300ms cubic-bezier(0.22, 1, 0.36, 1), color 200ms;
+        transition: background-size 400ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms;
     }
 
     .link-underline:hover {
         background-size: 100% 1px;
+    }
+
+    /* Chart neatline: a hairline frame with graduation ticks. */
+    .neatline {
+        @apply pointer-events-none absolute inset-3 border sm:inset-5;
+        border-color: currentColor;
+    }
+
+    .neatline::before,
+    .neatline::after {
+        content: '';
+        position: absolute;
+        background-repeat: repeat;
+    }
+
+    .neatline::before {
+        inset: -1px 0 auto 0;
+        height: 7px;
+        background-image: linear-gradient(to right, currentColor 1px, transparent 1px);
+        background-size: 48px 7px;
+    }
+
+    .neatline::after {
+        inset: 0 auto 0 -1px;
+        width: 7px;
+        background-image: linear-gradient(to bottom, currentColor 1px, transparent 1px);
+        background-size: 7px 48px;
+    }
+
+    /* Hairline chart graticule fill. */
+    .graticule {
+        background-image:
+            linear-gradient(to right, currentColor 1px, transparent 1px),
+            linear-gradient(to bottom, currentColor 1px, transparent 1px);
+        background-size: 96px 96px;
+    }
+
+    /* Coordinates / soundings: small tracked numerals. */
+    .sounding {
+        @apply text-[0.68rem] font-semibold uppercase tracking-[0.18em];
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+/* ==================================================================
+ | Landing page — 3D chart plate, hero parallax, changeover line.
+ * ================================================================== */
+@layer components {
+    .hero-stage {
+        perspective: 1600px;
+        perspective-origin: 50% 0%;
+    }
+
+    /* The hero "plate" settles flat like a chart laid on a table. */
+    .hero-plate {
+        transform-origin: 50% 0%;
+        animation: plate-settle 1700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes plate-settle {
+        from { transform: rotateX(14deg) translateZ(-140px) scale(1.04); opacity: 0.2; filter: blur(6px) saturate(0.6); }
+        to { transform: none; opacity: 1; filter: none; }
+    }
+
+    /* Pointer parallax: JS writes --px / --py in -1..1 on [x-parallax]. */
+    .depth {
+        --d: 0;
+        transform: translate3d(calc(var(--px, 0) * var(--d) * 1px), calc(var(--py, 0) * var(--d) * 1px), 0);
+        transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
+    }
+
+    /* Headline lines rise from behind a mask. */
+    .line-mask {
+        display: block;
+        overflow: hidden;
+        padding-bottom: 0.08em;
+        margin-bottom: -0.08em;
+    }
+
+    .line-mask > span {
+        display: block;
+        animation: line-rise 1200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: calc(300ms + var(--i, 0) * 110ms);
+    }
+
+    @keyframes line-rise {
+        from { transform: translateY(105%) rotateX(-40deg); opacity: 0; }
+    }
+
+    .fade-late {
+        animation: fade-in 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: var(--delay, 700ms);
+    }
+
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(12px); }
+    }
+
+    /* Booking dock lifts out of the page in 3D. */
+    .dock {
+        animation: dock-in 1300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: 650ms;
+        transform-origin: 50% 100%;
+    }
+
+    @keyframes dock-in {
+        from { opacity: 0; transform: perspective(900px) translateY(40px) rotateX(24deg); }
+    }
+
+    /* Hero graticule hairlines draw themselves. */
+    .grid-line {
+        animation: line-x 1800ms cubic-bezier(0.65, 0, 0.35, 1) both;
+        animation-delay: var(--delay, 300ms);
+    }
+
+    .grid-line-v {
+        animation: line-y 1800ms cubic-bezier(0.65, 0, 0.35, 1) both;
+        animation-delay: var(--delay, 300ms);
+    }
+
+    @keyframes line-x { from { transform: scaleX(0); } }
+    @keyframes line-y { from { transform: scaleY(0); } }
+
+    /* SVG strokes that draw themselves. */
+    .draw {
+        stroke-dasharray: var(--len, 1600);
+        stroke-dashoffset: var(--len, 1600);
+        animation: draw 2400ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+        animation-delay: var(--delay, 200ms);
+    }
+
+    @keyframes draw {
+        to { stroke-dashoffset: 0; }
+    }
+
+    /* ---- The bay in layers: a scroll-driven 3D chart plate ---- *
+     | JS writes --p (0 → 1) as the section crosses the viewport.  */
+    .bay {
+        --p: 0;
+        --mx: 0;
+        --my: 0;
+        perspective: 1800px;
+        perspective-origin: 50% 30%;
+    }
+
+    .bay-plate {
+        position: relative;
+        transform-style: preserve-3d;
+        transform:
+            rotateX(calc(58deg - var(--p) * 18deg + var(--my) * 4deg))
+            rotateZ(calc(-24deg + var(--p) * 14deg + var(--mx) * 4deg))
+            translateY(calc((1 - var(--p)) * 40px));
+        transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bay-layer {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+        transform: translateZ(calc(var(--z, 0) * (0.35 + var(--p) * 0.65) * 1px));
+        transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+    }
+
+    /* A chart marker stands up off the plate, facing the viewer. */
+    .bay-pin {
+        position: absolute;
+        transform-style: preserve-3d;
+        transform: translateZ(calc(var(--z, 60) * (0.3 + var(--p) * 0.7) * 1px));
+        transition: transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: auto;
+    }
+
+    .bay-pin-card {
+        transform-origin: 50% 100%;
+        transform:
+            rotateZ(calc((-24deg + var(--p) * 14deg + var(--mx) * 4deg) * -1))
+            rotateX(calc((58deg - var(--p) * 18deg + var(--my) * 4deg) * -1));
+        transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Changeover strip: the two stays draw toward noon. */
+    .changeover .bar {
+        transform: scaleX(0);
+        transition: transform 1400ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .changeover .bar-out { transform-origin: 0 50%; }
+    .changeover .bar-in { transform-origin: 100% 50%; transition-delay: 500ms; }
+
+    .changeover.is-visible .bar,
+    .changeover:not(.reveal) .bar {
+        transform: scaleX(1);
+    }
+
+    /* Slow tide drift behind the night section. */
+    .tide {
+        animation: tide 22s ease-in-out infinite alternate;
+    }
+
+    @keyframes tide {
+        from { transform: scale(1.08) translate3d(-1.5%, 0, 0); }
+        to { transform: scale(1.12) translate3d(1.5%, -1%, 0); }
     }
 }
 
@@ -305,16 +586,25 @@
     *::before,
     *::after {
         animation-duration: 1ms !important;
+        animation-delay: 0ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 1ms !important;
     }
 
-    .tilt {
+    .tilt,
+    .depth,
+    .tilt .tilt-photo {
         transform: none !important;
     }
 
-    .reveal {
+    .reveal,
+    .reveal.reveal-rise {
         opacity: 1;
+        translate: none;
+        rotate: none;
+    }
+
+    .changeover .bar {
         transform: none;
     }
 }

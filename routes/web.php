@@ -13,6 +13,7 @@ use App\Http\Controllers\Guest\BookingController as GuestBookingController;
 use App\Http\Controllers\Guest\DashboardController as GuestDashboardController;
 use App\Http\Controllers\Guest\ReservationController;
 use App\Http\Controllers\FakeCheckoutController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Guest\PaymentController as GuestPaymentController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\Staff\BookingController as StaffBookingController;
@@ -27,7 +28,7 @@ use Illuminate\Support\Facades\Route;
 | Public
 |--------------------------------------------------------------------------
 */
-Route::view('/', 'welcome')->name('home');
+Route::get('/', HomeController::class)->name('home');
 
 Route::get('/cottages', [CottageController::class, 'index'])->name('cottages.index');
 Route::get('/cottages/{cottage}', [CottageController::class, 'show'])->name('cottages.show');
