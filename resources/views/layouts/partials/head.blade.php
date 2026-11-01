@@ -9,6 +9,6 @@
 <link href="https://fonts.bunny.net/css?family=fraunces:400,500,600,700|hanken-grotesk:400,500,600,700&display=swap" rel="stylesheet" />
 
 {{-- A skipped cross-page transition rejects its promises; that is expected, not an error. --}}
-<script>addEventListener('pagereveal',function(e){var t=e.viewTransition;if(t){t.ready.catch(function(){});t.finished.catch(function(){});}});</script>
+<script>['pageswap','pagereveal'].forEach(function(n){addEventListener(n,function(e){var t=e.viewTransition;if(t){t.ready.catch(function(){});t.finished.catch(function(){});if(t.updateCallbackDone)t.updateCallbackDone.catch(function(){});}});});</script>
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -48,7 +48,7 @@ class AdminReportsTest extends TestCase
         $urls = ['/admin/reports', '/admin/reports/bookings.csv', '/admin/reports/payments.csv'];
 
         foreach ($urls as $url) {
-            $this->get($url)->assertRedirect('/login');
+            $this->get($url)->assertRedirect('/staff/login');
         }
 
         foreach ([User::factory()->create(), User::factory()->staff()->create()] as $user) {

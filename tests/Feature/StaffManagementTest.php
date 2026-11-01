@@ -60,7 +60,7 @@ class StaffManagementTest extends TestCase
         $this->assertTrue(Hash::check('seashell2026', $staff->password));
 
         auth()->logout();
-        $this->post('/login', ['email' => 'maria@labnasan.test', 'password' => 'seashell2026'])->assertRedirect();
+        $this->post('/staff/login', ['email' => 'maria@labnasan.test', 'password' => 'seashell2026'])->assertRedirect();
         $this->get('/staff')->assertOk();
     }
 
@@ -133,11 +133,11 @@ class StaffManagementTest extends TestCase
         $this->assertDatabaseMissing('sessions', ['id' => 'xyz']);
 
         // An already-open session is thrown out on the next request.
-        $this->actingAs($staff->fresh())->get('/staff')->assertRedirect('/login');
+        $this->actingAs($staff->fresh())->get('/staff')->assertRedirect('/staff/login');
         $this->assertGuest();
 
         // And a fresh login is refused.
-        $this->post('/login', ['email' => $staff->email, 'password' => 'password']);
+        $this->post('/staff/login', ['email' => $staff->email, 'password' => 'password']);
         $this->assertGuest();
 
         $this->actingAs($this->admin)->patch("/admin/staff/{$staff->id}/toggle");

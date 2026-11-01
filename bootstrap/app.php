@@ -11,6 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Signed-out visitors to staff or owner pages go to the staff sign-in page.
+        $middleware->redirectGuestsTo(fn (\Illuminate\Http\Request $request) => \App\Support\LoginPage::for($request));
+
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
         ]);

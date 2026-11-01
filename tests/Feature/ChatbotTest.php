@@ -376,7 +376,7 @@ class ChatbotTest extends TestCase
     {
         $inquiry = ChatInquiry::factory()->create(['question' => 'Do you allow pets?', 'context_snapshot' => 'TODAY: secret-context-marker']);
 
-        $this->get('/admin/chatbot')->assertRedirect('/login');
+        $this->get('/admin/chatbot')->assertRedirect('/staff/login');
         $this->actingAs(User::factory()->create())->get('/admin/chatbot')->assertForbidden();
         $this->actingAs(User::factory()->staff()->create())->get('/admin/chatbot')->assertForbidden();
         $this->actingAs(User::factory()->staff()->create())->get("/admin/chatbot/{$inquiry->id}")->assertForbidden();

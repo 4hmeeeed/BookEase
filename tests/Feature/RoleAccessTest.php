@@ -84,8 +84,12 @@ class RoleAccessTest extends TestCase
 
     public function test_unauthenticated_visitors_are_sent_to_login(): void
     {
-        foreach (['/my', '/staff', '/admin', '/dashboard'] as $uri) {
+        foreach (['/my', '/dashboard'] as $uri) {
             $this->get($uri)->assertRedirect('/login');
+        }
+
+        foreach (['/staff', '/admin'] as $uri) {
+            $this->get($uri)->assertRedirect('/staff/login');
         }
     }
 
@@ -93,7 +97,7 @@ class RoleAccessTest extends TestCase
     {
         $user = User::factory()->staff()->inactive()->create();
 
-        $this->post('/login', ['email' => $user->email, 'password' => 'password']);
+        $this->post('/staff/login', ['email' => $user->email, 'password' => 'password']);
 
         $this->assertGuest();
     }
@@ -105,7 +109,7 @@ class RoleAccessTest extends TestCase
 
         $user->forceFill(['is_active' => false])->save();
 
-        $this->get('/staff')->assertRedirect('/login');
+        $this->get('/staff')->assertRedirect('/staff/login');
         $this->assertGuest();
     }
 

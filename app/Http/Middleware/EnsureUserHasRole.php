@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Enums\UserRole;
+use App\Support\LoginPage;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,15 +23,17 @@ class EnsureUserHasRole
         $user = $request->user();
 
         if (! $user) {
-            return redirect()->guest(route('login'));
+            return redirect()->guest(LoginPage::for($request));
         }
 
         if (! $user->is_active) {
+            $loginPage = LoginPage::forUser($user);
+
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')
+            return redirect($loginPage)
                 ->withErrors(['email' => 'This account has been deactivated. Please contact the resort.']);
         }
 

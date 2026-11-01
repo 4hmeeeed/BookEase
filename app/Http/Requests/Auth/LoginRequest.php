@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Enums\UserRole;
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -34,24 +36,47 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
+     * Authenticate, but only if the account belongs on this sign-in page.
+     *
+     * Clients sign in at /login and staff/owner at /staff/login. The role is
+     * checked only after the password is verified, so the "wrong page" hint
+     * never tells a stranger which email addresses belong to staff.
+     *
+     * @param  list<UserRole>  $roles  roles allowed through this page
+     * @param  string  $wrongPageMessage  shown to a valid account of another role
      *
      * @throws ValidationException
      */
-    public function authenticate(): void
+    public function authenticate(array $roles, string $wrongPageMessage): void
     {
         $this->ensureIsNotRateLimited();
 
         // Deactivated accounts (e.g. former staff) cannot log in.
         $credentials = [...$this->only('email', 'password'), 'is_active' => true];
 
-        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
+        $guard = Auth::guard('web');
+        $provider = $guard->getProvider();
+        $user = $provider->retrieveByCredentials($credentials);
+
+        if (! $user || ! $provider->validateCredentials($user, $credentials)) {
+            event(new Failed('web', $user, $credentials));
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
         }
+
+        if (! $user->hasRole(...$roles)) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => $wrongPageMessage,
+            ]);
+        }
+
+        $provider->rehashPasswordIfRequired($user, $credentials);
+        $guard->login($user, $this->boolean('remember'));
 
         RateLimiter::clear($this->throttleKey());
     }

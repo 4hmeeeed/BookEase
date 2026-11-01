@@ -44,6 +44,9 @@
                 <nav class="flex gap-5">
                     <a href="{{ route('cottages.index') }}" class="link-underline">Cottages</a>
                     <a href="{{ route('home') }}#how-it-works" class="link-underline">How it works</a>
+                    @guest
+                        <a href="{{ route('staff.login') }}" class="link-underline">Staff login</a>
+                    @endguest
                 </nav>
                 <p>&copy; {{ date('Y') }} Labnasan Resort · Basey, Samar</p>
             </div>

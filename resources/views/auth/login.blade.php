@@ -1,4 +1,10 @@
 <x-guest-layout>
+    <div class="mb-6">
+        <p class="eyebrow">Guest sign-in</p>
+        <h1 class="mt-1 font-display text-2xl font-semibold text-lagoon-950">Welcome back</h1>
+        <p class="mt-1 text-sm text-gray-600">Sign in to see your bookings, pay with GCash or Maya, and download receipts.</p>
+    </div>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -44,4 +50,11 @@
             </x-primary-button>
         </div>
     </form>
+
+    @if (Route::has('register'))
+        <p class="mt-6 border-t border-sand-200 pt-5 text-center text-sm text-gray-600">
+            New to Labnasan?
+            <a href="{{ route('register') }}" class="link-underline font-semibold text-coral-700">Create an account</a>
+        </p>
+    @endif
 </x-guest-layout>
