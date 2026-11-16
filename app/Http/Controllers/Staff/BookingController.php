@@ -101,7 +101,8 @@ class BookingController extends Controller
 
         return match ($tab) {
             'pending' => $q->where('status', BookingStatus::Pending)->orderBy('created_at'),
-            'arrivals' => $q->where('status', BookingStatus::Confirmed)->where('check_in', '<=', $today)->where('check_out', '>', $today)->orderBy('check_in'),
+            // Includes no-shows whose stay has ended, so staff can cancel them.
+            'arrivals' => $q->where('status', BookingStatus::Confirmed)->where('check_in', '<=', $today)->orderBy('check_in'),
             'in_house' => $q->where('status', BookingStatus::CheckedIn)->orderBy('check_out'),
             'departures' => $q->where('status', BookingStatus::CheckedIn)->where('check_out', '<=', $today)->orderBy('check_out'),
             'upcoming' => $q->where('status', BookingStatus::Confirmed)->where('check_in', '>', $today)->orderBy('check_in'),

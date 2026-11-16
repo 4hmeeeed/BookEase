@@ -163,6 +163,27 @@ class BookingLifecycleTest extends TestCase
         $this->assertSame(BookingStatus::Confirmed, $booking->fresh()->status);
     }
 
+    public function test_a_same_day_request_can_be_approved_on_its_check_in_day(): void
+    {
+        $booking = $this->booking();
+
+        $this->travelTo('2026-12-10 15:00:00');
+        $this->actingAs($this->staff)->post("/staff/bookings/{$booking->reference_code}/approve")->assertSessionHas('status');
+
+        $this->assertSame(BookingStatus::Confirmed, $booking->fresh()->status);
+    }
+
+    public function test_a_request_whose_stay_has_ended_cannot_be_approved(): void
+    {
+        // Approving it would create a confirmed stay that can never be checked in.
+        $booking = $this->booking();
+
+        $this->travelTo('2026-12-13 10:00:00');
+        $this->actingAs($this->staff)->post("/staff/bookings/{$booking->reference_code}/approve")->assertSessionHas('error');
+
+        $this->assertSame(BookingStatus::Pending, $booking->fresh()->status);
+    }
+
     public function test_check_out_releases_the_dates(): void
     {
         $booking = $this->booking(BookingStatus::CheckedIn);
@@ -234,6 +255,17 @@ class BookingLifecycleTest extends TestCase
         $this->actingAs($this->staff)->get('/staff/bookings?tab=history')->assertOk()->assertDontSee($booking->reference_code);
         $this->actingAs($this->staff)->get("/staff/bookings/{$booking->reference_code}")
             ->assertOk()->assertSee('Approve')->assertSee('Reject');
+    }
+
+    public function test_a_confirmed_guest_who_never_arrived_stays_in_the_arrivals_queue(): void
+    {
+        // The stay was Dec 10–13 and the guest never came. Staff must still find
+        // it to cancel it; otherwise it counts as a sold stay and an unpaid balance forever.
+        $noShow = $this->booking(BookingStatus::Confirmed);
+        $this->travelTo('2026-12-14 09:00:00');
+
+        $this->actingAs($this->staff)->get('/staff/bookings?tab=arrivals')->assertOk()->assertSee($noShow->reference_code);
+        $this->actingAs($this->staff)->get('/staff')->assertOk()->assertSee($noShow->reference_code);
     }
 
     public function test_queue_search_by_reference_or_guest(): void

@@ -14,10 +14,10 @@ class DashboardController extends Controller
     {
         $today = CarbonImmutable::today()->toDateString();
 
+        // Includes no-shows whose stay has ended, so staff can cancel them.
         $arrivals = Booking::with(['cottage', 'user'])
             ->where('status', BookingStatus::Confirmed)
             ->where('check_in', '<=', $today)
-            ->where('check_out', '>', $today)
             ->orderBy('check_in')
             ->get();
 

@@ -21,7 +21,12 @@ class BookingLifecycleService
 {
     public function approve(Booking $booking, User $actor, ?string $remarks = null): Booking
     {
-        return $this->transition($booking, BookingStatus::Confirmed, $actor, $remarks);
+        return $this->transition($booking, BookingStatus::Confirmed, $actor, $remarks, function (Booking $b) {
+            // A confirmed stay that has already ended could never be checked in.
+            if (CarbonImmutable::today()->gte($b->check_out)) {
+                throw InvalidBookingTransitionException::because('This stay\'s dates have already passed. Reject the request instead.');
+            }
+        });
     }
 
     public function reject(Booking $booking, User $actor, string $remarks): Booking
