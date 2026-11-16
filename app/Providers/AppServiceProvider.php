@@ -49,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
             baseUrl: (string) config('services.gemini.base_url'),
             timeout: (int) config('services.gemini.timeout', 20),
             maxOutputTokens: (int) config('services.gemini.max_output_tokens', 1024),
+            fallbackModels: array_values((array) config('services.gemini.fallback_models', [])),
+            totalTimeout: (int) config('services.gemini.total_timeout', 40),
         ));
     }
 

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Chatbot\ChatReply;
 use App\Chatbot\GeminiClient;
+use App\Chatbot\Guardrails;
 use App\Chatbot\LanguageModelRefused;
 use App\Chatbot\LanguageModelUnavailable;
 use App\Models\Booking;
@@ -42,6 +43,7 @@ class ChatbotService
     public function __construct(
         private readonly GeminiClient $model,
         private readonly AvailabilityService $availability,
+        private readonly Guardrails $guardrails,
     ) {}
 
     public function ask(string $question, ?User $user, string $sessionId): ChatReply
@@ -57,16 +59,18 @@ class ChatbotService
                 throw new LanguageModelUnavailable('The chatbot is switched off (CHATBOT_ENABLED=false).');
             }
 
-            $answer = $this->model->generate(
-                $this->systemInstruction($context, $canary),
-                [...$this->history($sessionId), ['role' => 'user', 'text' => self::fence($question)]],
-            );
-
-            if ($this->leaks($answer, $canary)) {
-                Log::warning('Chatbot answer withheld: it repeated the instructions.', ['session' => $sessionId]);
+            if ($this->guardrails->looksLikeInjection($question)) {
+                Log::info('Chatbot question declined without asking the model: it tries to override the instructions.', ['session' => $sessionId]);
                 [$answer, $fallback] = [$this->declineMessage(), true];
             } else {
-                $answer = $this->tidy($answer);
+                $history = $this->history($sessionId);
+
+                $answer = $this->model->generate(
+                    $this->systemInstruction($context, $canary),
+                    [...$history, ['role' => 'user', 'text' => self::fence($question)]],
+                );
+
+                [$answer, $fallback] = $this->screen($answer, $canary, $context, [...$history, ['role' => 'user', 'text' => $question]], $sessionId);
             }
         } catch (LanguageModelRefused $e) {
             Log::info('Chatbot answer blocked by the model\'s safety filter.', ['reason' => $e->getMessage()]);
@@ -340,6 +344,40 @@ class ChatbotService
     // Output
     // ------------------------------------------------------------------
 
+    /**
+     * Decide whether the model's answer may be shown.
+     *
+     * @param  list<array{role: 'user'|'model', text: string}>  $conversation  earlier turns plus this question
+     * @return array{0: string, 1: bool} [answer to show, was it withheld]
+     */
+    private function screen(string $answer, string $canary, string $context, array $conversation, string $sessionId): array
+    {
+        if ($this->leaks($answer, $canary)) {
+            Log::warning('Chatbot answer withheld: it repeated the instructions.', ['session' => $sessionId]);
+
+            return [$this->declineMessage(), true];
+        }
+
+        $answer = $this->tidy($answer);
+
+        if ($this->guardrails->claimsAction($answer)) {
+            Log::warning('Chatbot answer withheld: it claimed to act on a booking.', ['session' => $sessionId]);
+
+            return [$this->actionMessage(), true];
+        }
+
+        // Figures the guest typed may be echoed back; anything else must come from the resort data.
+        $guestWords = collect($conversation)->where('role', 'user')->pluck('text')->implode("\n");
+
+        if ($unverified = $this->guardrails->ungroundedFigures($answer, $context."\n".$guestWords)) {
+            Log::warning('Chatbot answer withheld: figures not found in the resort data.', ['session' => $sessionId, 'figures' => $unverified]);
+
+            return [$this->unverifiedMessage(), true];
+        }
+
+        return [$answer, false];
+    }
+
     private function leaks(string $answer, string $canary): bool
     {
         if (str_contains($answer, $canary)) {
@@ -376,6 +414,26 @@ class ChatbotService
             : 'Please contact Labnasan Resort directly ('.rtrim($contact, '.').').';
 
         return "Sorry, our assistant can't answer right now. {$contact} You can also browse the Cottages page for rates and open dates.";
+    }
+
+    /** Shown instead of an answer that quoted a rate, total or contact detail the records don't have. */
+    public function unverifiedMessage(): string
+    {
+        $contact = $this->contactLine();
+        $contact = str_starts_with($contact, 'No phone')
+            ? ''
+            : ' You can also contact Labnasan Resort directly ('.rtrim($contact, '.').').';
+
+        return 'Sorry, I couldn’t confirm that from the resort’s current records, so I won’t guess. '
+            .'Each cottage’s page lists its nightly rate, and the booking page shows the exact total for your dates.'
+            .$contact;
+    }
+
+    /** Shown instead of an answer that claimed to make, change, cancel or pay for a booking. */
+    public function actionMessage(): string
+    {
+        return 'I can only answer questions, so I can’t make, change, cancel, or pay for a booking. '
+            .'To reserve, choose a unit and dates on the Cottages page. To manage a booking you already have, open My bookings.';
     }
 
     public function declineMessage(): string

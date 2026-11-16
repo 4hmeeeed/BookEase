@@ -42,6 +42,10 @@ return [
         'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
         'timeout' => (int) env('GEMINI_TIMEOUT', 20),
         'max_output_tokens' => (int) env('GEMINI_MAX_OUTPUT_TOKENS', 1024),
+        // Tried in order when the model above is overloaded, timing out or retired (comma-separated; empty = none).
+        'fallback_models' => array_values(array_filter(array_map('trim', explode(',', (string) env('GEMINI_FALLBACK_MODELS', 'gemini-3.1-flash-lite'))))),
+        // Seconds for all attempts together, so a guest never waits on a chain of timeouts.
+        'total_timeout' => (int) env('GEMINI_TOTAL_TIMEOUT', 40),
     ],
 
     // "Continue with Google" (guests only). Free OAuth client from Google Cloud Console.
