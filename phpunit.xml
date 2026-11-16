@@ -32,5 +32,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Compile test views apart from the running dev server's: on Windows a
+             compiled view can't be replaced while the other process has it open. -->
+        <env name="VIEW_COMPILED_PATH" value="storage/framework/views/testing"/>
     </php>
 </phpunit>
