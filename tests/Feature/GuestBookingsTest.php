@@ -51,6 +51,26 @@ class GuestBookingsTest extends TestCase
         $this->actingAs($this->guest)->get("/my/bookings/{$theirs->reference_code}")->assertForbidden();
     }
 
+    public function test_a_stay_checking_out_today_is_still_listed_as_current(): void
+    {
+        $booking = $this->myBooking(BookingStatus::CheckedIn);
+        $this->travelTo('2026-12-13 08:00:00'); // check-out day; check-out time is 12:00 NN
+
+        $this->actingAs($this->guest)->get('/my/bookings')
+            ->assertOk()
+            ->assertViewHas('current', fn ($current) => $current->contains('id', $booking->id));
+    }
+
+    public function test_a_stay_that_ended_yesterday_is_listed_as_past(): void
+    {
+        $booking = $this->myBooking(BookingStatus::Confirmed);
+        $this->travelTo('2026-12-14 08:00:00');
+
+        $this->actingAs($this->guest)->get('/my/bookings')
+            ->assertOk()
+            ->assertViewHas('past', fn ($past) => $past->contains('id', $booking->id));
+    }
+
     public function test_guest_dashboard_shows_next_stay(): void
     {
         $booking = $this->myBooking(BookingStatus::Confirmed);

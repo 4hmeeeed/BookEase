@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Services\BookingLifecycleService;
 use App\Services\PaymentService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -22,8 +23,11 @@ class BookingController extends Controller
             ->orderByDesc('check_in')
             ->get();
 
+        // A stay is current through its check-out day (check-out is at 12:00 NN).
+        $today = CarbonImmutable::today();
+
         [$current, $past] = $bookings->partition(
-            fn (Booking $b) => $b->status->holdsDates() && $b->check_out->isFuture()
+            fn (Booking $b) => $b->status->holdsDates() && $b->check_out->gte($today)
         );
 
         return view('guest.bookings.index', [
