@@ -18,6 +18,8 @@ use Laravel\Socialite\Contracts\User as GoogleUser;
  */
 class GoogleSignIn
 {
+    public function __construct(private readonly UserSessions $sessions) {}
+
     /** Google sign-in shows up only once both OAuth credentials are configured. */
     public static function enabled(): bool
     {
@@ -57,10 +59,27 @@ class GoogleSignIn
         }
 
         // First Google sign-in for an existing guest: link it. Google has verified the address.
+        $unproven = $user->email_verified_at === null;
+
         $user->forceFill([
             'google_id' => $googleId,
             'email_verified_at' => $user->email_verified_at ?? now(),
-        ])->save();
+        ]);
+
+        if ($unproven) {
+            // Nobody had proven they own this address, so the current password
+            // may belong to someone who registered it in another person's name.
+            // Google has proven ownership now: retire that password and its sessions.
+            // The guest keeps signing in with Google, or sets a new password with
+            // "Forgot your password?".
+            $user->password = Str::password(40);
+        }
+
+        $user->save();
+
+        if ($unproven) {
+            $this->sessions->endAll($user);
+        }
 
         return $user;
     }

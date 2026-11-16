@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Enums\UserRole;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -16,6 +15,8 @@ use InvalidArgumentException;
  */
 class StaffService
 {
+    public function __construct(private readonly UserSessions $sessions) {}
+
     /**
      * @param  array{name: string, email: string, phone?: string|null, password: string}  $data
      */
@@ -57,7 +58,7 @@ class StaffService
         $staff->save();
 
         if ($passwordChanged) {
-            $this->endSessions($staff); // whoever knew the old password is locked out
+            $this->sessions->endAll($staff); // whoever knew the old password is locked out
         }
 
         return $staff;
@@ -71,23 +72,10 @@ class StaffService
         $staff->save();
 
         if (! $active) {
-            $this->endSessions($staff);
+            $this->sessions->endAll($staff);
         }
 
         return $staff;
-    }
-
-    /** Sign the user out everywhere: stored sessions and "remember me" cookies. */
-    private function endSessions(User $user): void
-    {
-        $user->forceFill(['remember_token' => Str::random(60)])->saveQuietly();
-
-        if (config('session.driver') === 'database') {
-            DB::connection(config('session.connection'))
-                ->table(config('session.table', 'sessions'))
-                ->where('user_id', $user->id)
-                ->delete();
-        }
     }
 
     private function ensureStaff(User $user): void

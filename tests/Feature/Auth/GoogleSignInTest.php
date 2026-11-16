@@ -5,6 +5,8 @@ namespace Tests\Feature\Auth;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 use Laravel\Socialite\Two\User as SocialiteUser;
@@ -99,6 +101,36 @@ class GoogleSignInTest extends TestCase
         $this->assertSame('g-456', $guest->google_id);
         $this->assertNotNull($guest->email_verified_at);
         $this->assertSame(1, User::count());
+    }
+
+    public function test_linking_an_unproven_account_retires_the_password_and_sessions_set_before_it(): void
+    {
+        // Anyone can register with any address, so the person who chose this
+        // password may not own the mailbox. Google has now proven who does.
+        config(['session.driver' => 'database']);
+        $guest = User::factory()->unverified()->create(['email' => 'ana@example.com']);
+        $oldToken = $guest->remember_token;
+        DB::table('sessions')->insert(['id' => 'squatter', 'user_id' => $guest->id, 'payload' => '', 'last_activity' => time()]);
+
+        $this->googleReturns('g-456', 'ana@example.com');
+        $this->get('/auth/google/callback?code=abc');
+
+        $this->assertAuthenticatedAs($guest);
+        $guest->refresh();
+        $this->assertFalse(Hash::check('password', $guest->password));
+        $this->assertNotSame($oldToken, $guest->remember_token);
+        $this->assertDatabaseMissing('sessions', ['id' => 'squatter']);
+    }
+
+    public function test_linking_an_already_proven_account_keeps_its_password(): void
+    {
+        $guest = User::factory()->create(['email' => 'ana@example.com']);
+
+        $this->googleReturns('g-456', 'ana@example.com');
+        $this->get('/auth/google/callback?code=abc');
+
+        $this->assertAuthenticatedAs($guest);
+        $this->assertTrue(Hash::check('password', $guest->refresh()->password));
     }
 
     public function test_a_linked_guest_is_found_by_google_id_even_after_changing_email(): void
