@@ -9,7 +9,9 @@ use App\Models\Booking;
 use App\Models\Cottage;
 use App\Models\User;
 use App\Support\ReferenceCode;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Str;
 
 /**
  * Reservation submission: validates the stay, re-checks availability under a
@@ -45,6 +47,8 @@ class BookingService
         }
 
         return $this->availability->reserve($cottage, $in, $out, function (Cottage $locked) use ($guest, $in, $out, $guests, $data) {
+            $this->ensureUnderPendingLimit($guest);
+
             $booking = new Booking([
                 'cottage_id' => $locked->id,
                 'check_in' => $in,
@@ -68,6 +72,30 @@ class BookingService
 
             return $booking;
         });
+    }
+
+    /**
+     * Pending requests hold their dates until staff act on them, so a guest may
+     * only have a few waiting at once. Requests whose stay has passed don't count.
+     *
+     * @throws InvalidStayException
+     */
+    private function ensureUnderPendingLimit(User $guest): void
+    {
+        // Serialises this guest's submissions so parallel requests can't all slip under the limit.
+        User::query()->whereKey($guest->getKey())->lockForUpdate()->first();
+
+        $open = $guest->bookings()
+            ->where('status', BookingStatus::Pending)
+            ->where('check_out', '>', CarbonImmutable::today()->toDateString())
+            ->count();
+
+        if ($open >= (int) config('bookease.max_pending_per_guest')) {
+            throw new InvalidStayException(
+                "You already have {$open} reservation ".Str::plural('request', $open).' waiting for the resort to confirm. '.
+                'Please wait for a reply, or cancel one, before sending another.'
+            );
+        }
     }
 
     private function saveWithUniqueReference(Booking $booking): void

@@ -209,6 +209,37 @@ class ReservationTest extends TestCase
         $this->assertSame(2, Booking::count());
     }
 
+    public function test_a_guest_cannot_hold_more_open_requests_than_the_limit(): void
+    {
+        // Pending requests hold dates until staff act, so one account must not
+        // be able to block the whole resort with unconfirmed requests.
+        config(['bookease.max_pending_per_guest' => 2]);
+        Booking::factory()->for($this->guest)->stay('2026-12-01', '2026-12-03')->create();
+        Booking::factory()->for($this->guest)->stay('2026-12-20', '2026-12-22')->create();
+
+        $this->actingAs($this->guest)
+            ->post("/cottages/{$this->cottage->id}/book", $this->payload())
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, $this->cottage->bookings()->count());
+        $this->assertTrue(app(AvailabilityService::class)->isAvailable($this->cottage, '2026-12-10', '2026-12-13'));
+    }
+
+    public function test_confirmed_stays_and_lapsed_requests_do_not_count_toward_the_limit(): void
+    {
+        config(['bookease.max_pending_per_guest' => 1]);
+        Booking::factory()->for($this->guest)->stay('2026-12-01', '2026-12-03')->status(BookingStatus::Confirmed)->create();
+        // A request staff never answered, whose dates have already passed.
+        Booking::factory()->for($this->guest)->stay('2026-10-20', '2026-10-22')->create();
+
+        $this->actingAs($this->guest)
+            ->post("/cottages/{$this->cottage->id}/book", $this->payload())
+            ->assertSessionHasNoErrors()
+            ->assertSessionMissing('error');
+
+        $this->assertSame(1, $this->cottage->bookings()->count());
+    }
+
     public function test_reservation_posts_are_rate_limited(): void
     {
         for ($i = 0; $i < 10; $i++) {

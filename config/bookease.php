@@ -21,6 +21,11 @@ return [
     // How far ahead (in days) a check-in date may be booked.
     'booking_window_days' => (int) env('BOOKEASE_BOOKING_WINDOW_DAYS', 365),
 
+    // Unconfirmed requests one guest may have waiting at once. Pending requests
+    // hold their dates until staff act, so this stops a single account from
+    // blocking the resort. Requests whose dates have passed don't count.
+    'max_pending_per_guest' => (int) env('BOOKEASE_MAX_PENDING_PER_GUEST', 3),
+
     /*
     |--------------------------------------------------------------------------
     | Payments
