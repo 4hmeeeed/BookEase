@@ -36,6 +36,7 @@ class PaymentService
     public function __construct(
         private readonly PaymentGateway $gateway,
         private readonly AvailabilityService $availability,
+        private readonly ConsoleNotifier $notifier,
     ) {}
 
     // ------------------------------------------------------------------
@@ -198,6 +199,10 @@ class PaymentService
 
         if ($outcome === 'paid') {
             $this->notifyGuest($payment);
+            $this->notifier->paymentReceived($payment);
+        } elseif ($outcome === 'mismatch') {
+            // Not credited, so a person has to look at it.
+            $this->notifier->paymentNeedsReview($payment);
         }
 
         return $outcome;
@@ -244,6 +249,7 @@ class PaymentService
         $this->closeOpenCheckouts($booking);
 
         $this->notifyGuest($payment);
+        $this->notifier->moneyRecorded($payment, $staff);
 
         return $payment;
     }
@@ -257,7 +263,7 @@ class PaymentService
     {
         $amount = Money::normalize($amount);
 
-        return DB::transaction(function () use ($booking, $staff, $amount, $method) {
+        $payment = DB::transaction(function () use ($booking, $staff, $amount, $method) {
             $locked = $this->lock($booking);
 
             if (! Money::isPositive($amount) || Money::compare($amount, $locked->amount_paid) > 0) {
@@ -269,6 +275,10 @@ class PaymentService
 
             return $payment;
         });
+
+        $this->notifier->moneyRecorded($payment, $staff);
+
+        return $payment;
     }
 
     // ------------------------------------------------------------------

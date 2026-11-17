@@ -4,9 +4,13 @@ namespace App\Services;
 
 use App\Enums\UserRole;
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\User;
 use App\Notifications\Console\ConsoleNotification;
+use App\Notifications\Console\MoneyRecordedByStaff;
 use App\Notifications\Console\NewBookingRequest;
+use App\Notifications\Console\OnlinePaymentReceived;
+use App\Notifications\Console\PaymentNeedsReview;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -24,6 +28,22 @@ class ConsoleNotifier
     public function bookingRequested(Booking $booking): void
     {
         $this->send($this->desk(), new NewBookingRequest($booking));
+    }
+
+    public function paymentReceived(Payment $payment): void
+    {
+        $this->send($this->desk(), new OnlinePaymentReceived($payment));
+    }
+
+    public function paymentNeedsReview(Payment $payment): void
+    {
+        $this->send($this->desk(), new PaymentNeedsReview($payment));
+    }
+
+    /** Cash and refunds are entered by the desk itself, so only the owners hear about them. */
+    public function moneyRecorded(Payment $payment, User $actor): void
+    {
+        $this->send($this->owners($actor), new MoneyRecordedByStaff($payment));
     }
 
     /**
