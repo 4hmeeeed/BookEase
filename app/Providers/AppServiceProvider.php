@@ -9,10 +9,12 @@ use App\Payments\FakeGateway;
 use App\Payments\PaymentGateway;
 use App\Payments\PayMongoGateway;
 use App\Services\ChatbotService;
+use App\View\Composers\ConsoleComposer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use RuntimeException;
 
@@ -81,5 +83,7 @@ class AppServiceProvider extends ServiceProvider
             $model::saved(fn () => ChatbotService::forgetContext());
             $model::deleted(fn () => ChatbotService::forgetContext());
         }
+
+        View::composer('layouts.console', ConsoleComposer::class);
     }
 }

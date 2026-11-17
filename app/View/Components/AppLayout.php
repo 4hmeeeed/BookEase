@@ -12,6 +12,7 @@ class AppLayout extends Component
      */
     public function render(): View
     {
-        return view('layouts.app');
+        // Staff and the owner work in the console; guests keep the resort's top navigation.
+        return view(auth()->user()?->isGuest() === false ? 'layouts.console' : 'layouts.app');
     }
 }

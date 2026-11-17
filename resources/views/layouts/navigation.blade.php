@@ -1,31 +1,12 @@
-@use('App\Enums\UserRole')
-
+{{-- Guests only: staff and the owner get the console layout (layouts.console). --}}
 @php
     $user = Auth::user();
 
-    $links = match ($user->role) {
-        UserRole::Admin => [
-            ['admin.dashboard', 'Overview', 'admin.dashboard'],
-            ['admin.cottages.index', 'Cottages', 'admin.cottages.*'],
-            ['admin.reports.index', 'Reports', 'admin.reports.*'],
-            ['admin.staff.index', 'Staff', 'admin.staff.*'],
-            ['admin.chatbot.index', 'Chatbot', 'admin.chatbot.*'],
-            ['staff.dashboard', 'Front desk', 'staff.dashboard'],
-            ['staff.bookings.index', 'Bookings', 'staff.bookings.*'],
-        ],
-        UserRole::Staff => [
-            ['staff.dashboard', 'Front desk', 'staff.dashboard'],
-            ['staff.bookings.index', 'Bookings', 'staff.bookings.*'],
-        ],
-        default => [
-            ['guest.dashboard', 'My stays', 'guest.dashboard'],
-            ['guest.bookings.index', 'My bookings', 'guest.bookings.*'],
-            ['cottages.index', 'Browse cottages', 'cottages.*'],
-        ],
-    };
-
-    // The owner has many links: keep the hamburger menu up to xl so nothing overflows.
-    $wide = count($links) > 5;
+    $links = [
+        ['guest.dashboard', 'My stays', 'guest.dashboard'],
+        ['guest.bookings.index', 'My bookings', 'guest.bookings.*'],
+        ['cottages.index', 'Browse cottages', 'cottages.*'],
+    ];
 @endphp
 
 <nav x-data="{ open: false }" class="sticky top-0 z-40 print:hidden border-b border-lagoon-950/10 bg-cream/90 backdrop-blur-md">
@@ -34,15 +15,15 @@
             <div class="flex items-center gap-10">
                 <x-brand :href="route('dashboard')" />
 
-                <div @class(['hidden items-center gap-1', 'lg:flex' => ! $wide, 'xl:flex' => $wide])>
+                <div class="hidden items-center gap-1 lg:flex">
                     @foreach ($links as [$route, $label, $pattern])
                         <x-nav-link :href="route($route)" :active="request()->routeIs($pattern)">{{ $label }}</x-nav-link>
                     @endforeach
                 </div>
             </div>
 
-            <div @class(['hidden items-center gap-3', 'lg:flex' => ! $wide, 'xl:flex' => $wide])>
-                <span class="badge {{ $user->isGuest() ? 'badge-checked-in' : ($user->isAdmin() ? 'badge-rejected' : 'badge-confirmed') }}">
+            <div class="hidden items-center gap-3 lg:flex">
+                <span class="badge badge-checked-in">
                     <span class="badge-dot"></span>{{ $user->role->label() }}
                 </span>
 
@@ -72,7 +53,7 @@
 
             {{-- Hamburger --}}
             <button @click="open = ! open" :aria-expanded="open" aria-label="Toggle menu"
-                    class="inline-flex items-center justify-center rounded-md p-2 text-lagoon-800 transition hover:bg-sand-100 active:scale-95 focus:outline-none {{ $wide ? 'xl:hidden' : 'lg:hidden' }}">
+                    class="inline-flex items-center justify-center rounded-md p-2 text-lagoon-800 transition hover:bg-sand-100 active:scale-95 focus:outline-none lg:hidden">
                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                     <path :class="{ 'hidden': open }" stroke-linecap="round" stroke-width="2" d="M4 7h16M4 12h10M4 17h16" />
                     <path :class="{ 'hidden': ! open }" class="hidden" stroke-linecap="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -85,7 +66,7 @@
     <div x-show="open" x-cloak
          x-transition:enter="transition ease-out-soft duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-         class="border-t border-lagoon-950/10 {{ $wide ? 'xl:hidden' : 'lg:hidden' }}">
+         class="border-t border-lagoon-950/10 lg:hidden">
         <div class="space-y-1 py-3">
             @foreach ($links as [$route, $label, $pattern])
                 <x-responsive-nav-link :href="route($route)" :active="request()->routeIs($pattern)">{{ $label }}</x-responsive-nav-link>
