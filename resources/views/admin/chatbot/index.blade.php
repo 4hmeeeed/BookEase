@@ -13,7 +13,7 @@
                 ['Chats (7 days)', $stats['week_visitors'], 'text-ocean-800'],
                 ['Fallback answers (7 days)', $stats['week_fallback'], $stats['week_fallback'] ? 'text-coral-700' : 'text-lagoon-900'],
             ] as [$label, $value, $tone])
-                <div class="card tilt p-5" x-tilt="4">
+                <div class="card p-5">
                     <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ $label }}</dt>
                     <dd class="tilt-pop mt-2 font-display text-3xl font-semibold {{ $tone }}">{{ number_format($value) }}</dd>
                 </div>

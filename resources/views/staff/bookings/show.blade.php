@@ -6,7 +6,7 @@
         <div class="mt-3 flex flex-wrap items-end justify-between gap-4">
             <div>
                 <p class="eyebrow">Booking</p>
-                <h1 class="mt-2 font-mono text-3xl font-semibold tracking-wider text-lagoon-950">{{ $booking->reference_code }}</h1>
+                <h1 class="ref-code mt-2 text-3xl text-lagoon-950">{{ $booking->reference_code }}</h1>
             </div>
             <x-booking-status :status="$booking->status" class="!px-4 !py-1.5 !text-sm" />
         </div>
@@ -22,7 +22,7 @@
         $canTakeCash = app(\App\Services\PaymentService::class)->isPayable($booking);
     @endphp
 
-    <div class="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_24rem] lg:px-8" x-data>
+    <div @class(['mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_24rem] lg:px-8', 'max-lg:pb-28' => ! $status->isFinal()]) x-data>
         <div class="space-y-6">
             {{-- Actions --}}
             @unless ($status->isFinal())
@@ -30,7 +30,9 @@
                     <h2 class="font-serif text-xl font-semibold text-lagoon-950">Next step</h2>
                     <x-input-error :messages="$errors->get('remarks')" class="mt-2" />
 
-                    <div class="mt-4 flex flex-wrap gap-3">
+                    {{-- On phones the buttons ride in a bar just above the tab bar, within thumb reach. --}}
+                    <div data-action-bar
+                         class="mt-4 flex flex-wrap gap-3 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))] max-lg:z-30 max-lg:mt-0 max-lg:flex-nowrap max-lg:overflow-x-auto max-lg:border-t max-lg:border-lagoon-950/10 max-lg:bg-cream/95 max-lg:px-4 max-lg:py-3 max-lg:backdrop-blur-md max-lg:[&>*]:shrink-0">
                         @if ($canApprove)
                             <form method="POST" action="{{ route('staff.bookings.approve', $booking) }}">
                                 @csrf

@@ -24,7 +24,7 @@
                     </header>
                 @endisset
 
-                <div class="relative animate-fade-up [animation-delay:80ms]">
+                <div class="console-enter relative">
                     {{ $slot }}
                 </div>
             </main>

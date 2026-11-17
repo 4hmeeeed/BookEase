@@ -17,7 +17,7 @@
                 ['in_house', 'In house', 'ocean', 'Guests checked in now'],
                 ['departures', 'Departures', 'coral', 'Due to check out by 12:00 NN'],
             ] as [$key, $label, $tone, $hint])
-                <a href="{{ route('staff.bookings.index', ['tab' => $key]) }}" x-tilt="6"
+                <a href="{{ route('staff.bookings.index', ['tab' => $key]) }}" x-tilt="3"
                    class="card tilt group block p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-lagoon-400">
                     <p class="text-sm font-semibold text-gray-600">{{ $label }}</p>
                     <p @class(['tilt-pop mt-2 font-display text-5xl font-semibold tabular-nums',
@@ -30,10 +30,10 @@
 
         <div class="grid gap-6 lg:grid-cols-3">
             @foreach ([
-                ['Waiting for approval', $pending, 'pending', 'No requests waiting. Nice!'],
-                ['Arriving', $arrivals, 'arrivals', 'No arrivals today.'],
-                ['Departing', $departures, 'departures', 'No departures due.'],
-            ] as [$title, $list, $tab, $empty])
+                ['Waiting for approval', $pending, 'pending', 'No requests waiting.', 'buoy'],
+                ['Arriving', $arrivals, 'arrivals', 'No arrivals today.', 'anchor'],
+                ['Departing', $departures, 'departures', 'No departures due.', 'anchor'],
+            ] as [$title, $list, $tab, $empty, $icon])
                 <section class="card p-5" x-reveal>
                     <div class="flex items-center justify-between">
                         <h2 class="font-serif text-lg font-semibold text-lagoon-950">{{ $title }}</h2>
@@ -45,13 +45,13 @@
                                 <a href="{{ route('staff.bookings.show', $booking) }}" class="-mx-2 flex items-center justify-between gap-3 rounded-xl px-2 py-3 transition hover:bg-sand-50">
                                     <span class="min-w-0">
                                         <span class="block truncate font-semibold text-gray-800">{{ $booking->user->name }}</span>
-                                        <span class="block truncate text-xs text-gray-500">{{ $booking->cottage->name }} · {{ $booking->check_in->format('M j') }}–{{ $booking->check_out->format('M j') }}</span>
+                                        <span class="block truncate text-xs tabular-nums text-gray-500">{{ $booking->cottage->name }} · {{ $booking->check_in->format('M j') }}–{{ $booking->check_out->format('M j') }}</span>
                                     </span>
-                                    <span class="shrink-0 font-mono text-xs text-sand-700">{{ $booking->reference_code }}</span>
+                                    <span class="shrink-0 ref-code text-xs text-sand-700">{{ $booking->reference_code }}</span>
                                 </a>
                             </li>
                         @empty
-                            <li class="py-6 text-center text-sm text-gray-500">{{ $empty }}</li>
+                            <li><x-empty-state :icon="$icon" class="!py-6">{{ $empty }}</x-empty-state></li>
                         @endforelse
                     </ul>
                 </section>

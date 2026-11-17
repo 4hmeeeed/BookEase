@@ -45,7 +45,7 @@
         @else
             <ul class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" x-reveal.stagger>
                 @foreach ($staff as $member)
-                    <li @class(['card tilt flex flex-col p-5', 'opacity-70 hover:opacity-100' => ! $member->is_active]) x-tilt="4">
+                    <li @class(['card flex flex-col p-5', 'opacity-70 hover:opacity-100' => ! $member->is_active])>
                         <div class="tilt-pop flex items-start gap-3">
                             <span @class(['grid h-11 w-11 shrink-0 place-items-center rounded-full font-display text-lg font-semibold',
                                           'bg-lagoon-100 text-lagoon-800' => $member->is_active,

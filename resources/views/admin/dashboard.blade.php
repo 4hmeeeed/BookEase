@@ -46,7 +46,7 @@
                                         @foreach ($item->bookings as $booking)
                                             <a href="{{ route('staff.bookings.show', $booking) }}"
                                                class="inline-flex items-center gap-1.5 rounded-md border border-lagoon-950/10 bg-cream px-2 py-1 text-xs text-gray-700 transition-colors duration-200 hover:border-lagoon-950/25 hover:text-lagoon-950">
-                                                <span class="font-mono font-semibold text-sand-700">{{ $booking->reference_code }}</span>
+                                                <span class="ref-code text-sand-700">{{ $booking->reference_code }}</span>
                                                 <span class="max-w-[9rem] truncate">{{ $booking->user->name }}</span>
                                             </a>
                                         @endforeach

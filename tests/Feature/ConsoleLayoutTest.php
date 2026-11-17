@@ -85,6 +85,16 @@ class ConsoleLayoutTest extends TestCase
             ->assertSeeInOrder(['data-console-tabbar', 'Overview', 'Bookings', 'Alerts', 'More'], false);
     }
 
+    public function test_the_booking_page_has_a_thumb_reachable_action_bar(): void
+    {
+        $booking = Booking::factory()->create(); // pending: Approve / Reject / Cancel
+
+        $this->actingAs($this->staff)->get(route('staff.bookings.show', $booking))
+            ->assertOk()
+            ->assertSee('data-action-bar', false)
+            ->assertSee('Approve');
+    }
+
     public function test_guests_keep_the_top_navigation(): void
     {
         $this->actingAs(User::factory()->create())->get('/my')

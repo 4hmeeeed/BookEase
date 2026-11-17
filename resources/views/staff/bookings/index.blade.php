@@ -34,9 +34,11 @@
         </div>
 
         @if ($bookings->isEmpty())
-            <div class="card mt-8 animate-pop-in p-12 text-center">
-                <p class="font-serif text-2xl font-semibold text-lagoon-950">Nothing here</p>
-                <p class="mt-1 text-gray-600">{{ $search ? 'No bookings match your search.' : 'There are no bookings in this list right now.' }}</p>
+            <div class="card mt-8 animate-pop-in">
+                <x-empty-state icon="compass" class="!py-12">
+                    <span class="block font-serif text-2xl text-lagoon-950">Nothing here</span>
+                    <span class="mt-1 block">{{ $search ? 'No bookings match your search.' : 'There are no bookings in this list right now.' }}</span>
+                </x-empty-state>
             </div>
         @else
             <ul class="mt-6 space-y-3" x-reveal.stagger>
@@ -44,14 +46,14 @@
                     <li>
                         <a href="{{ route('staff.bookings.show', $booking) }}"
                            class="card group grid gap-3 p-4 transition-all duration-300 ease-out-soft hover:-translate-y-0.5 hover:shadow-lift sm:grid-cols-[8rem_1fr_auto_auto] sm:items-center">
-                            <span class="font-mono text-sm font-semibold tracking-wider text-sand-700">{{ $booking->reference_code }}</span>
+                            <span class="ref-code text-sm text-sand-700">{{ $booking->reference_code }}</span>
                             <span class="min-w-0">
                                 <span class="block truncate font-semibold text-gray-900">{{ $booking->user->name }}</span>
                                 <span class="block truncate text-sm text-gray-600">
                                     {{ $booking->cottage->name }} · {{ $booking->guests_count }} {{ Str::plural('guest', $booking->guests_count) }}
                                 </span>
                             </span>
-                            <span class="text-sm text-gray-700">
+                            <span class="text-sm tabular-nums text-gray-700">
                                 {{ $booking->check_in->format('M j') }} → {{ $booking->check_out->format('M j, Y') }}
                                 <span class="block text-xs text-gray-500">{{ $booking->nights() }} {{ Str::plural('night', $booking->nights()) }} · {{ \App\Support\Money::format($booking->total_price) }}</span>
                                 <span @class(['block text-xs font-semibold',

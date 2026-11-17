@@ -74,12 +74,12 @@
 
         {{-- Headline figures --}}
         <dl class="grid grid-cols-2 gap-4 lg:grid-cols-4" x-reveal.stagger>
-            <div class="card tilt p-5" x-tilt="4">
+            <div class="card p-5">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Occupancy</dt>
                 <dd class="tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ $occupancy['rate'] !== null ? $occupancy['rate'].'%' : '—' }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">{{ number_format($occupancy['occupied']) }} of {{ number_format($occupancy['available']) }} unit-nights sold</dd>
             </div>
-            <div class="card tilt p-5" x-tilt="4">
+            <div class="card p-5">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Collected (net)</dt>
                 <dd class="tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ Money::format($revenue['net']) }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">
@@ -87,12 +87,12 @@
                     @if (Money::isPositive($revenue['refunded'])) · {{ Money::format($revenue['refunded']) }} refunded @endif
                 </dd>
             </div>
-            <div class="card tilt p-5" x-tilt="4">
+            <div class="card p-5">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Outstanding</dt>
                 <dd @class(['tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl', 'text-coral-700' => $outstanding['count'], 'text-lagoon-900' => ! $outstanding['count']])>{{ Money::format($outstanding['total']) }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">{{ $outstanding['count'] }} {{ Str::plural('booking', $outstanding['count']) }} with a balance</dd>
             </div>
-            <div class="card tilt p-5" x-tilt="4">
+            <div class="card p-5">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Stays starting</dt>
                 <dd class="tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ number_format($bookings['arriving']) }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">{{ number_format($bookings['received']) }} new {{ Str::plural('request', $bookings['received']) }} received</dd>
@@ -224,7 +224,7 @@
                         <li>
                             <a href="{{ route('staff.bookings.show', $booking) }}" class="block px-5 py-4 transition-colors active:bg-sand-50">
                                 <div class="flex items-baseline justify-between gap-3">
-                                    <span class="font-mono text-sm font-semibold text-sand-700">{{ $booking->reference_code }}</span>
+                                    <span class="ref-code text-sm text-sand-700">{{ $booking->reference_code }}</span>
                                     <span class="font-semibold tabular-nums text-coral-700">{{ Money::format($booking->balance()) }}</span>
                                 </div>
                                 <p class="mt-1 text-sm text-gray-800">{{ $booking->user?->name }} · {{ $booking->cottage?->name }}</p>
@@ -252,7 +252,7 @@
                         <tbody class="divide-y divide-sand-100">
                             @foreach ($outstanding['bookings'] as $booking)
                                 <tr class="transition-colors hover:bg-sand-50/60">
-                                    <td class="px-5 py-3"><a href="{{ route('staff.bookings.show', $booking) }}" class="link-underline font-mono font-semibold text-sand-700">{{ $booking->reference_code }}</a></td>
+                                    <td class="px-5 py-3"><a href="{{ route('staff.bookings.show', $booking) }}" class="link-underline ref-code text-sand-700">{{ $booking->reference_code }}</a></td>
                                     <td class="px-5 py-3">{{ $booking->user?->name }}<span class="block text-xs text-gray-500">{{ $booking->cottage?->name }}</span></td>
                                     <td class="px-5 py-3">{{ $booking->check_in->format('M j, Y') }}</td>
                                     <td class="px-5 py-3"><x-booking-status :status="$booking->status" /></td>
