@@ -7,10 +7,13 @@ const listeners = { window: {}, document: {} };
 const on = (bucket) => (type, fn) => { (listeners[bucket][type] ??= []).push(fn); };
 const fire = (bucket, type, event = {}) => (listeners[bucket][type] ?? []).forEach((fn) => fn(event));
 
+let reloads; // how often the bell reloaded the page
+
 globalThis.window = {
     matchMedia: () => ({ matches: false }),
     addEventListener: on('window'),
     dispatchEvent: (event) => fire('window', event.type, event),
+    location: { reload: () => { reloads += 1; } },
 };
 globalThis.document = {
     title: 'BookEase — Labnasan Resort',
@@ -25,8 +28,9 @@ let calls;
 
 globalThis.fetch = async (url, options) => {
     calls.push({ url, options });
-    const { status = 200, body = { unread: 0, newest: null } } = responses.shift() ?? {};
-    return { status, ok: status >= 200 && status < 300, json: async () => body, text: async () => '<ul></ul>' };
+    // redirected: fetch followed a redirect (e.g. to the sign-in page) and answers 200.
+    const { status = 200, redirected = false, body = { unread: 0, newest: null } } = responses.shift() ?? {};
+    return { status, redirected, ok: status >= 200 && status < 300, json: async () => body, text: async () => '<ul></ul>' };
 };
 
 /** Let pending promise callbacks (fetch → json → update) run. */
@@ -53,6 +57,7 @@ beforeEach(() => {
     document.visibilityState = 'visible';
     responses = [];
     calls = [];
+    reloads = 0;
 });
 
 test('checks for new alerts every 30 seconds and shares the count', async () => {
@@ -97,6 +102,45 @@ test('stops for good when the session has ended', async () => {
     document.visibilityState = 'visible';
     fire('document', 'visibilitychange');
     fire('window', 'keydown');
+    await settle();
+
+    assert.equal(polls(), 1);
+});
+
+test('opening the dropdown after the session has ended reloads to the sign-in page', async () => {
+    responses.push({ status: 401 });
+    const bell = makeBell();
+
+    bell.toggle();
+    await settle();
+
+    assert.equal(reloads, 1); // sign-in then brings them back to this page
+    assert.equal(bell.panelHtml, '');
+
+    mock.timers.tick(60_000);
+    await settle();
+    assert.equal(polls(), 0);
+});
+
+test('a redirected dropdown counts as signed out, not as content', async () => {
+    // e.g. a switched-off account: fetch follows the redirect to the sign-in form.
+    responses.push({ redirected: true });
+    const bell = makeBell();
+
+    bell.toggle();
+    await settle();
+
+    assert.equal(bell.panelHtml, '');
+    assert.equal(reloads, 1);
+});
+
+test('stops checking once a check is redirected', async () => {
+    responses.push({ redirected: true });
+    makeBell();
+
+    mock.timers.tick(30_000);
+    await settle();
+    mock.timers.tick(30_000);
     await settle();
 
     assert.equal(polls(), 1);

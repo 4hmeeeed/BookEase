@@ -24,5 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // The bell's background requests want a status code, not the sign-in page. Its
+        // dropdown asks for HTML, so a signed-out request would otherwise be redirected.
+        $exceptions->shouldRenderJsonWhen(fn (\Illuminate\Http\Request $request) => $request->expectsJson()
+            || $request->routeIs('staff.notifications.poll', 'staff.notifications.panel'));
     })->create();

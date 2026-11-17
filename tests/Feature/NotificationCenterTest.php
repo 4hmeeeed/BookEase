@@ -146,6 +146,15 @@ class NotificationCenterTest extends TestCase
         $this->getJson('/staff/notifications/poll')->assertUnauthorized();
     }
 
+    public function test_an_expired_session_gets_401_from_the_panel_too(): void
+    {
+        // The dropdown asks for HTML, as the bell does. A redirect would put the sign-in
+        // page inside the dropdown and save the bare dropdown as the page to return to.
+        $this->get('/staff/notifications/panel', ['Accept' => 'text/html', 'X-Requested-With' => 'XMLHttpRequest'])
+            ->assertUnauthorized()
+            ->assertSessionMissing('url.intended');
+    }
+
     public function test_poll_is_rate_limited(): void
     {
         $this->actingAs($this->staff);
