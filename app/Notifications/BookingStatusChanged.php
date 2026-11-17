@@ -59,7 +59,9 @@ class BookingStatusChanged extends Notification
         }
 
         if ($this->status === BookingStatus::Confirmed && Money::isPositive($b->balance())) {
-            $mail->line('Balance due: '.Money::format($b->balance()).'. You can pay it with GCash or Maya from your booking page.');
+            $mail->line('Balance due: '.Money::format($b->balance()).(config('bookease.payments.online')
+                ? '. You can pay it with GCash or Maya from your booking page.'
+                : ', payable at the resort\'s front desk.'));
         } elseif ($this->status !== BookingStatus::Confirmed && Money::isPositive($b->amount_paid)) {
             $mail->line('The resort will contact you about the '.Money::format($b->amount_paid).' you already paid.');
         }

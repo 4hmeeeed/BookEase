@@ -185,7 +185,9 @@ class ChatbotService
             '- Reservations are made on the website: open the Cottages page, choose a unit and dates, and submit. A guest account is required.',
             '- New reservations stay pending until resort staff approve them.',
             '- One online booking can be at most '.(int) config('bookease.max_nights').' nights, with check-in up to '.(int) config('bookease.booking_window_days').' days ahead.',
-            "- Online payment is by GCash or Maya through the website's secure checkout, from the guest's booking page. Guests may pay a {$down}% down payment or the full amount, and pay the remaining balance later.",
+            config('bookease.payments.online')
+                ? "- Online payment is by GCash or Maya through the website's secure checkout, from the guest's booking page. Guests may pay a {$down}% down payment or the full amount, and pay the remaining balance later."
+                : '- Online payment is not available on the website. Guests pay at the resort\'s front desk.',
             '- Payments made in person are recorded by resort staff, and an electronic receipt is issued for every payment.',
             '- Guests can cancel their own pending or confirmed booking from "My bookings" before the check-in date.',
             '- The total price is the nightly rate times the number of nights; the booking page shows the exact total.',

@@ -32,11 +32,17 @@ return [
     |--------------------------------------------------------------------------
     | driver: "fake"     – local sandbox simulator (no API keys, no real money)
     |         "paymongo" – PayMongo Checkout (use TEST keys; sandbox only)
+    |         "none"     – pay at the resort: no online checkout; staff record
+    |                      cash at the front desk (hosting without webhooks)
     |
     | The down-payment percentage is a resort policy: confirm it with the owner.
     */
     'payments' => [
         'driver' => env('PAYMENT_DRIVER', 'fake'),
+
+        // Whether guests can pay online. Views and services read this flag;
+        // it is false only for PAYMENT_DRIVER=none.
+        'online' => env('PAYMENT_DRIVER', 'fake') !== 'none',
 
         'down_payment_percent' => (int) env('BOOKEASE_DOWN_PAYMENT_PERCENT', 50),
 

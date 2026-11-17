@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Chatbot\GeminiClient;
 use App\Models\Booking;
 use App\Models\Cottage;
+use App\Payments\DisabledGateway;
 use App\Payments\FakeGateway;
 use App\Payments\PaymentGateway;
 use App\Payments\PayMongoGateway;
@@ -41,6 +42,8 @@ class AppServiceProvider extends ServiceProvider
                         toleranceSeconds: $cfg['webhook_tolerance_seconds'],
                         allowLiveMode: false,
                     ),
+                // Pay at the resort: allowed everywhere, including production.
+                'none' => new DisabledGateway,
                 default => throw new RuntimeException("Unknown payment driver [{$cfg['driver']}]."),
             };
         });

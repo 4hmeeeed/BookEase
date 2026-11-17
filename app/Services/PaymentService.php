@@ -62,7 +62,7 @@ class PaymentService
      */
     public function onlineOptions(Booking $booking): array
     {
-        if (! $this->isPayable($booking)) {
+        if (! config('bookease.payments.online') || ! $this->isPayable($booking)) {
             return [];
         }
 
@@ -96,6 +96,10 @@ class PaymentService
      */
     public function startCheckout(Booking $booking, User $guest, PaymentKind $kind, PaymentMethod $method, Closure $returnUrls): array
     {
+        if (! config('bookease.payments.online')) {
+            throw new PaymentNotAllowedException('Online payment isn’t available. Please pay at the resort’s front desk.');
+        }
+
         if ($booking->user_id !== $guest->id) {
             throw new PaymentNotAllowedException('You can only pay for your own bookings.');
         }
