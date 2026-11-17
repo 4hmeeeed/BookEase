@@ -6,9 +6,12 @@ use App\Enums\BookingStatus;
 use App\Exceptions\InvalidBookingTransitionException;
 use App\Models\Booking;
 use App\Models\User;
+use App\Notifications\BookingStatusChanged;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Every status change goes through here so the state machine, the date
@@ -21,17 +24,21 @@ class BookingLifecycleService
 {
     public function approve(Booking $booking, User $actor, ?string $remarks = null): Booking
     {
-        return $this->transition($booking, BookingStatus::Confirmed, $actor, $remarks, function (Booking $b) {
+        $this->transition($booking, BookingStatus::Confirmed, $actor, $remarks, function (Booking $b) {
             // A confirmed stay that has already ended could never be checked in.
             if (CarbonImmutable::today()->gte($b->check_out)) {
                 throw InvalidBookingTransitionException::because('This stay\'s dates have already passed. Reject the request instead.');
             }
         });
+
+        return $this->notifyGuest($booking, $remarks);
     }
 
     public function reject(Booking $booking, User $actor, string $remarks): Booking
     {
-        return $this->transition($booking, BookingStatus::Rejected, $actor, $remarks);
+        $this->transition($booking, BookingStatus::Rejected, $actor, $remarks);
+
+        return $this->notifyGuest($booking, $remarks);
     }
 
     /**
@@ -42,7 +49,7 @@ class BookingLifecycleService
     {
         $byGuest = $actor->isGuest();
 
-        return $this->transition($booking, BookingStatus::Cancelled, $actor, $remarks, function (Booking $b) use ($actor, $byGuest) {
+        $this->transition($booking, BookingStatus::Cancelled, $actor, $remarks, function (Booking $b) use ($actor, $byGuest) {
             if ($byGuest && $b->user_id !== $actor->id) {
                 throw InvalidBookingTransitionException::because('You can only cancel your own bookings.');
             }
@@ -51,6 +58,9 @@ class BookingLifecycleService
                 throw InvalidBookingTransitionException::because('This booking can no longer be cancelled online. Please contact the resort.');
             }
         });
+
+        // A guest who cancelled online already knows; tell them when the resort did it.
+        return $byGuest ? $booking : $this->notifyGuest($booking, $remarks);
     }
 
     public function checkIn(Booking $booking, User $actor, ?string $remarks = null): Booking
@@ -71,6 +81,21 @@ class BookingLifecycleService
     public function checkOut(Booking $booking, User $actor, ?string $remarks = null): Booking
     {
         return $this->transition($booking, BookingStatus::CheckedOut, $actor, $remarks);
+    }
+
+    /**
+     * Email the guest about the resort's decision. Runs after the transition is
+     * committed, and a mail outage must never block or undo the decision.
+     */
+    private function notifyGuest(Booking $booking, ?string $remarks): Booking
+    {
+        try {
+            $booking->loadMissing(['user', 'cottage'])->user->notify(new BookingStatusChanged($booking, filled($remarks) ? trim($remarks) : null));
+        } catch (Throwable $e) {
+            Log::error('Could not send the booking status email', ['booking' => $booking->reference_code, 'error' => $e->getMessage()]);
+        }
+
+        return $booking;
     }
 
     /**
