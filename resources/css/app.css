@@ -108,6 +108,17 @@
 }
 
 @layer components {
+    /* Keyboard "Skip to content": hidden until focused, then a drafted ink tab. */
+    .skip-link {
+        @apply sr-only;
+    }
+
+    .skip-link:focus {
+        @apply not-sr-only fixed left-4 top-4 z-[70] rounded-md bg-lagoon-950 px-4 py-2.5 text-sm font-semibold text-cream shadow-lift outline-none ring-2 ring-coral-300;
+    }
+}
+
+@layer components {
     /* ---------------- Buttons: drafted, press feedback ------------- */
     .btn {
         @apply relative inline-flex select-none items-center justify-center gap-2 rounded-md px-4 py-2.5
