@@ -71,6 +71,14 @@ class ConsoleLayoutTest extends TestCase
             ->assertSee('9+');
     }
 
+    public function test_the_bell_is_wired_to_the_poll_and_panel_endpoints(): void
+    {
+        $this->actingAs($this->staff)->get('/staff')
+            ->assertSee('x-data="consoleBell(', false)
+            ->assertSee(route('staff.notifications.poll'), false)
+            ->assertSee(route('staff.notifications.panel'), false);
+    }
+
     public function test_phones_get_the_owner_tabs(): void
     {
         $this->actingAs($this->owner)->get('/admin')

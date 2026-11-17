@@ -3,9 +3,11 @@ import './bootstrap';
 import Alpine from 'alpinejs';
 import stayCalendar from './stay-calendar';
 import chatbot from './chatbot';
+import consoleBell from './console-bell';
 
 Alpine.data('stayCalendar', stayCalendar);
 Alpine.data('chatbot', chatbot);
+Alpine.data('consoleBell', consoleBell);
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;

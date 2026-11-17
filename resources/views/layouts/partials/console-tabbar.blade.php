@@ -1,7 +1,8 @@
 {{-- Phones and tablets (< lg): bottom tabs, plus a "More" sheet for everything else. --}}
 @php $user = auth()->user(); @endphp
 
-<div x-data="{ more: false }" @keydown.escape.window="more = false" class="print:hidden lg:hidden">
+<div x-data="{ more: false, unread: {{ (int) $console['unread'] }} }" @keydown.escape.window="more = false"
+     @console-unread.window="unread = $event.detail" class="print:hidden lg:hidden">
     <nav data-console-tabbar aria-label="Console"
          class="fixed inset-x-0 bottom-0 z-40 border-t border-lagoon-950/10 bg-cream/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
         <ul class="grid h-14 grid-cols-4">
@@ -11,7 +12,11 @@
                     <a href="{{ route($tab['route']) }}" @class(['console-tab', 'is-active' => $active]) @if ($active) aria-current="page" @endif>
                         <span class="relative">
                             <x-console-icon :name="$tab['icon']" class="h-5 w-5" />
-                            @if ($tab['badge'])
+                            @if ($tab['route'] === 'staff.notifications.index')
+                                {{-- Kept live by the bell's background check (console-unread event). --}}
+                                <span x-show="unread > 0" x-text="unread > 9 ? '9+' : unread" @if (! $tab['badge']) x-cloak @endif aria-hidden="true"
+                                      class="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-lagoon-950 px-1 text-[0.6rem] font-semibold tabular-nums text-cream ring-2 ring-cream">{{ $tab['badge'] > 9 ? '9+' : $tab['badge'] }}</span>
+                            @elseif ($tab['badge'])
                                 <span class="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-lagoon-950 px-1 text-[0.6rem] font-semibold tabular-nums text-cream ring-2 ring-cream" aria-hidden="true">{{ $tab['badge'] > 9 ? '9+' : $tab['badge'] }}</span>
                             @endif
                         </span>
