@@ -20,6 +20,7 @@ use App\Http\Controllers\Staff\BookingController as StaffBookingController;
 use App\Http\Controllers\Staff\PaymentController as StaffPaymentController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
 use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
+use App\Http\Controllers\Staff\NotificationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -118,6 +119,13 @@ Route::middleware(['auth', 'verified', 'role:staff,admin'])
 
         Route::post('/bookings/{booking}/cash', [StaffPaymentController::class, 'storeCash'])->name('payments.cash');
         Route::post('/bookings/{booking}/refund', [StaffPaymentController::class, 'storeRefund'])->name('payments.refund');
+
+        // The console bell: list, a cheap background check, the dropdown, open, clear.
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/poll', [NotificationController::class, 'poll'])->middleware('throttle:30,1')->name('notifications.poll');
+        Route::get('/notifications/panel', [NotificationController::class, 'panel'])->middleware('throttle:30,1')->name('notifications.panel');
+        Route::get('/notifications/{notification}/open', [NotificationController::class, 'open'])->name('notifications.open');
+        Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
     });
 
 /*
