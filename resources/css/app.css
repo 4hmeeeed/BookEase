@@ -660,9 +660,11 @@
         }
     }
     /* Console pages fade in without a transform: a lingering transform would make the
-       content box, not the screen, the anchor for fixed children (phone action bar, modals). */
+       content box, not the screen, the anchor for fixed children (phone action bar, modals).
+       The fill is "backwards", not "both": a finished animation left in effect keeps a
+       stacking context around the page, and dialogs would open under the sidebar and top bar. */
     .console-enter {
-        animation: console-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+        animation: console-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) 80ms backwards;
     }
 
     @keyframes console-enter {
