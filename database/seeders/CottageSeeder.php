@@ -27,11 +27,11 @@ class CottageSeeder extends Seeder
         }
 
         $units = [
-            ['[Sample] Seaside Cottage A', CottageType::Cottage, 4, '1500.00', 'Open-air beachfront cottage with a table and benches, steps from the shore.', 'seaside-cottage-a'],
-            ['[Sample] Seaside Cottage B', CottageType::Cottage, 6, '2000.00', 'Larger beachfront cottage for families, shaded by coconut palms.', 'seaside-cottage-b'],
-            ['[Sample] Garden Room', CottageType::Room, 2, '2500.00', 'Air-conditioned room with a private bathroom, facing the garden.', 'garden-room'],
-            ['[Sample] Family Villa', CottageType::Villa, 10, '6500.00', 'Two-bedroom villa with a kitchen and veranda, good for big groups.', 'family-villa'],
-            ['[Sample] Sunset Cabana', CottageType::Cabana, 3, '1200.00', 'Small cabana on the sand, best for watching the sunset.', 'sunset-cabana'],
+            ['Seaside Cottage A', CottageType::Cottage, 4, '1500.00', 'Open-air beachfront cottage with a table and benches, steps from the shore.', 'seaside-cottage-a'],
+            ['Seaside Cottage B', CottageType::Cottage, 6, '2000.00', 'Larger beachfront cottage for families, shaded by coconut palms.', 'seaside-cottage-b'],
+            ['Garden Room', CottageType::Room, 2, '2500.00', 'Air-conditioned room with a private bathroom, facing the garden.', 'garden-room'],
+            ['Family Villa', CottageType::Villa, 10, '6500.00', 'Two-bedroom villa with a kitchen and veranda, good for big groups.', 'family-villa'],
+            ['Sunset Cabana', CottageType::Cabana, 3, '1200.00', 'Small cabana on the sand, best for watching the sunset.', 'sunset-cabana'],
         ];
 
         foreach ($units as [$name, $type, $capacity, $rate, $description, $photo]) {
