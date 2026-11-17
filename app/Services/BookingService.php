@@ -21,7 +21,10 @@ class BookingService
 {
     private const REFERENCE_ATTEMPTS = 5;
 
-    public function __construct(private readonly AvailabilityService $availability) {}
+    public function __construct(
+        private readonly AvailabilityService $availability,
+        private readonly ConsoleNotifier $notifier,
+    ) {}
 
     /**
      * @param  array{check_in: string, check_out: string, guests_count: int|string, notes?: ?string, phone?: ?string}  $data
@@ -46,7 +49,7 @@ class BookingService
             $guest->forceFill(['phone' => $data['phone']])->save();
         }
 
-        return $this->availability->reserve($cottage, $in, $out, function (Cottage $locked) use ($guest, $in, $out, $guests, $data) {
+        $booking = $this->availability->reserve($cottage, $in, $out, function (Cottage $locked) use ($guest, $in, $out, $guests, $data) {
             $this->ensureUnderPendingLimit($guest);
 
             $booking = new Booking([
@@ -72,6 +75,11 @@ class BookingService
 
             return $booking;
         });
+
+        // Only after the reservation has committed, so a refused request alerts no one.
+        $this->notifier->bookingRequested($booking->loadMissing(['user', 'cottage']));
+
+        return $booking;
     }
 
     /**
