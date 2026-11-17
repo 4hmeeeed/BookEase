@@ -120,6 +120,23 @@ class SupersededCheckoutTest extends TestCase
         Http::assertSent(fn (Request $request) => $request->url() === 'https://api.paymongo.com/v1/checkout_sessions/cs_first/expire');
     }
 
+    public function test_a_front_desk_cash_payment_closes_the_guests_open_checkout(): void
+    {
+        // The checkout was priced against the old balance; paying it after the
+        // cash would charge the guest twice.
+        config(['bookease.payments.driver' => 'fake']);
+        $this->app->forgetInstance(PaymentGateway::class);
+        $this->pay('full');
+        $checkout = Payment::sole();
+
+        $this->actingAs(User::factory()->staff()->create())
+            ->post("/staff/bookings/{$this->booking->reference_code}/cash", ['amount' => '6000'])
+            ->assertSessionHas('status');
+
+        $this->assertSame(PaymentRecordStatus::Expired, $checkout->fresh()->status);
+        $this->get("/sandbox/checkout/{$checkout->provider_payment_id}")->assertGone();
+    }
+
     public function test_an_unreachable_gateway_sends_the_guest_back_with_a_message(): void
     {
         $this->usePayMongo();

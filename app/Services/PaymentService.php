@@ -240,6 +240,9 @@ class PaymentService
             return $payment;
         });
 
+        // Open online checkouts were priced against the old balance.
+        $this->closeOpenCheckouts($booking);
+
         $this->notifyGuest($payment);
 
         return $payment;
