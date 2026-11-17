@@ -44,6 +44,7 @@ class ChatbotService
         private readonly GeminiClient $model,
         private readonly AvailabilityService $availability,
         private readonly Guardrails $guardrails,
+        private readonly ConsoleNotifier $notifier,
     ) {}
 
     public function ask(string $question, ?User $user, string $sessionId): ChatReply
@@ -91,6 +92,10 @@ class ChatbotService
             'response' => $answer,
             'was_fallback' => $fallback,
         ]);
+
+        if ($fallback) {
+            $this->notifier->chatbotMissed();
+        }
 
         return new ChatReply($answer, $fallback);
     }

@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\Cottage;
 use App\Models\User;
+use App\Notifications\Console\GuestCancelledBooking;
 use App\Notifications\Console\NewBookingRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -98,5 +99,37 @@ class BookingAlertsTest extends TestCase
         $this->book()->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertSame(1, Booking::count());
+    }
+
+    private function confirmedStay(): Booking
+    {
+        return Booking::factory()->for($this->guest)->for($this->cottage)
+            ->stay('2026-11-24', '2026-11-26')
+            ->status(BookingStatus::Confirmed)
+            ->create();
+    }
+
+    public function test_a_guest_cancellation_alerts_the_desk(): void
+    {
+        Notification::fake();
+        $booking = $this->confirmedStay();
+
+        $this->actingAs($this->guest)->post("/my/bookings/{$booking->reference_code}/cancel")->assertRedirect();
+
+        $this->assertSame(BookingStatus::Cancelled, $booking->fresh()->status);
+        Notification::assertSentTo([$this->staff, $this->owner], GuestCancelledBooking::class, fn (GuestCancelledBooking $n) => $n->reference() === $booking->reference_code
+            && $n->body() === 'Ana Reyes · Seaside Cottage A · Nov 24–Nov 26. The dates are open again.');
+        Notification::assertNotSentTo($this->guest, GuestCancelledBooking::class);
+    }
+
+    public function test_a_cancellation_by_staff_sends_no_desk_alert(): void
+    {
+        Notification::fake();
+        $booking = $this->confirmedStay();
+
+        $this->actingAs($this->staff)->post("/staff/bookings/{$booking->reference_code}/cancel", ['remarks' => 'Typhoon signal no. 2.']);
+
+        $this->assertSame(BookingStatus::Cancelled, $booking->fresh()->status);
+        Notification::assertNotSentTo([$this->staff, $this->owner], GuestCancelledBooking::class);
     }
 }

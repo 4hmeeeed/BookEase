@@ -6,7 +6,9 @@ use App\Enums\UserRole;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\User;
+use App\Notifications\Console\ChatbotUnanswered;
 use App\Notifications\Console\ConsoleNotification;
+use App\Notifications\Console\GuestCancelledBooking;
 use App\Notifications\Console\MoneyRecordedByStaff;
 use App\Notifications\Console\NewBookingRequest;
 use App\Notifications\Console\OnlinePaymentReceived;
@@ -44,6 +46,35 @@ class ConsoleNotifier
     public function moneyRecorded(Payment $payment, User $actor): void
     {
         $this->send($this->owners($actor), new MoneyRecordedByStaff($payment));
+    }
+
+    public function guestCancelled(Booking $booking): void
+    {
+        $this->send($this->desk(), new GuestCancelledBooking($booking));
+    }
+
+    /**
+     * One unread alert per owner per day carries the day's running count: a
+     * later miss replaces it with a fresh one, so it rises to the top of the
+     * bell without disturbing the order of anything already read.
+     */
+    public function chatbotMissed(): void
+    {
+        try {
+            foreach ($this->owners() as $owner) {
+                $today = $owner->unreadNotifications()
+                    ->where('type', ChatbotUnanswered::class)
+                    ->where('created_at', '>=', today())
+                    ->first();
+
+                $misses = 1 + (int) ($today?->data['count'] ?? 0);
+                $today?->delete();
+
+                $this->send(new Collection([$owner]), new ChatbotUnanswered($misses));
+            }
+        } catch (Throwable $e) {
+            Log::error('Could not update the chatbot console alert', ['error' => $e->getMessage()]);
+        }
     }
 
     /**

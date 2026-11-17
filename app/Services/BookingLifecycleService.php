@@ -22,7 +22,10 @@ use Throwable;
  */
 class BookingLifecycleService
 {
-    public function __construct(private readonly PaymentService $payments) {}
+    public function __construct(
+        private readonly PaymentService $payments,
+        private readonly ConsoleNotifier $notifier,
+    ) {}
 
     public function approve(Booking $booking, User $actor, ?string $remarks = null): Booking
     {
@@ -64,8 +67,15 @@ class BookingLifecycleService
 
         $this->payments->closeOpenCheckouts($booking);
 
-        // A guest who cancelled online already knows; tell them when the resort did it.
-        return $byGuest ? $booking : $this->notifyGuest($booking, $remarks);
+        if ($byGuest) {
+            // The guest already knows; the desk needs to, because the dates are open again.
+            $this->notifier->guestCancelled($booking->loadMissing(['user', 'cottage']));
+
+            return $booking;
+        }
+
+        // Tell the guest when the resort cancelled it.
+        return $this->notifyGuest($booking, $remarks);
     }
 
     public function checkIn(Booking $booking, User $actor, ?string $remarks = null): Booking
