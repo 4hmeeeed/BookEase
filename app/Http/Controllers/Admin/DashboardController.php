@@ -2,30 +2,27 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\ChatInquiry;
-use App\Models\User;
+use App\Services\ActivityFeed;
+use App\Services\AttentionService;
 use App\Services\ReportService;
 use App\Support\ReportPeriod;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(ReportService $reports): View
+    public function __invoke(Request $request, ReportService $reports, AttentionService $attention, ActivityFeed $activity): View
     {
         $month = $reports->build(ReportPeriod::preset('this_month'));
         $last30 = ReportPeriod::preset('last_30');
 
         return view('admin.dashboard', [
+            'attention' => $attention->items($request->user()),
             'today' => $reports->today(),
             'month' => $month,
             'trend' => $reports->build($last30)['daily'],
-            'staffCount' => User::where('role', UserRole::Staff)->where('is_active', true)->count(),
-            'chat' => [
-                'week' => ChatInquiry::where('created_at', '>=', now()->subDays(7))->count(),
-                'fallback' => ChatInquiry::where('created_at', '>=', now()->subDays(7))->where('was_fallback', true)->count(),
-            ],
+            'activity' => $activity->latest(10),
         ]);
     }
 }

@@ -124,8 +124,8 @@ class AdminReportsTest extends TestCase
 
         $this->actingAs($this->admin)->get('/admin')
             ->assertOk()
-            ->assertSee('Today at the desk')
-            ->assertSee('Pending requests')
+            ->assertSee('Needs attention')
+            ->assertSee('waiting for approval')
             ->assertSee('₱3,500.00')    // still owed (in-house booking)
             ->assertSee('₱2,500.00')    // collected this month
             ->assertSee(route('admin.staff.index'))
