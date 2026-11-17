@@ -103,7 +103,7 @@ class PaymentService
             throw new PaymentNotAllowedException('Please choose GCash or Maya.');
         }
 
-        $payment = DB::transaction(function () use ($booking, $kind, $method) {
+        [$payment, $superseded] = DB::transaction(function () use ($booking, $kind, $method) {
             $locked = $this->lock($booking);
             $amount = $this->onlineOptions($locked)[$kind->value] ?? null;
 
@@ -112,16 +112,20 @@ class PaymentService
             }
 
             // Only one open checkout per booking: older unfinished ones expire.
-            Payment::query()
+            $open = Payment::query()
                 ->where('booking_id', $locked->id)
                 ->where('status', PaymentRecordStatus::Pending)
-                ->whereIn('method', [PaymentMethod::GCash, PaymentMethod::Maya])
-                ->update(['status' => PaymentRecordStatus::Expired, 'updated_at' => now()]);
+                ->whereIn('method', [PaymentMethod::GCash, PaymentMethod::Maya]);
 
-            return $this->newPayment($locked, $method, $kind, $amount, PaymentRecordStatus::Pending);
+            $superseded = (clone $open)->whereNotNull('provider_payment_id')->pluck('provider_payment_id')->all();
+            $open->update(['status' => PaymentRecordStatus::Expired, 'updated_at' => now()]);
+
+            return [$this->newPayment($locked, $method, $kind, $amount, PaymentRecordStatus::Pending), $superseded];
         });
 
-        // Network call happens outside the DB lock.
+        // Network calls happen outside the DB lock.
+        $this->closeAtGateway($superseded);
+
         [$successUrl, $cancelUrl] = $returnUrls($payment);
 
         try {
@@ -300,6 +304,28 @@ class PaymentService
         $booking->save();
 
         return $booking;
+    }
+
+    /**
+     * Hosted checkouts stay payable until closed, so superseded ones are closed
+     * at the gateway; otherwise paying both pages would charge the guest twice.
+     * A refusal (e.g. a payment already under way) is logged, never fatal: a
+     * payment that still lands is credited by its signed webhook as usual.
+     *
+     * @param  list<string>  $checkoutIds
+     */
+    private function closeAtGateway(array $checkoutIds): void
+    {
+        foreach ($checkoutIds as $checkoutId) {
+            try {
+                $this->gateway->expireCheckout($checkoutId);
+            } catch (Throwable $e) {
+                Log::warning('Could not close a superseded checkout at the payment gateway', [
+                    'checkout' => $checkoutId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 
     private function lock(Booking $booking): Booking

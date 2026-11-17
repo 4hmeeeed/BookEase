@@ -4,6 +4,7 @@ namespace App\Payments;
 
 use App\Models\Payment;
 use App\Support\Money;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 /**
@@ -14,9 +15,22 @@ use Illuminate\Support\Str;
  */
 class FakeGateway extends PayMongoGateway
 {
+    private const EXPIRED_KEY = 'fake-checkout-expired:';
+
     public function name(): string
     {
         return 'fake';
+    }
+
+    /** Like PayMongo: an expired checkout page can no longer be paid. */
+    public function expireCheckout(string $checkoutId): void
+    {
+        Cache::put(self::EXPIRED_KEY.$checkoutId, true, now()->addDays(7));
+    }
+
+    public function isExpired(string $checkoutId): bool
+    {
+        return Cache::has(self::EXPIRED_KEY.$checkoutId);
     }
 
     public function createCheckout(Payment $payment, string $successUrl, string $cancelUrl): CheckoutSession

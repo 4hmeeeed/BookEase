@@ -16,6 +16,14 @@ interface PaymentGateway
     public function createCheckout(Payment $payment, string $successUrl, string $cancelUrl): CheckoutSession;
 
     /**
+     * Close a hosted checkout so it can no longer be paid. Hosted checkouts
+     * stay open until paid or expired, so a superseded one must be closed.
+     *
+     * @throws \RuntimeException when the gateway refuses, e.g. a payment on it is already under way
+     */
+    public function expireCheckout(string $checkoutId): void;
+
+    /**
      * Verify the signature of a raw webhook body and parse it.
      *
      * @throws InvalidWebhookException when the signature, timestamp, or mode is not acceptable

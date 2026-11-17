@@ -55,6 +55,11 @@ class FakeCheckoutController extends Controller
 
     private function payment(string $session): Payment
     {
+        /** @var FakeGateway $gateway */
+        $gateway = $this->gateway;
+
+        abort_if($gateway->isExpired($session), 410, 'This checkout was replaced by a newer one. Start the payment again from your booking page.');
+
         return Payment::where('provider_payment_id', $session)->firstOrFail();
     }
 

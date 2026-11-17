@@ -5,6 +5,7 @@ namespace App\Payments;
 use App\Enums\PaymentMethod;
 use App\Models\Payment;
 use App\Support\Money;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -36,13 +37,7 @@ class PayMongoGateway implements PaymentGateway
 
     public function createCheckout(Payment $payment, string $successUrl, string $cancelUrl): CheckoutSession
     {
-        if (blank($this->secretKey)) {
-            throw new RuntimeException('PAYMONGO_SECRET_KEY is not set.');
-        }
-
-        if (! $this->allowLiveMode && ! str_starts_with($this->secretKey, 'sk_test_')) {
-            throw new RuntimeException('Refusing to use a live PayMongo key while payments are in sandbox mode.');
-        }
+        $this->ensureUsableKey();
 
         $booking = $payment->booking;
 
@@ -75,7 +70,7 @@ class PayMongoGateway implements PaymentGateway
                     ],
                 ])
                 ->throw();
-        } catch (RequestException $e) {
+        } catch (RequestException|ConnectionException $e) {
             throw new RuntimeException('The payment provider could not start checkout. Please try again.', previous: $e);
         }
 
@@ -87,6 +82,37 @@ class PayMongoGateway implements PaymentGateway
         }
 
         return new CheckoutSession($id, $url);
+    }
+
+    /**
+     * POST {base}/checkout_sessions/{id}/expire. PayMongo answers 400 when the
+     * session is already paid, already expired, or has a payment under way.
+     */
+    public function expireCheckout(string $checkoutId): void
+    {
+        $this->ensureUsableKey();
+
+        try {
+            Http::withBasicAuth($this->secretKey, '')
+                ->acceptJson()
+                ->timeout(15)
+                ->post("{$this->baseUrl}/checkout_sessions/".rawurlencode($checkoutId).'/expire')
+                ->throw();
+        } catch (RequestException|ConnectionException $e) {
+            throw new RuntimeException("The payment provider could not close checkout {$checkoutId}.", previous: $e);
+        }
+    }
+
+    /** Payments stay in sandbox until the owner explicitly allows live mode. */
+    protected function ensureUsableKey(): void
+    {
+        if (blank($this->secretKey)) {
+            throw new RuntimeException('PAYMONGO_SECRET_KEY is not set.');
+        }
+
+        if (! $this->allowLiveMode && ! str_starts_with($this->secretKey, 'sk_test_')) {
+            throw new RuntimeException('Refusing to use a live PayMongo key while payments are in sandbox mode.');
+        }
     }
 
     public function parseWebhook(string $rawBody, ?string $signatureHeader): WebhookEvent
