@@ -85,7 +85,7 @@ class NotificationCenterTest extends TestCase
 
         $this->actingAs($this->staff)->getJson('/staff/notifications/poll')
             ->assertOk()
-            ->assertExactJson(['unread' => 2, 'newest' => $newest->id]);
+            ->assertExactJson(['unread' => 2, 'newest' => $newest->id.'@'.$newest->created_at->getTimestamp()]);
     }
 
     public function test_opening_an_alert_marks_it_read_and_goes_to_the_booking(): void

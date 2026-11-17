@@ -40,9 +40,12 @@ class NotificationController extends Controller
     /** What the bell checks every 30 seconds: kept to two small queries. */
     public function poll(Request $request): JsonResponse
     {
+        $newest = $request->user()->unreadNotifications()->first(['id', 'created_at']);
+
         return response()->json([
             'unread' => $request->user()->unreadNotifications()->count(),
-            'newest' => $request->user()->unreadNotifications()->value('id'),
+            // Changes when an alert arrives or the day's chatbot alert is updated in place.
+            'newest' => $newest ? $newest->id.'@'.$newest->created_at->getTimestamp() : null,
         ]);
     }
 

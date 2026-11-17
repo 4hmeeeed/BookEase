@@ -58,6 +58,35 @@ class ChatbotAlertsTest extends TestCase
         $this->assertSame("2 questions today the assistant couldn't answer", $alert->data['body']);
     }
 
+    public function test_a_later_miss_updates_the_alert_so_open_links_keep_working(): void
+    {
+        $this->ask();
+        $link = route('staff.notifications.open', $this->owner->unreadNotifications()->sole()->id);
+
+        // The bell or the Notifications page may still be showing this first version.
+        $this->travel(10)->minutes();
+        $this->ask();
+
+        $this->actingAs($this->owner)->get($link)
+            ->assertRedirect(route('admin.chatbot.index', ['filter' => 'fallback']));
+
+        $alert = $this->owner->notifications()->sole();
+        $this->assertSame(2, $alert->data['count']);
+        $this->assertSame(now()->toDateTimeString(), $alert->created_at->toDateTimeString()); // back at the top
+    }
+
+    public function test_the_bell_notices_when_the_alert_is_updated(): void
+    {
+        $this->ask();
+        $before = $this->actingAs($this->owner)->getJson('/staff/notifications/poll')->json('newest');
+
+        $this->travel(10)->minutes();
+        $this->ask();
+
+        // An open dropdown reloads only when this marker changes.
+        $this->assertNotSame($before, $this->getJson('/staff/notifications/poll')->json('newest'));
+    }
+
     public function test_a_miss_after_midnight_starts_a_new_alert(): void
     {
         $this->travelTo('2026-11-01 23:50:00');

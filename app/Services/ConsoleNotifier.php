@@ -55,8 +55,8 @@ class ConsoleNotifier
 
     /**
      * One unread alert per owner per day carries the day's running count: a
-     * later miss replaces it with a fresh one, so it rises to the top of the
-     * bell without disturbing the order of anything already read.
+     * later miss updates it in place and moves it back to the top of the bell.
+     * It keeps its id, so a link to it on a page that is already open still works.
      */
     public function chatbotMissed(): void
     {
@@ -67,10 +67,17 @@ class ConsoleNotifier
                     ->where('created_at', '>=', today())
                     ->first();
 
-                $misses = 1 + (int) ($today?->data['count'] ?? 0);
-                $today?->delete();
+                if ($today === null) {
+                    $this->send(new Collection([$owner]), new ChatbotUnanswered(1));
 
-                $this->send(new Collection([$owner]), new ChatbotUnanswered($misses));
+                    continue;
+                }
+
+                $misses = 1 + (int) ($today->data['count'] ?? 0);
+                $today->forceFill([
+                    'data' => (new ChatbotUnanswered($misses))->toArray($owner),
+                    'created_at' => now(),
+                ])->save();
             }
         } catch (Throwable $e) {
             Log::error('Could not update the chatbot console alert', ['error' => $e->getMessage()]);
