@@ -70,6 +70,12 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        // Sign-ups and reset emails, per IP address. Each guest account may hold
+        // only a few pending requests, so scripted sign-ups must be limited too.
+        // Generous, because many mobile users share one carrier IP address.
+        RateLimiter::for('registration', fn (Request $request) => Limit::perHour(10)->by('register:'.$request->ip()));
+        RateLimiter::for('password-reset', fn (Request $request) => Limit::perMinute(5)->by('reset:'.$request->ip()));
+
         // The chatbot must never quote stale rates or availability.
         foreach ([Cottage::class, Booking::class] as $model) {
             $model::saved(fn () => ChatbotService::forgetContext());
