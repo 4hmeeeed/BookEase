@@ -6,6 +6,8 @@ use App\Enums\BookingStatus;
 use App\Enums\PaymentRecordStatus;
 use App\Models\Payment;
 use App\Models\User;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Self-service account deletion from the profile page.
@@ -38,5 +40,23 @@ class AccountDeletion
         }
 
         return null;
+    }
+
+    /**
+     * Delete the account together with the staff alerts about the guest's
+     * bookings, whose text names them (RA 10173). Only call this when
+     * refusal() returned null.
+     */
+    public function delete(User $user): void
+    {
+        DB::transaction(function () use ($user) {
+            $references = $user->bookings()->pluck('reference_code')->all();
+
+            if ($references !== []) {
+                DatabaseNotification::query()->whereIn('data->reference', $references)->delete();
+            }
+
+            $user->delete();
+        });
     }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CottageController as AdminCottageController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\SystemController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\CottageAvailabilityController;
 use App\Http\Controllers\CottageController;
@@ -30,6 +31,9 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::get('/', HomeController::class)->name('home');
+
+// Data Privacy Act notice (RA 10173); the page itself belongs to the UI session.
+Route::view('/privacy', 'privacy')->name('privacy');
 
 Route::get('/cottages', [CottageController::class, 'index'])->name('cottages.index');
 Route::get('/cottages/{cottage}', [CottageController::class, 'show'])->name('cottages.show');
@@ -150,6 +154,15 @@ Route::middleware(['auth', 'verified', 'role:admin'])
 
         Route::get('chatbot', [ChatInquiryController::class, 'index'])->name('chatbot.index');
         Route::get('chatbot/{inquiry}', [ChatInquiryController::class, 'show'])->name('chatbot.show');
+
+        // Server checks and maintenance (stands in for SSH on InfinityFree).
+        Route::get('system', [SystemController::class, 'index'])->name('system');
+        Route::middleware('password.confirm')->prefix('system')->name('system.')->group(function () {
+            Route::post('test-email', [SystemController::class, 'testEmail'])->name('test-email');
+            Route::post('migrate', [SystemController::class, 'migrate'])->name('migrate');
+            Route::post('clear-caches', [SystemController::class, 'clearCaches'])->name('clear-caches');
+            Route::post('cleanup', [SystemController::class, 'cleanup'])->name('cleanup');
+        });
     });
 
 require __DIR__.'/auth.php';

@@ -21,6 +21,22 @@ return [
     // How far ahead (in days) a check-in date may be booked.
     'booking_window_days' => (int) env('BOOKEASE_BOOKING_WINDOW_DAYS', 365),
 
+    /*
+    | Staff/owner console: how often an open console tab asks for new alerts.
+    | Raise it on hosting with a daily hit limit (InfinityFree: 90 or more).
+    */
+    'console' => [
+        'poll_seconds' => max(15, (int) env('BOOKEASE_BELL_POLL_SECONDS', 30)),
+    ],
+
+    /*
+    | Hosting without cron (e.g. InfinityFree): run the daily clean-up from the
+    | first page visit of each day instead of the scheduler.
+    */
+    'maintenance' => [
+        'on_requests' => (bool) env('BOOKEASE_CLEANUP_ON_REQUESTS', false),
+    ],
+
     // Unconfirmed requests one guest may have waiting at once. Pending requests
     // hold their dates until staff act, so this stops a single account from
     // blocking the resort. Requests whose dates have passed don't count.

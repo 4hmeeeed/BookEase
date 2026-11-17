@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
         ]);
 
+        // Daily clean-up from page visits on hosts without cron (off unless enabled).
+        $middleware->web(append: \App\Http\Middleware\RunDailyCleanup::class);
+
         // Authenticated by the gateway's HMAC signature instead of a CSRF token.
         $middleware->validateCsrfTokens(except: [
             'webhooks/payments',

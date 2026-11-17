@@ -8,6 +8,8 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -73,6 +75,35 @@ class AccountDeletionTest extends TestCase
 
         $this->assertNotNull($guest->fresh());
         $this->assertNotNull($payment->fresh());
+    }
+
+    public function test_deleting_an_account_removes_staff_alerts_that_name_the_guest(): void
+    {
+        // RA 10173: once the guest is gone, alerts like "Maria Santos requested…" go too.
+        $guest = User::factory()->create(['name' => 'Maria Santos']);
+        $booking = Booking::factory()->for($guest)->status(BookingStatus::Cancelled)->create();
+        $owner = User::factory()->admin()->create();
+        $alert = function (?string $reference) use ($owner): string {
+            $id = (string) Str::uuid();
+            DB::table('notifications')->insert([
+                'id' => $id,
+                'type' => 'App\\Notifications\\Console\\NewBookingRequest',
+                'notifiable_type' => User::class,
+                'notifiable_id' => $owner->id,
+                'data' => json_encode(['kind' => 'booking', 'title' => 'New booking request', 'body' => 'Maria Santos requested a stay', 'reference' => $reference, 'count' => 1]),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return $id;
+        };
+        $aboutGuest = $alert($booking->reference_code);
+        $unrelated = $alert('LBN-OTHER1');
+
+        $this->actingAs($guest)->delete('/profile', ['password' => 'password'])->assertSessionHasNoErrors();
+
+        $this->assertDatabaseMissing('notifications', ['id' => $aboutGuest]);
+        $this->assertDatabaseHas('notifications', ['id' => $unrelated]);
     }
 
     public function test_guest_with_only_released_unpaid_bookings_can_delete_their_account(): void
