@@ -112,13 +112,7 @@ class PaymentService
             }
 
             // Only one open checkout per booking: older unfinished ones expire.
-            $open = Payment::query()
-                ->where('booking_id', $locked->id)
-                ->where('status', PaymentRecordStatus::Pending)
-                ->whereIn('method', [PaymentMethod::GCash, PaymentMethod::Maya]);
-
-            $superseded = (clone $open)->whereNotNull('provider_payment_id')->pluck('provider_payment_id')->all();
-            $open->update(['status' => PaymentRecordStatus::Expired, 'updated_at' => now()]);
+            $superseded = $this->expireOpenCheckouts($locked);
 
             return [$this->newPayment($locked, $method, $kind, $amount, PaymentRecordStatus::Pending), $superseded];
         });
@@ -304,6 +298,33 @@ class PaymentService
         $booking->save();
 
         return $booking;
+    }
+
+    /**
+     * A rejected or cancelled booking takes no more online payments: its
+     * unfinished checkouts expire here and are closed at the gateway.
+     */
+    public function closeOpenCheckouts(Booking $booking): void
+    {
+        $this->closeAtGateway(DB::transaction(fn () => $this->expireOpenCheckouts($booking)));
+    }
+
+    /**
+     * Mark the booking's unfinished online checkouts expired.
+     *
+     * @return list<string> their gateway checkout ids, to close at the gateway
+     */
+    private function expireOpenCheckouts(Booking $booking): array
+    {
+        $open = Payment::query()
+            ->where('booking_id', $booking->id)
+            ->where('status', PaymentRecordStatus::Pending)
+            ->whereIn('method', [PaymentMethod::GCash, PaymentMethod::Maya]);
+
+        $checkoutIds = (clone $open)->whereNotNull('provider_payment_id')->pluck('provider_payment_id')->all();
+        $open->update(['status' => PaymentRecordStatus::Expired, 'updated_at' => now()]);
+
+        return $checkoutIds;
     }
 
     /**

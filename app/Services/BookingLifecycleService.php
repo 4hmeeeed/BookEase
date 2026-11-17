@@ -22,6 +22,8 @@ use Throwable;
  */
 class BookingLifecycleService
 {
+    public function __construct(private readonly PaymentService $payments) {}
+
     public function approve(Booking $booking, User $actor, ?string $remarks = null): Booking
     {
         $this->transition($booking, BookingStatus::Confirmed, $actor, $remarks, function (Booking $b) {
@@ -37,6 +39,7 @@ class BookingLifecycleService
     public function reject(Booking $booking, User $actor, string $remarks): Booking
     {
         $this->transition($booking, BookingStatus::Rejected, $actor, $remarks);
+        $this->payments->closeOpenCheckouts($booking);
 
         return $this->notifyGuest($booking, $remarks);
     }
@@ -58,6 +61,8 @@ class BookingLifecycleService
                 throw InvalidBookingTransitionException::because('This booking can no longer be cancelled online. Please contact the resort.');
             }
         });
+
+        $this->payments->closeOpenCheckouts($booking);
 
         // A guest who cancelled online already knows; tell them when the resort did it.
         return $byGuest ? $booking : $this->notifyGuest($booking, $remarks);

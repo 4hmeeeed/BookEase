@@ -16,9 +16,10 @@ use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
- * Hosted checkouts never close on their own, so when a guest starts a new
- * checkout the old one must be closed at the gateway. Otherwise paying both
- * open checkout pages charges the guest twice.
+ * Hosted checkouts never close on their own, so a checkout that should no
+ * longer take money must be closed at the gateway: when a guest starts a new
+ * one (paying both would charge twice), and when the booking is rejected or
+ * cancelled (money would land on a booking that no longer holds dates).
  */
 class SupersededCheckoutTest extends TestCase
 {
@@ -91,6 +92,32 @@ class SupersededCheckoutTest extends TestCase
         $this->pay('full', 'maya')->assertRedirect('https://checkout.paymongo.com/cs_second');
 
         $this->assertSame(PaymentRecordStatus::Pending, Payment::where('provider_payment_id', 'cs_second')->sole()->status);
+    }
+
+    public function test_rejecting_a_booking_closes_its_open_checkout(): void
+    {
+        config(['bookease.payments.driver' => 'fake']);
+        $this->app->forgetInstance(PaymentGateway::class);
+        $this->pay('down');
+        $payment = Payment::sole();
+
+        $this->actingAs(User::factory()->staff()->create())
+            ->post("/staff/bookings/{$this->booking->reference_code}/reject", ['remarks' => 'Fully booked that week.'])
+            ->assertSessionHas('status');
+
+        $this->assertSame(PaymentRecordStatus::Expired, $payment->fresh()->status);
+        $this->get("/sandbox/checkout/{$payment->provider_payment_id}")->assertGone();
+    }
+
+    public function test_cancelling_a_booking_closes_its_open_checkout_at_paymongo(): void
+    {
+        $this->usePayMongo();
+        $this->pay('down');
+
+        $this->actingAs($this->guest)->post("/my/bookings/{$this->booking->reference_code}/cancel")->assertSessionHas('status');
+
+        $this->assertSame(PaymentRecordStatus::Expired, Payment::sole()->status);
+        Http::assertSent(fn (Request $request) => $request->url() === 'https://api.paymongo.com/v1/checkout_sessions/cs_first/expire');
     }
 
     public function test_an_unreachable_gateway_sends_the_guest_back_with_a_message(): void
