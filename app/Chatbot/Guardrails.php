@@ -22,6 +22,25 @@ class Guardrails
         '/\b(?:reveal|show|print|repeat|output|display|dump|leak|tell\s+me|give\s+me)\s+(?:me\s+)?(?:your|the)\s+(?:system\s+prompt|prompt|system\s+(?:message|instructions)|(?:hidden|initial|original|secret|internal|developer)\s+(?:instructions|prompt|message|rules)|secret\s+code)\b/iu',
         // persona swaps and well-known jailbreaks
         '/\b(?:you\s+are\s+now\s+(?:dan|an?\s+(?:unrestricted|unfiltered|jailbroken|different|new))|do\s+anything\s+now|developer\s+mode|jailbreak|dan\s+mode)\b/iu',
+        // "pretend you have no rules", "act as if you have no restrictions", "from now on you are ..."
+        '/\b(?:pretend|act\s+as\s+if|imagine)\s+(?:that\s+)?you\s+(?:have|had)\s+no\s+(?:rules|restrictions|limits|filters|guidelines)\b/iu',
+        '/\bfrom\s+now\s+on,?\s+you\s+(?:are|will\s+be|must\s+act\s+as)\b/iu',
+        // Filipino: "kalimutan mo ang mga instructions", "huwag mong sundin ang rules mo"
+        '/\b(?:kalimutan|balewalain|huwag\s+(?:mo(?:ng)?\s+)?(?:pansinin|sundin))\s+(?:mo\s+)?(?:na\s+)?(?:ang\s+|yung\s+)?(?:lahat\s+ng\s+)?(?:mga\s+)?(?:naunang\s+)?(?:instructions?|utos|rules?|patakaran|bilin)\b/iu',
+        '/\b(?:ipakita|sabihin|ibigay)\s+(?:mo\s+)?(?:sa\s+akin\s+)?(?:ang\s+|yung\s+)?(?:system\s+prompt|prompt\s+mo|instructions?\s+mo|lihim\s+na\s+code)\b/iu',
+    ];
+
+    /** Secrets a guest should never type into a chat: they are not sent to the model at all. */
+    private const SECRET_PATTERNS = [
+        // card numbers: 13–19 digits, optionally grouped by spaces or dashes
+        '/(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/u',
+        // "my MPIN is 1234", "OTP: 482913", "password: hunter2", "CVV 123"
+        '/\b(?:m-?pin|otp|one[\s-]time\s+(?:pin|code|password)|cvv|cvc|password|passcode|pin\s+code)\b\s*(?:is|ko\s+ay|ko|:|=|-)?\s*\S*\d/iu',
+    ];
+
+    /** An answer that asks the guest for a secret, which the resort never does. */
+    private const SECRET_REQUEST_PATTERNS = [
+        '/\b(?:send|give|share|type|enter|provide|tell|reply\s+with|ibigay|i-?send|sabihin)\b[^.?!\n]{0,40}\b(?:m-?pin|otp|one[\s-]time\s+(?:pin|code|password)|password|passcode|cvv|cvc|card\s+number|pin)\b/iu',
     ];
 
     /** First-person claims of having acted on a booking, which the assistant cannot do. */
@@ -51,6 +70,18 @@ class Guardrails
     public function looksLikeInjection(string $question): bool
     {
         return $this->matchesAny(self::INJECTION_PATTERNS, $question);
+    }
+
+    /** The guest typed something that looks like a card number, OTP, MPIN or password. */
+    public function containsSecret(string $question): bool
+    {
+        return $this->matchesAny(self::SECRET_PATTERNS, $question);
+    }
+
+    /** The answer asks the guest for an OTP, MPIN, password or card number. */
+    public function asksForSecret(string $answer): bool
+    {
+        return $this->matchesAny(self::SECRET_REQUEST_PATTERNS, $answer);
     }
 
     public function claimsAction(string $answer): bool
