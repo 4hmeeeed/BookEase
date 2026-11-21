@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Chatbot\GeminiClient;
+use App\Mail\BrevoTransport;
 use App\Models\Booking;
 use App\Models\Cottage;
 use App\Payments\DisabledGateway;
@@ -14,6 +15,7 @@ use App\View\Composers\ConsoleComposer;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -62,6 +64,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // MAIL_MAILER=brevo: Brevo's HTTPS API, for hosts that block SMTP ports.
+        Mail::extend('brevo', fn () => new BrevoTransport(config('services.brevo.key')));
+
         // Served over HTTPS in production: every generated link and redirect is https.
         if ($this->app->isProduction() && str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceHttps();

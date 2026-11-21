@@ -37,6 +37,11 @@ return [
 
     'mailers' => [
 
+        // Brevo's HTTPS API (app/Mail/BrevoTransport.php); needs BREVO_API_KEY.
+        'brevo' => [
+            'transport' => 'brevo',
+        ],
+
         'smtp' => [
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
