@@ -134,6 +134,29 @@
         transition-duration: 80ms;
     }
 
+    /* Submitted and waiting (set by app.js): keep the label, add a small spinner. */
+    button[aria-busy='true'] {
+        cursor: progress;
+    }
+
+    .btn[aria-busy='true'] {
+        opacity: 0.85;
+    }
+
+    .btn[aria-busy='true']::after {
+        content: '';
+        width: 0.9em;
+        height: 0.9em;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 9999px;
+        animation: busy-spin 0.7s linear infinite;
+    }
+
+    @keyframes busy-spin {
+        to { transform: rotate(360deg); }
+    }
+
     .btn-primary {
         @apply btn bg-lagoon-800 text-cream shadow-[inset_0_1px_0_rgb(255_255_255/0.08),0_1px_2px_rgb(11_35_36/0.2)]
                hover:bg-lagoon-700 focus-visible:ring-lagoon-500;
@@ -214,14 +237,40 @@
         transform: translateZ(18px);
     }
 
-    /* Photo inside a tilting card drifts against the tilt (depth). */
+    /* Cottage photo: leans in on hover; inside a tilting card it also drifts
+     | against the tilt for depth (and keeps drifting while it leans in). */
+    .tilt-photo {
+        transition: transform 1200ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .group:hover .tilt-photo {
+        transform: scale(1.06);
+    }
+
     .tilt .tilt-photo {
         transform: scale(1.08) translate3d(calc(var(--ry) * -1.1), calc(var(--rx) * 1.1), 0);
         transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    .tilt:hover .tilt-photo {
+        transform: scale(1.13) translate3d(calc(var(--ry) * -1.1), calc(var(--rx) * 1.1), 0);
+    }
+
     .tilt.is-tilting .tilt-photo {
         transition-duration: 140ms;
+    }
+
+    /* Soft sweep behind a photo while it loads; the <img> removes it on load. */
+    .photo-shimmer {
+        background:
+            linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.55) 50%, transparent 70%) 0 0 / 220% 100% no-repeat,
+            theme('colors.sand.100');
+        animation: shimmer 1.4s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+        from { background-position: 130% 0, 0 0; }
+        to { background-position: -30% 0, 0 0; }
     }
 
     /* ---------------- Scroll reveal + stagger ------------------------ *
@@ -302,7 +351,7 @@
     }
 
     .cal-day > span {
-        @apply relative z-10 grid h-9 w-9 place-items-center rounded-md transition-all duration-200 ease-out-soft sm:h-10 sm:w-10;
+        @apply relative z-10 grid h-9 w-9 place-items-center rounded-md transition-[background-color,color,box-shadow,transform] duration-200 ease-out-soft sm:h-10 sm:w-10;
     }
 
     .cal-day:not(.is-disabled):hover > span {
@@ -592,33 +641,6 @@
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 1ms !important;
-        animation-delay: 0ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 1ms !important;
-    }
-
-    .tilt,
-    .depth,
-    .tilt .tilt-photo {
-        transform: none !important;
-    }
-
-    .reveal,
-    .reveal.reveal-rise {
-        opacity: 1;
-        translate: none;
-        rotate: none;
-    }
-
-    .changeover .bar {
-        transform: none;
-    }
-}
 /* ==================================================================
  | Staff/owner console — sidebar links, counts, phone tab bar.
  * ================================================================== */
@@ -648,8 +670,25 @@
         @apply text-lagoon-950;
         box-shadow: inset 0 2px 0 theme('colors.lagoon.950');
     }
-}
 
+    /* Console pages fade in without a transform: a lingering transform would make the
+       content box, not the screen, the anchor for fixed children (phone action bar, modals).
+       The fill is "backwards", not "both": a finished animation left in effect keeps a
+       stacking context around the page, and dialogs would open under the sidebar and top bar. */
+    .console-enter {
+        animation: console-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) 80ms backwards;
+    }
+
+    @keyframes console-enter {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Booking and receipt codes: the body face, tabular and tracked (no system monospace). */
+    .ref-code {
+        @apply font-sans font-semibold uppercase tracking-[0.08em];
+        font-variant-numeric: tabular-nums;
+    }
 
     /* A new alert: the bell swings once (skipped with reduced motion). */
     .bell-ring {
@@ -670,21 +709,32 @@
             animation: none;
         }
     }
-    /* Console pages fade in without a transform: a lingering transform would make the
-       content box, not the screen, the anchor for fixed children (phone action bar, modals).
-       The fill is "backwards", not "both": a finished animation left in effect keeps a
-       stacking context around the page, and dialogs would open under the sidebar and top bar. */
-    .console-enter {
-        animation: console-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) 80ms backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 1ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
     }
 
-    @keyframes console-enter {
-        from { opacity: 0; }
-        to { opacity: 1; }
+    .tilt,
+    .depth,
+    .tilt-photo {
+        transform: none !important;
     }
 
-    /* Booking and receipt codes: the body face, tabular and tracked (no system monospace). */
-    .ref-code {
-        @apply font-sans font-semibold uppercase tracking-[0.08em];
-        font-variant-numeric: tabular-nums;
+    .reveal,
+    .reveal.reveal-rise {
+        opacity: 1;
+        translate: none;
+        rotate: none;
     }
+
+    .changeover .bar {
+        transform: none;
+    }
+}

@@ -19,6 +19,7 @@ final class ConsoleAlert
         'payment.cash' => 'money',
         'payment.refund' => 'money',
         'payment.review' => 'warning',
+        'payment.proof' => 'attention',
         'chatbot.unanswered' => 'info',
     ];
 

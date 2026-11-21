@@ -24,7 +24,7 @@
             <nav class="flex gap-1" aria-label="Log filters">
                 @foreach (['all' => 'All questions', 'fallback' => 'Fallback only'] as $key => $label)
                     <a href="{{ route('admin.chatbot.index', array_filter(['filter' => $key === 'all' ? null : $key, 'q' => $search])) }}"
-                       @class(['rounded-md px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
+                       @class(['rounded-md px-4 py-2 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-200 ease-out-soft active:scale-95',
                                'bg-lagoon-950 text-cream' => $filter === $key,
                                'text-gray-600 hover:bg-sand-100 hover:text-lagoon-900' => $filter !== $key])>
                         {{ $label }}
@@ -51,7 +51,7 @@
                 @foreach ($inquiries as $inquiry)
                     <li>
                         <a href="{{ route('admin.chatbot.show', $inquiry) }}"
-                           class="card group grid gap-3 p-4 transition-all duration-300 ease-out-soft hover:-translate-y-0.5 hover:shadow-lift sm:grid-cols-[9rem_1fr_auto] sm:items-start">
+                           class="card group grid gap-3 p-4 transition-[transform,box-shadow,border-color] duration-300 ease-out-soft hover:-translate-y-0.5 hover:shadow-lift sm:grid-cols-[9rem_1fr_auto] sm:items-start">
                             <span class="text-sm text-gray-500">
                                 <span class="block font-semibold text-gray-700">{{ $inquiry->created_at->format('M j, g:i A') }}</span>
                                 {{ $inquiry->user?->name ?? 'Visitor' }}

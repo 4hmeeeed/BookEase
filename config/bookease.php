@@ -62,6 +62,17 @@ return [
 
         'down_payment_percent' => (int) env('BOOKEASE_DOWN_PAYMENT_PERCENT', 50),
 
+        /*
+        | Pay by sending GCash/Maya to the resort's own wallet (only when
+        | PAYMENT_DRIVER=none). The guest uploads the receipt; staff verify it
+        | in the wallet app before it counts. Leave a number empty to hide
+        | that wallet. Optional QR: public/images/wallets/gcash-qr.png
+        */
+        'wallets' => [
+            'gcash' => ['name' => env('GCASH_ACCOUNT_NAME'), 'number' => env('GCASH_NUMBER')],
+            'maya' => ['name' => env('MAYA_ACCOUNT_NAME'), 'number' => env('MAYA_NUMBER')],
+        ],
+
         // Reject webhooks whose signed timestamp is older than this (replay protection).
         'webhook_tolerance_seconds' => (int) env('PAYMENT_WEBHOOK_TOLERANCE', 300),
 

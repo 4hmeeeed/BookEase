@@ -14,9 +14,11 @@
             <span>{{ $label }}</span>
         </a>
 
+        <p class="mt-2 text-center text-xs text-gray-500">By continuing you agree to the <a href="{{ route('privacy') }}" class="link-underline text-lagoon-900">privacy notice</a>.</p>
+
         <x-input-error :messages="$errors->get('google')" class="mt-2" role="alert" />
 
-        <div class="my-6 flex items-center gap-4" aria-hidden="true">
+        <div class="my-6 flex items-center gap-4 short:my-4" aria-hidden="true">
             <span class="h-px flex-1 bg-lagoon-950/10"></span>
             <span class="sounding text-gray-500">or with email</span>
             <span class="h-px flex-1 bg-lagoon-950/10"></span>

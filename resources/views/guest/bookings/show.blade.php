@@ -1,3 +1,6 @@
+{{-- Online payment is off with PAYMENT_DRIVER=none: the balance is then settled at the front desk. --}}
+@php($payOnline = config('bookease.payments.online'))
+
 <x-app-layout>
     <x-slot name="header">
         <a href="{{ route('guest.bookings.index') }}" class="link-underline text-sm">&larr; My bookings</a>
@@ -31,7 +34,7 @@
                 </h2>
                 <p class="mt-1.5 text-gray-700">
                     @switch($booking->status->value)
-                        @case('pending') Your dates are held while the front desk reviews your request. You can pay your down payment below with GCash or Maya. @break
+                        @case('pending') Your dates are held while the front desk reviews your request. {{ $payOnline || $transferOptions ? 'You can pay your down payment below with GCash or Maya.' : 'Payment is made in person at the resort’s front desk.' }} @break
                         @case('confirmed') Check-in opens at 2:00 PM on {{ $booking->check_in->format('l, F j') }}. Keep your reference code handy. @break
                         @case('checked_in') Check-out is by 12:00 NN on {{ $booking->check_out->format('l, F j') }}. @break
                         @case('checked_out') We hope to welcome you back to Labnasan soon. @break
@@ -54,7 +57,22 @@
 
             @if ($paymentOptions)
                 @include('guest.bookings._pay')
+            @elseif ($transferOptions)
+                @include('guest.bookings._transfer')
+            @elseif (! $payOnline && app(\App\Services\PaymentService::class)->isPayable($booking))
+                <section class="card p-6" aria-labelledby="front-desk-heading">
+                    <h2 id="front-desk-heading" class="font-serif text-xl font-semibold text-lagoon-950">Pay at the front desk</h2>
+                    <p class="mt-1.5 text-gray-700">
+                        @if ($proofs->contains(fn ($p) => $p->isPending()))
+                            We received your GCash/Maya receipt and the front desk is checking it.
+                        @endif
+                        Your balance of <strong class="tabular-nums text-coral-700">{{ \App\Support\Money::format($booking->balance()) }}</strong>
+                        is payable at the resort’s front desk. Staff record each payment there and give you an e-receipt.
+                    </p>
+                </section>
             @endif
+
+            @include('guest.bookings._transfer-status')
 
             <div class="card p-6">
                 <div class="flex flex-wrap items-baseline justify-between gap-2">
@@ -93,7 +111,8 @@
             @endcan
         </div>
 
-        <aside class="lg:sticky lg:top-24 lg:self-start">
+        {{-- On phones the stay (what, when, total) comes first; on desktop it rides alongside. --}}
+        <aside class="order-first lg:sticky lg:top-24 lg:order-none lg:self-start">
             <x-stay-summary :cottage="$booking->cottage" :check-in="$booking->check_in" :check-out="$booking->check_out"
                             :nights="$booking->nights()" :total="$booking->total_price" :guests="$booking->guests_count" />
         </aside>

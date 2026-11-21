@@ -44,14 +44,14 @@
                         <li class="group relative flex h-full flex-1 items-end justify-center outline-none" tabindex="0"
                             aria-label="{{ $bar['title'] }}: {{ $bar['value'] }}">
                             <span @class([
-                                    'block w-full max-w-[2.5rem] origin-bottom rounded-t-[4px] transition-all duration-500 ease-out-soft group-hover:brightness-110 group-focus-visible:ring-2 group-focus-visible:ring-lagoon-400',
+                                    'block w-full max-w-[2.5rem] origin-bottom rounded-t-[4px] transition-[filter,height] duration-500 ease-out-soft group-hover:brightness-110 group-focus-visible:ring-2 group-focus-visible:ring-lagoon-400',
                                     'bg-lagoon-600' => empty($bar['muted']),
                                     'bg-lagoon-400' => ! empty($bar['muted']),
                                   ])
                                   style="height: {{ max(0, min(100, (float) $bar['height'])) }}%; {{ (float) $bar['height'] > 0 ? 'min-height: 2px;' : '' }}"></span>
 
                             {{-- tooltip --}}
-                            <span class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max max-w-[12rem] -translate-x-1/2 translate-y-1 rounded-xl bg-lagoon-950 px-3 py-2 text-xs text-cream opacity-0 shadow-lift transition-all duration-200 ease-out-soft group-hover:translate-y-0 group-hover:opacity-100 group-focus:translate-y-0 group-focus:opacity-100">
+                            <span class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max max-w-[12rem] -translate-x-1/2 translate-y-1 rounded-xl bg-lagoon-950 px-3 py-2 text-xs text-cream opacity-0 shadow-lift transition-[opacity,transform] duration-200 ease-out-soft group-hover:translate-y-0 group-hover:opacity-100 group-focus:translate-y-0 group-focus:opacity-100">
                                 <span class="block text-lagoon-200">{{ $bar['title'] }}</span>
                                 <span class="block font-semibold tabular-nums">{{ $bar['value'] }}</span>
                             </span>

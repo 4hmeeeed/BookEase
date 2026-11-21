@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Services\BookingLifecycleService;
 use App\Services\PaymentService;
+use App\Services\WalletTransferService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,15 +37,18 @@ class BookingController extends Controller
         ]);
     }
 
-    public function show(Booking $booking, PaymentService $payments): View
+    public function show(Booking $booking, PaymentService $payments, WalletTransferService $transfers): View
     {
         $this->authorize('view', $booking);
 
-        $booking->load(['cottage', 'statusChanges', 'payments']);
+        $booking->load(['cottage', 'statusChanges', 'payments', 'paymentProofs']);
 
         return view('guest.bookings.show', [
             'booking' => $booking,
             'paymentOptions' => $payments->onlineOptions($booking),
+            'transferOptions' => $transfers->options($booking),
+            'wallets' => $transfers->wallets(),
+            'proofs' => $booking->paymentProofs,
             'downPercent' => (int) config('bookease.payments.down_payment_percent'),
         ]);
     }

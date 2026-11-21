@@ -1,11 +1,13 @@
 @php
     $today = now()->toDateString();
     $pins = [[24, 30], [63, 21], [76, 57], [43, 68], [16, 74]];
+    // Online payment is off with PAYMENT_DRIVER=none: guests pay at the front desk.
+    $payOnline = config('bookease.payments.online');
     $questions = [
         'What cottages do you have?',
         'What time is check-in and check-out?',
         'Is anything free this weekend?',
-        'How do I pay the down payment?',
+        $payOnline ? 'How do I pay the down payment?' : 'How do I pay?',
     ];
 @endphp
 
@@ -14,15 +16,17 @@
          1 · Hero — a moving shore laid down like a chart plate.
          Stock placeholder footage (Pexels) — see public/videos/CREDITS.md.
          ===================================================================== --}}
-    <section x-parallax class="hero-stage relative isolate min-h-[100svh] overflow-hidden bg-[#e6d9cf]">
+    <section x-parallax x-data="{ playing: true }"
+             x-init="if (matchMedia('(prefers-reduced-motion: reduce)').matches) { $refs.shore.pause(); playing = false }"
+             class="hero-stage relative isolate min-h-[100svh] overflow-hidden bg-[#e6d9cf]">
         <div class="hero-plate absolute inset-0 -z-10">
             <div class="depth absolute -inset-8" style="--d: -14">
-                <video class="h-full w-full object-cover motion-reduce:hidden" autoplay muted loop playsinline preload="metadata"
-                       poster="{{ asset('videos/shore-dusk-poster.webp') }}" aria-hidden="true">
+                <video x-ref="shore" class="h-full w-full object-cover motion-reduce:hidden" autoplay muted loop playsinline preload="metadata"
+                       poster="{{ asset('videos/shore-dusk-poster.webp') }}" width="1280" height="720" aria-hidden="true">
                     <source src="{{ asset('videos/shore-dusk.webm') }}" type="video/webm">
                     <source src="{{ asset('videos/shore-dusk.mp4') }}" type="video/mp4">
                 </video>
-                <img src="{{ asset('videos/shore-dusk-poster.webp') }}" alt="" class="hidden h-full w-full object-cover motion-reduce:block">
+                <img src="{{ asset('videos/shore-dusk-poster.webp') }}" alt="" width="1280" height="720" class="hidden h-full w-full object-cover motion-reduce:block">
             </div>
             {{-- keep the ink legible on the pale sky, deepen the foam toward the dock --}}
             <div class="absolute inset-0 bg-[linear-gradient(180deg,rgb(250_247_241/0.78)_0%,rgb(250_247_241/0.42)_44%,rgb(250_247_241/0.12)_58%,rgb(11_35_36/0.5)_100%)]"></div>
@@ -46,7 +50,7 @@
                     <span class="line-mask"><span style="--i: 2">booked in minutes.</span></span>
                 </h1>
                 <p class="fade-late max-w-md text-[1.05rem] leading-relaxed text-lagoon-950/85 lg:mb-3 lg:border-l lg:border-lagoon-950/20 lg:pl-5" style="--delay: 800ms">
-                    See which cottages are open, reserve the dates you want, and pay your down payment with GCash or Maya. No more waiting on messages or phone calls.
+                    See which cottages are open, reserve the dates you want, and {{ $payOnline ? 'pay your down payment with GCash or Maya' : 'pay in person at the resort’s front desk' }}. No more waiting on messages or phone calls.
                 </p>
             </div>
 
@@ -87,7 +91,17 @@
                         <span>Rates from <span class="tabular font-semibold">{{ $fromRate }}</span> a night</span>
                         <span class="h-3 w-px bg-cream/40" aria-hidden="true"></span>
                     @endif
-                    <span>Down payment with GCash or Maya</span>
+                    <span>{{ $payOnline ? 'Down payment with GCash or Maya' : 'Pay at the front desk' }}</span>
+
+                    {{-- WCAG 2.2.2: looping background motion gets a pause control. --}}
+                    <button type="button"
+                            @click="playing = ! playing; playing ? $refs.shore.play() : $refs.shore.pause()"
+                            :aria-label="playing ? 'Pause the background video' : 'Play the background video'"
+                            class="ml-auto inline-flex items-center gap-2 rounded px-2 py-1 text-cream/80 transition-colors hover:bg-cream/10 hover:text-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-cream/70 motion-reduce:hidden">
+                        <svg x-show="playing" class="h-3 w-3" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="3" y="2" width="3.4" height="12" rx=".7" /><rect x="9.6" y="2" width="3.4" height="12" rx=".7" /></svg>
+                        <svg x-show="! playing" x-cloak class="h-3 w-3" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.6v10.8a.8.8 0 0 0 1.2.7l8.9-5.4a.8.8 0 0 0 0-1.4L5.2 1.9a.8.8 0 0 0-1.2.7Z" /></svg>
+                        <span class="sounding" x-text="playing ? 'Pause' : 'Play'">Pause</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -159,7 +173,7 @@
                 <div class="bay-plate aspect-square w-full">
                     {{-- the plate: aerial photo (stock placeholder, Unsplash) + graticule --}}
                     <div class="bay-layer overflow-hidden rounded-lg shadow-[0_60px_120px_-30px_rgb(0_0_0/0.7)]" style="--z: 0">
-                        <img src="{{ asset('images/stock/bay-aerial.webp') }}" alt="" loading="lazy" decoding="async" class="h-full w-full object-cover">
+                        <img src="{{ asset('images/stock/bay-aerial.webp') }}" alt="" width="1200" height="1500" loading="lazy" decoding="async" class="h-full w-full object-cover">
                         <div class="graticule absolute inset-0 text-cream/25 [background-size:12.5%_12.5%]"></div>
                         <div class="absolute inset-0 ring-1 ring-inset ring-cream/30"></div>
                         @foreach ($cottages as $cottage)
@@ -193,7 +207,7 @@
                         </a>
                     @endforeach
                 </div>
-                <p class="sounding mt-6 text-center text-cream/35">Illustrative chart · pins show live units and rates</p>
+                <p class="sounding mt-6 text-center text-cream/55">Illustrative chart · pins show live units and rates</p>
             </div>
         </div>
     </section>
@@ -203,7 +217,7 @@
          ===================================================================== --}}
     <section id="changeover" class="relative scroll-mt-10 bg-cream py-24 sm:py-32">
         <div class="mx-auto max-w-7xl px-6 sm:px-10 lg:px-12">
-            <h2 x-reveal class="max-w-3xl font-display text-5xl leading-[1.02] text-lagoon-950 sm:text-6xl">From "is it free?" to "see you there" in three steps.</h2>
+            <h2 x-reveal class="max-w-3xl font-display text-5xl leading-[1.02] text-lagoon-950 sm:text-6xl">From “is it free?” to “see you there” in three steps.</h2>
 
             {{-- Changeover strip: 8 AM → 6 PM on a changeover day --}}
             <figure x-reveal class="changeover mt-14 rounded-lg border border-lagoon-950/10 bg-white p-6 shadow-soft sm:p-8">
@@ -234,8 +248,12 @@
             <ol class="mt-14 border-t border-lagoon-950/15" x-reveal.stagger>
                 @foreach ([
                     ['Any time', 'Pick your dates', 'Browse cottages and see which dates are open. Taken dates are blocked, so two guests can never book the same cottage at once.'],
-                    ['GCash · Maya', 'Pay the down payment', 'Pay securely with GCash or Maya. We never see or store your wallet details, and every payment is verified directly with the payment provider.'],
-                    ['From 2:00 PM', 'Arrive and unwind', 'Get your e-receipt right away, settle the balance, and check in from 2:00 PM.'],
+                    $payOnline
+                        ? ['GCash · Maya', 'Pay the down payment', 'Pay securely with GCash or Maya. We never see or store your wallet details, and every payment is verified directly with the payment provider.']
+                        : ['Front desk', 'Pay at the resort', 'Pay in person at the front desk. Every payment is recorded on your booking, with an e-receipt you can download.'],
+                    $payOnline
+                        ? ['From 2:00 PM', 'Arrive and unwind', 'Get your e-receipt right away, settle the balance, and check in from 2:00 PM.']
+                        : ['From 2:00 PM', 'Arrive and unwind', 'Settle any balance at the front desk and check in from 2:00 PM.'],
                 ] as [$when, $title, $copy])
                     <li class="group grid gap-2 border-b border-lagoon-950/15 py-7 transition-colors duration-300 hover:bg-white/70 sm:grid-cols-[11rem_1fr_1.4fr] sm:gap-8 sm:px-4">
                         <span class="sounding pt-2 text-coral-600">{{ $when }}</span>
@@ -253,7 +271,7 @@
     <section class="relative isolate overflow-hidden bg-lagoon-950 py-24 text-cream sm:py-32">
         <div class="absolute inset-0 -z-10" aria-hidden="true">
             {{-- Stock placeholder (Unsplash) — see public/images/stock/CREDITS.md --}}
-            <img src="{{ asset('images/stock/dusk-boats.webp') }}" alt="" loading="lazy" decoding="async" class="tide h-full w-full object-cover opacity-45">
+            <img src="{{ asset('images/stock/dusk-boats.webp') }}" alt="" width="1800" height="1286" loading="lazy" decoding="async" class="tide h-full w-full object-cover opacity-45">
             <div class="absolute inset-0 bg-gradient-to-r from-lagoon-950 via-lagoon-950/85 to-lagoon-950/30"></div>
         </div>
 
@@ -267,7 +285,7 @@
             </div>
 
             <div class="self-end" x-data>
-                <p class="sounding text-cream/45">Try asking</p>
+                <p class="sounding text-cream/60">Try asking</p>
                 <ul class="mt-4 border-t border-cream/15" x-reveal.stagger>
                     @foreach ($questions as $question)
                         <li>
@@ -279,7 +297,7 @@
                         </li>
                     @endforeach
                 </ul>
-                <p class="mt-5 text-xs leading-relaxed text-cream/50">Answers come only from the resort's live records. The assistant can't make or change bookings.</p>
+                <p class="mt-5 text-xs leading-relaxed text-cream/65">Answers come only from the resort’s live records. The assistant can’t make or change bookings.</p>
             </div>
         </div>
     </section>
@@ -290,7 +308,7 @@
     <section class="relative isolate overflow-hidden">
         <div class="absolute inset-0 -z-10" aria-hidden="true">
             {{-- Stock placeholder (Unsplash) — see public/images/stock/CREDITS.md --}}
-            <img src="{{ asset('images/stock/palms-sunset.webp') }}" alt="" loading="lazy" decoding="async" class="h-full w-full object-cover object-[50%_70%]">
+            <img src="{{ asset('images/stock/palms-sunset.webp') }}" alt="" width="1800" height="2250" loading="lazy" decoding="async" class="h-full w-full object-cover object-[50%_70%]">
             <div class="absolute inset-0 bg-gradient-to-t from-lagoon-950/80 via-lagoon-950/30 to-lagoon-950/10"></div>
         </div>
         <div x-reveal class="mx-auto flex min-h-[26rem] max-w-7xl flex-col justify-end px-6 py-16 text-cream sm:min-h-[32rem] sm:px-10 lg:px-12">

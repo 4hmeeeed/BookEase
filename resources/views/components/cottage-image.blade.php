@@ -8,8 +8,11 @@
 <div {{ $attributes->merge(['class' => 'relative overflow-hidden bg-sand-100']) }}
      @if ($morph) style="view-transition-name: cottage-photo-{{ $cottage->id }}" @endif>
     @if ($cottage->image_url)
+        {{-- Shimmer shows while the photo loads (slow on `php artisan serve`); hover zoom lives in app.css. --}}
+        <div class="photo-shimmer absolute inset-0" aria-hidden="true"></div>
         <img src="{{ $cottage->image_url }}" alt="{{ $cottage->name }}" loading="lazy" decoding="async"
-             class="tilt-photo h-full w-full object-cover transition-transform duration-[1200ms] ease-expo group-hover:scale-[1.06]">
+             onload="this.previousElementSibling?.remove()" onerror="this.previousElementSibling?.remove()"
+             class="tilt-photo relative h-full w-full object-cover">
     @else
         <div class="absolute inset-0 bg-[linear-gradient(160deg,theme(colors.sand.100),theme(colors.sand.200))]" aria-hidden="true"></div>
         <svg class="absolute inset-0 h-full w-full text-sand-500/50" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" aria-hidden="true">

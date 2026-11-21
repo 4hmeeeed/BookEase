@@ -8,7 +8,10 @@
                 <p class="eyebrow">Booking</p>
                 <h1 class="ref-code mt-2 text-3xl text-lagoon-950">{{ $booking->reference_code }}</h1>
             </div>
-            <x-booking-status :status="$booking->status" class="!px-4 !py-1.5 !text-sm" />
+            <div class="flex flex-wrap items-center gap-2">
+                <x-no-show :booking="$booking" class="!px-4 !py-1.5 !text-sm" />
+                <x-booking-status :status="$booking->status" class="!px-4 !py-1.5 !text-sm" />
+            </div>
         </div>
     </x-slot>
 
@@ -19,6 +22,8 @@
         $canCancel = $status->canTransitionTo(BookingStatus::Cancelled);
         $canCheckOut = $status->canTransitionTo(BookingStatus::CheckedOut);
         $checkInAllowed = $booking->canCheckInToday();
+        // Confirmed but the stay already ended without a check-in: cancel, don't check in.
+        $isNoShow = $status === BookingStatus::Confirmed && $booking->check_out->lte(today());
         $canTakeCash = app(\App\Services\PaymentService::class)->isPayable($booking);
     @endphp
 
@@ -47,7 +52,7 @@
                             <button type="button" class="btn-ghost text-coral-700" @click="$dispatch('open-modal', 'reject')">Reject…</button>
                         @endif
 
-                        @if ($status === BookingStatus::Confirmed)
+                        @if ($status === BookingStatus::Confirmed && ! $isNoShow)
                             <form method="POST" action="{{ route('staff.bookings.check-in', $booking) }}">
                                 @csrf
                                 <button class="btn-primary" @disabled(! $checkInAllowed)>Check in guest</button>
@@ -66,7 +71,11 @@
                         @endif
                     </div>
 
-                    @if ($status === BookingStatus::Confirmed && ! $checkInAllowed)
+                    @if ($isNoShow)
+                        <p class="mt-3 text-sm text-coral-800">
+                            This stay ended on {{ $booking->check_out->format('l, M j') }} without a check-in. Cancel the booking to close it.
+                        </p>
+                    @elseif ($status === BookingStatus::Confirmed && ! $checkInAllowed)
                         <p class="mt-3 text-sm text-gray-500">
                             Check-in opens on {{ $booking->check_in->format('l, M j') }}.
                         </p>
@@ -116,6 +125,7 @@
                 </div>
                 <x-input-error :messages="$errors->get('amount')" class="mt-3" />
                 <x-input-error :messages="$errors->get('refund_amount')" class="mt-3" />
+                @include('staff.bookings._proofs')
                 <div class="mt-4"><x-payments-list :payments="$booking->payments" show-recorder /></div>
             </section>
 
@@ -159,9 +169,10 @@
                 </div>
                 <label for="refund-method" class="mt-4 block text-sm font-semibold text-lagoon-900">Sent via</label>
                 <select id="refund-method" name="refund_method" class="field mt-1.5">
-                    <option value="gcash">GCash</option>
-                    <option value="maya">Maya</option>
-                    <option value="cash">Cash</option>
+                    {{-- Cash first when guests pay at the front desk; e-wallets stay for refunds sent by transfer. --}}
+                    @foreach (config('bookease.payments.online') ? ['gcash' => 'GCash', 'maya' => 'Maya', 'cash' => 'Cash'] : ['cash' => 'Cash', 'gcash' => 'GCash', 'maya' => 'Maya'] as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
                 </select>
                 <div class="mt-6 flex justify-end gap-3">
                     <x-secondary-button x-on:click="$dispatch('close')">Cancel</x-secondary-button>

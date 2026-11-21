@@ -52,7 +52,11 @@
                 <x-slot name="icon">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2.5" /><path stroke-linecap="round" d="M3 10h18M7 15h4" /></svg>
                 </x-slot>
-                Pay securely with GCash or Maya and download an official e-receipt after every successful payment.
+                @if (config('bookease.payments.online'))
+                    Pay securely with GCash or Maya and download an official e-receipt after every successful payment.
+                @else
+                    Pay in person at the resort’s front desk and download an official e-receipt for every payment.
+                @endif
             </x-module-card>
         </div>
     </div>

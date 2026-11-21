@@ -83,7 +83,7 @@
                 </div>
                 <div class="text-right">
                     <p class="text-xs font-semibold uppercase tracking-widest text-sand-600">Total</p>
-                    <p class="font-display text-3xl font-semibold text-coral-600">
+                    <p class="tabular font-display text-3xl text-lagoon-950">
                         <span x-show="quoteLoading" class="inline-block h-7 w-28 animate-pulse rounded-lg bg-sand-200 align-middle"></span>
                         <span x-show="! quoteLoading && quote" x-text="quote?.total_formatted"></span>
                     </p>

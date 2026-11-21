@@ -51,7 +51,7 @@
             <nav class="flex flex-wrap gap-1" aria-label="Report period">
                 @foreach (\App\Support\ReportPeriod::PRESETS as $key => $label)
                     <a href="{{ route('admin.reports.index', ['period' => $key]) }}"
-                       @class(['shrink-0 rounded-md px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
+                       @class(['shrink-0 rounded-md px-4 py-2 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-200 ease-out-soft active:scale-95',
                                'bg-lagoon-950 text-cream' => $period->preset === $key,
                                'text-gray-600 hover:bg-sand-100 hover:text-lagoon-900' => $period->preset !== $key])>
                         {{ $label }}
@@ -121,7 +121,7 @@
                                 <span class="tabular-nums text-gray-700">{{ Money::format($amount) }}</span>
                             </div>
                             <div class="mt-1.5 h-2 overflow-hidden rounded-sm bg-sand-100">
-                                <div class="h-full bg-lagoon-600 transition-all duration-700 ease-out-soft"
+                                <div class="h-full bg-lagoon-600 transition-[width] duration-700 ease-out-soft"
                                      style="width: {{ Money::isPositive($maxMethod) && Money::isPositive($amount) ? bcdiv(bcmul($amount, '100', 2), $maxMethod, 1) : 0 }}%"></div>
                             </div>
                         </li>

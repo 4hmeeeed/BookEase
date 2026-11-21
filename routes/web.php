@@ -19,6 +19,8 @@ use App\Http\Controllers\Guest\PaymentController as GuestPaymentController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\Staff\BookingController as StaffBookingController;
 use App\Http\Controllers\Staff\PaymentController as StaffPaymentController;
+use App\Http\Controllers\Staff\PaymentProofController as StaffPaymentProofController;
+use App\Http\Controllers\Guest\PaymentProofController as GuestPaymentProofController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
 use App\Http\Controllers\Staff\DashboardController as StaffDashboardController;
 use App\Http\Controllers\Staff\NotificationController;
@@ -85,6 +87,12 @@ Route::middleware(['auth', 'verified', 'role:guest'])->name('guest.')->group(fun
         Route::get('/bookings/{booking}/payments/{payment}/return', [GuestPaymentController::class, 'returned'])->name('payments.return');
         Route::get('/bookings/{booking}/payments/{payment}/status', [GuestPaymentController::class, 'status'])
             ->middleware('throttle:60,1')->name('payments.status');
+
+        // GCash/Maya sent straight to the resort's wallet: the receipt, for staff to verify.
+        Route::post('/bookings/{booking}/transfer', [GuestPaymentProofController::class, 'store'])
+            ->middleware('throttle:6,1')->name('proofs.store');
+        Route::get('/bookings/{booking}/transfer/{proof}/screenshot', [GuestPaymentProofController::class, 'screenshot'])
+            ->name('proofs.screenshot');
     });
 });
 
@@ -123,6 +131,10 @@ Route::middleware(['auth', 'verified', 'role:staff,admin'])
 
         Route::post('/bookings/{booking}/cash', [StaffPaymentController::class, 'storeCash'])->name('payments.cash');
         Route::post('/bookings/{booking}/refund', [StaffPaymentController::class, 'storeRefund'])->name('payments.refund');
+
+        Route::get('/bookings/{booking}/proofs/{proof}/screenshot', [StaffPaymentProofController::class, 'screenshot'])->name('proofs.screenshot');
+        Route::post('/bookings/{booking}/proofs/{proof}/verify', [StaffPaymentProofController::class, 'verify'])->name('proofs.verify');
+        Route::post('/bookings/{booking}/proofs/{proof}/reject', [StaffPaymentProofController::class, 'reject'])->name('proofs.reject');
 
         // The console bell: list, a cheap background check, the dropdown, open, clear.
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

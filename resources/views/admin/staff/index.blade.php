@@ -17,7 +17,7 @@
             <nav class="inline-flex self-start rounded-lg border border-sand-200 bg-white/70 p-1 shadow-sm" aria-label="Staff filters">
                 @foreach (['all' => 'All', 'active' => 'Active', 'inactive' => 'Deactivated'] as $key => $label)
                     <a href="{{ route('admin.staff.index', array_filter(['status' => $key === 'all' ? null : $key, 'q' => $search])) }}"
-                       @class(['rounded-md px-4 py-1.5 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
+                       @class(['rounded-md px-4 py-1.5 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-200 ease-out-soft active:scale-95',
                                'bg-lagoon-950 text-cream' => $status === $key,
                                'text-gray-600 hover:text-lagoon-900' => $status !== $key])>
                         {{ $label }} <span class="ms-1 opacity-70">{{ $counts[$key] }}</span>

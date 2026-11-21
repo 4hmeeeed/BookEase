@@ -12,6 +12,6 @@
             {{ $booking->check_in->format('M j') }} – {{ $booking->check_out->format('M j, Y') }}
             · {{ $booking->nights() }} {{ Str::plural('night', $booking->nights()) }}
         </p>
-        <p class="mt-1 font-semibold text-coral-600">{{ \App\Support\Money::format($booking->total_price) }}</p>
+        <p class="mt-1 font-semibold tabular-nums text-lagoon-950">{{ \App\Support\Money::format($booking->total_price) }}</p>
     </div>
 </a>

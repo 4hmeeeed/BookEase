@@ -62,7 +62,17 @@ class PaymentService
      */
     public function onlineOptions(Booking $booking): array
     {
-        if (! config('bookease.payments.online') || ! $this->isPayable($booking)) {
+        return config('bookease.payments.online') ? $this->amountOptions($booking) : [];
+    }
+
+    /**
+     * What the guest may pay now, whichever way they pay: kind value => amount.
+     *
+     * @return array<string, string>
+     */
+    public function amountOptions(Booking $booking): array
+    {
+        if (! $this->isPayable($booking)) {
             return [];
         }
 
@@ -236,14 +246,7 @@ class PaymentService
                 throw new PaymentNotAllowedException('Enter an amount between ₱0.01 and the balance of '.Money::format($locked->balance()).'.');
             }
 
-            $nothingPaidYet = ! Money::isPositive($locked->amount_paid);
-            $kind = match (true) {
-                $nothingPaidYet && Money::compare($amount, $locked->total_price) === 0 => PaymentKind::Full,
-                $nothingPaidYet => PaymentKind::Down,
-                default => PaymentKind::Balance,
-            };
-
-            $payment = $this->newPayment($locked, PaymentMethod::Cash, $kind, $amount, PaymentRecordStatus::Paid, $staff);
+            $payment = $this->newPayment($locked, PaymentMethod::Cash, $this->kindFor($locked, $amount), $amount, PaymentRecordStatus::Paid, $staff);
             $this->recalculate($locked);
 
             return $payment;
@@ -256,6 +259,46 @@ class PaymentService
         $this->notifier->moneyRecorded($payment, $staff);
 
         return $payment;
+    }
+
+    /**
+     * Credit a GCash/Maya transfer to the resort's own wallet that staff have
+     * checked against the wallet app. Runs inside the caller's transaction and
+     * sends nothing: the caller sends the receipt once everything committed.
+     *
+     * @throws PaymentNotAllowedException
+     */
+    public function creditWalletTransfer(Booking $booking, User $staff, string $amount, PaymentMethod $method, string $transferKey): Payment
+    {
+        if (! $method->isOnline()) {
+            throw new PaymentNotAllowedException('Only GCash and Maya transfers are verified here.');
+        }
+
+        $amount = Money::normalize($amount);
+        $locked = $this->lock($booking);
+
+        if (! $this->isPayable($locked)) {
+            throw new PaymentNotAllowedException('This booking has nothing left to pay, so the transfer can’t be credited. Refund the guest instead.');
+        }
+
+        if (! Money::isPositive($amount) || Money::compare($amount, $locked->balance()) > 0) {
+            throw new PaymentNotAllowedException('Enter an amount between ₱0.01 and the balance of '.Money::format($locked->balance()).'.');
+        }
+
+        $payment = $this->newPayment($locked, $method, $this->kindFor($locked, $amount), $amount, PaymentRecordStatus::Paid, $staff);
+        // Unique column: the same transfer can never be credited twice.
+        $payment->forceFill(['provider_payment_id' => $transferKey])->save();
+        $this->recalculate($locked);
+
+        return $payment;
+    }
+
+    /** E-receipt email plus the owners' bell, after a desk-recorded payment committed. */
+    public function announceDeskPayment(Payment $payment, User $staff): void
+    {
+        $this->closeOpenCheckouts($payment->booking);
+        $this->notifyGuest($payment);
+        $this->notifier->moneyRecorded($payment, $staff);
     }
 
     /**
@@ -364,6 +407,17 @@ class PaymentService
                 ]);
             }
         }
+    }
+
+    private function kindFor(Booking $locked, string $amount): PaymentKind
+    {
+        $nothingPaidYet = ! Money::isPositive($locked->amount_paid);
+
+        return match (true) {
+            $nothingPaidYet && Money::compare($amount, $locked->total_price) === 0 => PaymentKind::Full,
+            $nothingPaidYet => PaymentKind::Down,
+            default => PaymentKind::Balance,
+        };
     }
 
     private function lock(Booking $booking): Booking

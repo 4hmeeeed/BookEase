@@ -15,26 +15,32 @@
 
                 <div class="grid grid-cols-2 gap-3 sm:w-auto"
                      x-data="{ checkIn: @js($rawCheckIn ?? ''), checkOut: @js($rawCheckOut ?? '') }">
+                    {{-- Every control in this bar is h-11 so the labels line up on one baseline. --}}
                     <label class="block">
                         <span class="mb-1.5 block text-sm font-semibold text-lagoon-900">Check-in</span>
                         <input type="date" name="check_in" x-model="checkIn" min="{{ $today }}"
                                @change="if (checkOut && checkOut <= checkIn) checkOut = ''"
-                               class="field !py-2" @if($stayError) aria-invalid="true" @endif>
+                               class="field h-11 !py-0" @if($stayError) aria-invalid="true" @endif>
                     </label>
                     <label class="block">
                         <span class="mb-1.5 block text-sm font-semibold text-lagoon-900">Check-out</span>
                         <input type="date" name="check_out" x-model="checkOut" :min="checkIn || @js($today)"
-                               class="field !py-2" @if($stayError) aria-invalid="true" @endif>
+                               class="field h-11 !py-0" @if($stayError) aria-invalid="true" @endif>
                     </label>
                 </div>
 
                 <div>
-                    <span class="mb-1.5 block text-sm font-semibold text-lagoon-900">Guests</span>
-                    <div class="inline-flex items-center rounded-lg border border-sand-300 bg-white p-1 shadow-sm">
-                        <button type="button" @click="guests = Math.max(0, guests - 1)" class="grid h-9 w-9 place-items-center rounded-full text-lagoon-800 transition hover:bg-sand-100 active:scale-90" aria-label="Fewer guests">&minus;</button>
-                        <span class="w-14 text-center font-semibold text-lagoon-950 tabular-nums" x-text="guests || 'Any'" aria-live="polite">{{ $guests ?: 'Any' }}</span>
+                    <span id="guests-label" class="mb-1.5 block text-sm font-semibold text-lagoon-900">Guests</span>
+                    <div role="group" aria-labelledby="guests-label"
+                         class="inline-flex h-11 items-center rounded-md border border-lagoon-950/15 bg-white px-1 shadow-[inset_0_1px_1px_rgb(11_35_36/0.04)] transition-colors hover:border-lagoon-950/30">
+                        <button type="button" @click="guests = Math.max(0, guests - 1)" :disabled="guests === 0"
+                                class="grid h-8 w-8 place-items-center rounded text-lg leading-none text-lagoon-800 transition-[background-color,transform,opacity] duration-200 hover:bg-sand-100 active:scale-90 disabled:pointer-events-none disabled:opacity-30"
+                                aria-label="Fewer guests">&minus;</button>
+                        <span class="w-14 text-center font-semibold tabular-nums text-lagoon-950" x-text="guests || 'Any'" aria-live="polite">{{ $guests ?: 'Any' }}</span>
                         <input type="hidden" name="guests" :value="guests" :disabled="! guests" @disabled(! $guests) value="{{ $guests }}">
-                        <button type="button" @click="guests = Math.min(100, guests + 1)" class="grid h-9 w-9 place-items-center rounded-full text-lagoon-800 transition hover:bg-sand-100 active:scale-90" aria-label="More guests">+</button>
+                        <button type="button" @click="guests = Math.min(100, guests + 1)"
+                                class="grid h-8 w-8 place-items-center rounded text-lg leading-none text-lagoon-800 transition-[background-color,transform] duration-200 hover:bg-sand-100 active:scale-90"
+                                aria-label="More guests">+</button>
                     </div>
                 </div>
 
@@ -44,8 +50,8 @@
                         @foreach (['' => 'All'] + $types as $value => $label)
                             <label class="cursor-pointer">
                                 <input type="radio" name="type" value="{{ $value }}" class="peer sr-only" @checked(($type?->value ?? '') === $value)>
-                                <span class="inline-flex rounded-lg border border-sand-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 ease-out-soft
-                                             hover:border-lagoon-300 active:scale-95 peer-checked:border-lagoon-700 peer-checked:bg-lagoon-700 peer-checked:text-cream peer-checked:shadow-lagoon-glow peer-focus-visible:ring-2 peer-focus-visible:ring-lagoon-400">
+                                <span class="inline-flex h-11 items-center rounded-md border border-lagoon-950/15 bg-white px-4 text-sm font-medium text-gray-700 transition-[background-color,border-color,color,transform] duration-200 ease-out-soft
+                                             hover:border-lagoon-950/30 hover:text-lagoon-950 active:scale-95 peer-checked:border-lagoon-800 peer-checked:bg-lagoon-800 peer-checked:text-cream peer-focus-visible:ring-2 peer-focus-visible:ring-lagoon-400 peer-focus-visible:ring-offset-2">
                                     {{ $label }}
                                 </span>
                             </label>
@@ -54,9 +60,9 @@
                 </fieldset>
 
                 <div class="flex gap-2">
-                    <button class="btn-primary">Show cottages</button>
+                    <button class="btn-primary h-11">Show cottages</button>
                     @if ($guests || $type || $rawCheckIn || $rawCheckOut)
-                        <a href="{{ route('cottages.index') }}" class="btn-ghost">Clear</a>
+                        <a href="{{ route('cottages.index') }}" class="btn-ghost h-11">Clear</a>
                     @endif
                 </div>
             </form>
@@ -92,9 +98,10 @@
                 <a href="{{ route('cottages.index') }}" class="btn-ghost mt-6">See all units</a>
             </div>
         @else
-            <p class="mb-4 text-sm font-medium text-gray-500">
+            {{-- h2 so the card titles (h3) sit under a real section heading --}}
+            <h2 class="mb-4 text-sm font-medium text-gray-500">
                 {{ $cottages->count() }} {{ Str::plural('unit', $cottages->count()) }}{{ $checkIn ? ' available' : '' }} · sorted by nightly rate
-            </p>
+            </h2>
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" x-reveal.stagger>
                 @foreach ($cottages as $cottage)
                     <x-cottage-card :cottage="$cottage"

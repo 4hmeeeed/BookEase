@@ -4,14 +4,16 @@
         @include('layouts.partials.head', ['title' => $title])
     </head>
     <body class="font-sans antialiased">
-        <!--
+        {{-- Design brief, kept out of the page that visitors download:
             THESIS: The landing is the resort's own chart of the bay: live cottages and the noon changeover plotted on a 3D plate, refusing the stock "full-bleed photo + three icon cards" resort template.
             OWN-WORLD: chart-paper cream, lagoon-950 ink, buff sand land, teal water, coral only as chart markers; hairline neatlines, graticules, sounding numerals; Libre Caslon Display over Hanken Grotesk; 3-8px drafted corners.
             STORY: a guest sees the shore, sets dates in the dock, sees live cottages and rates, understands the 12 NN / 2 PM changeover and the GCash/Maya down payment, then books or asks the assistant.
             FIRST VIEWPORT: full-bleed looping dusk shoreline under a ticked neatline; Caslon headline about 6rem, lower left, ink on pale sky; booking dock (check-in, check-out, guests, "See open cottages") across the bottom over the foam; coordinates on the frame.
             FORM: nautical chart / tide table, position 4 of 7, seed 449b20b1.
             FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
-        -->
+        --}}
+        <a href="#main" class="skip-link">Skip to content</a>
+
         <header @class([
             'z-30',
             'absolute inset-x-0 top-0' => $overlay,
@@ -21,7 +23,8 @@
                 <x-brand />
 
                 <nav class="flex items-center gap-1 sm:gap-2">
-                    <x-nav-link :href="route('cottages.index')" :active="request()->routeIs('cottages.*')" class="hidden sm:inline-flex">Cottages</x-nav-link>
+                    {{-- Visible on phones for visitors (fits beside "Log in"); signed-in phones show the wider dashboard button instead. --}}
+                    <x-nav-link :href="route('cottages.index')" :active="request()->routeIs('cottages.*')" class="{{ auth()->check() ? 'hidden sm:inline-flex' : '' }}">Cottages</x-nav-link>
                     <x-nav-link :href="route('home').'#changeover'" :active="false" class="hidden md:inline-flex">How booking works</x-nav-link>
 
                     @auth
@@ -38,7 +41,7 @@
 
         <x-flash />
 
-        <main>
+        <main id="main" tabindex="-1" class="scroll-mt-20 focus:outline-none">
             {{ $slot }}
         </main>
 
@@ -49,20 +52,21 @@
                     <div>
                         <x-brand light />
                         <p class="mt-5 max-w-sm text-sm leading-relaxed text-cream/65">
-                            Barangay Bacubac, Basey, Samar. Reserve a cottage, pay the down payment with GCash or Maya, and keep your e-receipt.
+                            Barangay Bacubac, Basey, Samar. Reserve a cottage, {{ config('bookease.payments.online') ? 'pay the down payment with GCash or Maya' : 'pay at the front desk' }}, and keep your e-receipt.
                         </p>
                     </div>
                     <nav class="flex flex-col gap-2.5 text-sm" aria-label="Footer">
-                        <span class="sounding mb-1 text-cream/40">Visit</span>
+                        <span class="sounding mb-1 text-cream/55">Visit</span>
                         <a href="{{ route('cottages.index') }}" class="link-underline w-fit text-cream/80 hover:text-cream">Cottages &amp; rates</a>
                         <a href="{{ route('home') }}#changeover" class="link-underline w-fit text-cream/80 hover:text-cream">How booking works</a>
+                        <a href="{{ route('privacy') }}" class="link-underline w-fit text-cream/80 hover:text-cream">Privacy notice</a>
                         @guest
                             <a href="{{ route('login') }}" class="link-underline w-fit text-cream/80 hover:text-cream">Guest sign-in</a>
                             <a href="{{ route('staff.login') }}" class="link-underline w-fit text-cream/80 hover:text-cream">Staff login</a>
                         @endguest
                     </nav>
                     <div class="text-sm">
-                        <span class="sounding text-cream/40">Times</span>
+                        <span class="sounding text-cream/55">Times</span>
                         <dl class="tabular mt-3 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-cream/80">
                             <dt>Check-in</dt><dd>2:00 PM</dd>
                             <dt>Check-out</dt><dd>12:00 NN</dd>
@@ -70,7 +74,8 @@
                     </div>
                 </div>
 
-                <div class="sounding mt-14 flex flex-col justify-between gap-3 border-t border-cream/10 pt-6 text-cream/40 sm:flex-row">
+                {{-- pr clears the floating assistant button --}}
+                <div class="sounding mt-14 flex flex-col justify-between gap-3 border-t border-cream/10 pb-16 pt-6 text-cream/55 sm:flex-row sm:pb-0 sm:pr-16">
                     <span>&copy; {{ date('Y') }} Labnasan Resort · Basey, Samar</span>
                     <span>11&deg;17&prime;N &nbsp;125&deg;04&prime;E</span>
                 </div>

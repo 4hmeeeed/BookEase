@@ -17,7 +17,7 @@
             <nav class="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0" aria-label="Booking filters">
                 @foreach ($tabs as $key => $label)
                     <a href="{{ route('staff.bookings.index', array_filter(['tab' => $key, 'q' => $search])) }}"
-                       @class(['inline-flex shrink-0 items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
+                       @class(['inline-flex shrink-0 items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-200 ease-out-soft active:scale-95',
                                'bg-lagoon-950 text-cream' => $tab === $key,
                                'text-gray-600 hover:bg-sand-100 hover:text-lagoon-900' => $tab !== $key])>
                         {{ $label }}
@@ -45,7 +45,7 @@
                 @foreach ($bookings as $booking)
                     <li>
                         <a href="{{ route('staff.bookings.show', $booking) }}"
-                           class="card group grid gap-3 p-4 transition-all duration-300 ease-out-soft hover:-translate-y-0.5 hover:shadow-lift sm:grid-cols-[8rem_1fr_auto_auto] sm:items-center">
+                           class="card group grid gap-3 p-4 transition-[transform,box-shadow,border-color] duration-300 ease-out-soft hover:-translate-y-0.5 hover:shadow-lift sm:grid-cols-[8rem_1fr_auto_auto] sm:items-center">
                             <span class="ref-code text-sm text-sand-700">{{ $booking->reference_code }}</span>
                             <span class="min-w-0">
                                 <span class="block truncate font-semibold text-gray-900">{{ $booking->user->name }}</span>
@@ -63,7 +63,10 @@
                                     {{ $booking->payment_status->label() }}
                                 </span>
                             </span>
-                            <x-booking-status :status="$booking->status" class="justify-self-start sm:justify-self-end" />
+                            <span class="flex flex-wrap items-center gap-1.5 justify-self-start sm:justify-self-end">
+                                <x-no-show :booking="$booking" />
+                                <x-booking-status :status="$booking->status" />
+                            </span>
                         </a>
                     </li>
                 @endforeach

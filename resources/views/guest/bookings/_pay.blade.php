@@ -9,7 +9,7 @@
         <p class="text-sm text-lagoon-100">Your wallet details are entered only on the payment provider's page. BookEase never sees them.</p>
     </div>
 
-    <form method="POST" action="{{ route('guest.payments.store', $booking) }}" class="space-y-5 p-6" @submit="sending = true">
+    <form method="POST" action="{{ route('guest.payments.store', $booking) }}" data-no-busy class="space-y-5 p-6" @submit="sending = true">
         @csrf
 
         <fieldset>
@@ -18,8 +18,8 @@
                 @foreach ($paymentOptions as $kind => $amount)
                     <label class="cursor-pointer">
                         <input type="radio" name="kind" value="{{ $kind }}" x-model="kind" class="peer sr-only">
-                        <span class="block rounded-2xl border-2 border-sand-200 bg-white p-4 transition-all duration-200 ease-out-soft hover:border-lagoon-300 active:scale-[.98]
-                                     peer-checked:border-lagoon-600 peer-checked:bg-lagoon-50 peer-checked:shadow-lagoon-glow peer-focus-visible:ring-2 peer-focus-visible:ring-lagoon-400">
+                        <span class="block rounded-lg border-2 border-lagoon-950/10 bg-white p-4 transition-[border-color,background-color,transform] duration-200 ease-out-soft hover:border-lagoon-950/25 active:scale-[.98]
+                                     peer-checked:border-lagoon-700 peer-checked:bg-lagoon-50 peer-focus-visible:ring-2 peer-focus-visible:ring-lagoon-400 peer-focus-visible:ring-offset-2">
                             <span class="block text-sm font-semibold text-gray-700">
                                 @switch($kind)
                                     @case('down') Down payment ({{ $downPercent }}%) @break
@@ -27,7 +27,7 @@
                                     @default Remaining balance
                                 @endswitch
                             </span>
-                            <span class="mt-1 block font-serif text-2xl font-semibold text-coral-600">{{ Money::format($amount) }}</span>
+                            <span class="mt-1 block text-2xl font-semibold tabular-nums tracking-tight text-lagoon-950">{{ Money::format($amount) }}</span>
                         </span>
                     </label>
                 @endforeach
@@ -40,8 +40,8 @@
                 @foreach (['gcash' => ['GCash', 'bg-ocean-600'], 'maya' => ['Maya', 'bg-lagoon-600']] as $value => [$label, $dot])
                     <label class="cursor-pointer">
                         <input type="radio" name="method" value="{{ $value }}" x-model="method" class="peer sr-only">
-                        <span class="flex items-center gap-3 rounded-2xl border-2 border-sand-200 bg-white px-4 py-3 font-semibold text-gray-800 transition-all duration-200 ease-out-soft hover:border-lagoon-300 active:scale-[.98]
-                                     peer-checked:border-lagoon-600 peer-checked:bg-lagoon-50 peer-focus-visible:ring-2 peer-focus-visible:ring-lagoon-400">
+                        <span class="flex items-center gap-3 rounded-lg border-2 border-lagoon-950/10 bg-white px-4 py-3 font-semibold text-gray-800 transition-[border-color,background-color,transform] duration-200 ease-out-soft hover:border-lagoon-950/25 active:scale-[.98]
+                                     peer-checked:border-lagoon-700 peer-checked:bg-lagoon-50 peer-focus-visible:ring-2 peer-focus-visible:ring-lagoon-400 peer-focus-visible:ring-offset-2">
                             <span class="grid h-8 w-8 place-items-center rounded-full text-xs font-bold text-white {{ $dot }}">{{ Str::substr($label, 0, 1) }}</span>
                             {{ $label }}
                         </span>

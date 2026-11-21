@@ -2,7 +2,9 @@
 
 namespace App\Notifications\Console;
 
-/** Front-desk money the owner keeps an eye on: cash taken in and refunds paid out. */
+use App\Enums\PaymentMethod;
+
+/** Front-desk money the owner keeps an eye on: cash taken in, GCash/Maya transfers verified, refunds paid out. */
 class MoneyRecordedByStaff extends PaymentAlert
 {
     public function kind(): string
@@ -12,7 +14,11 @@ class MoneyRecordedByStaff extends PaymentAlert
 
     public function title(): string
     {
-        return $this->payment->isRefund() ? 'Refund recorded' : 'Cash payment recorded';
+        return match (true) {
+            $this->payment->isRefund() => 'Refund recorded',
+            $this->payment->method === PaymentMethod::Cash => 'Cash payment recorded',
+            default => "{$this->payment->method->label()} transfer verified",
+        };
     }
 
     public function body(): string

@@ -26,6 +26,7 @@ class SignUpRateLimitTest extends TestCase
             'email' => 'maria@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
+            'privacy_consent' => '1',
         ])->assertTooManyRequests();
 
         $this->assertSame(0, User::count());
@@ -43,6 +44,7 @@ class SignUpRateLimitTest extends TestCase
             'email' => 'maria@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
+            'privacy_consent' => '1',
         ])->assertRedirect(route('dashboard', absolute: false));
     }
 

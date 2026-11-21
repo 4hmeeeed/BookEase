@@ -50,7 +50,7 @@ class BookingController extends Controller
     {
         $this->authorize('manage', $booking);
 
-        $booking->load(['cottage', 'user', 'statusChanges.user', 'payments.recordedBy']);
+        $booking->load(['cottage', 'user', 'statusChanges.user', 'payments.recordedBy', 'paymentProofs.reviewer']);
 
         return view('staff.bookings.show', ['booking' => $booking]);
     }

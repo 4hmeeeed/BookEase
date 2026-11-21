@@ -7,7 +7,7 @@
         'What cottages do you have?',
         'What time is check-in and check-out?',
         'Is anything free this weekend?',
-        'How do I pay the down payment?',
+        config('bookease.payments.online') ? 'How do I pay the down payment?' : 'How do I pay?',
     ];
 @endphp
 
@@ -91,13 +91,19 @@
                 </div>
             </template>
 
-            {{-- Typing indicator --}}
-            <div x-show="sending" x-cloak class="flex gap-2.5" aria-label="Assistant is typing">
+            {{-- Typing indicator; after ~8 s it says why it's taking a while (answers can take 10–40 s). --}}
+            <div x-show="sending" x-cloak class="flex gap-2.5" role="status">
                 <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-lagoon-100" aria-hidden="true"></span>
-                <div class="flex items-center gap-1 rounded-2xl rounded-tl-md border border-sand-200 bg-white px-4 py-3 shadow-sm">
-                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-lagoon-500 motion-reduce:animate-none"></span>
-                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-lagoon-500 [animation-delay:120ms] motion-reduce:animate-none"></span>
-                    <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-lagoon-500 [animation-delay:240ms] motion-reduce:animate-none"></span>
+                <div class="rounded-2xl rounded-tl-md border border-sand-200 bg-white px-4 py-3 shadow-sm">
+                    <div class="flex items-center gap-1" aria-hidden="true">
+                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-lagoon-500 motion-reduce:animate-none"></span>
+                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-lagoon-500 [animation-delay:120ms] motion-reduce:animate-none"></span>
+                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-lagoon-500 [animation-delay:240ms] motion-reduce:animate-none"></span>
+                    </div>
+                    <p x-show="slow" x-cloak x-transition.opacity.duration.400ms class="mt-2 max-w-[15rem] text-xs leading-snug text-gray-500">
+                        Still checking the resort’s records. This can take up to half a minute.
+                    </p>
+                    <span class="sr-only" x-text="slow ? 'Still checking the resort’s records.' : 'The assistant is checking.'"></span>
                 </div>
             </div>
         </div>
@@ -113,7 +119,7 @@
                           placeholder="Ask about rates, dates, or policies…"
                           class="field max-h-28 min-h-[2.75rem] flex-1 resize-none !py-2.5 text-sm"></textarea>
                 <button type="submit" :disabled="sending || !draft.trim()"
-                        class="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-lagoon-800 text-cream transition-all duration-200 ease-out-soft hover:bg-lagoon-700 active:scale-90 active:shadow-press disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+                        class="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-lagoon-800 text-cream transition-[background-color,transform,opacity,box-shadow] duration-200 ease-out-soft hover:bg-lagoon-700 active:scale-90 active:shadow-press disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
                         aria-label="Send question">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h13M13 6l6 6-6 6" /></svg>
                 </button>
@@ -129,7 +135,7 @@
     <button type="button" x-ref="launcher" @click="toggle()"
             :aria-expanded="open.toString()" aria-controls="chatbot-panel"
             :aria-label="open ? 'Close chat' : 'Ask the resort assistant'"
-            class="group relative grid h-14 w-14 animate-pop-in place-items-center rounded-full bg-lagoon-950 text-cream shadow-lift ring-1 ring-cream/20 transition-all duration-300 ease-out-soft [animation-delay:900ms] hover:-translate-y-0.5 hover:bg-lagoon-800 active:translate-y-0 active:scale-95">
+            class="group relative grid h-14 w-14 animate-pop-in place-items-center rounded-full bg-lagoon-950 text-cream shadow-lift ring-1 ring-cream/20 transition-[transform,background-color,box-shadow] duration-300 ease-out-soft [animation-delay:900ms] hover:-translate-y-0.5 hover:bg-lagoon-800 active:translate-y-0 active:scale-95">
         <span class="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5" x-show="!open && !messages.length" aria-hidden="true">
             <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-coral-400 opacity-70 motion-reduce:animate-none"></span>
             <span class="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-cream bg-coral-500"></span>
@@ -140,7 +146,7 @@
         </span>
         {{-- Label slides out on hover/focus only, so the button never covers page content --}}
         <span x-show="!open" aria-hidden="true"
-              class="pointer-events-none absolute right-full top-1/2 mr-3 hidden -translate-y-1/2 translate-x-2 whitespace-nowrap rounded bg-lagoon-950 px-3 py-1.5 text-xs font-semibold text-cream opacity-0 shadow-lift transition-all duration-200 ease-out-soft group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 sm:block">
+              class="pointer-events-none absolute right-full top-1/2 mr-3 hidden -translate-y-1/2 translate-x-2 whitespace-nowrap rounded bg-lagoon-950 px-3 py-1.5 text-xs font-semibold text-cream opacity-0 shadow-lift transition-[opacity,transform] duration-200 ease-out-soft group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 sm:block">
             Ask us
         </span>
     </button>

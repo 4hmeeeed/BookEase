@@ -20,7 +20,7 @@
                 @foreach (['all' => 'All', 'listed' => 'Listed', 'delisted' => 'Delisted'] as $key => $label)
                     @php $active = ($status ?? 'all') === $key || ($key === 'all' && ! in_array($status, ['listed', 'delisted'], true)); @endphp
                     <a href="{{ route('admin.cottages.index', array_filter(['status' => $key === 'all' ? null : $key, 'q' => request('q')])) }}"
-                       @class(['rounded-md px-4 py-1.5 text-sm font-semibold transition-all duration-200 ease-out-soft active:scale-95',
+                       @class(['rounded-md px-4 py-1.5 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-200 ease-out-soft active:scale-95',
                                'bg-lagoon-950 text-cream' => $active,
                                'text-gray-600 hover:text-lagoon-900' => ! $active])>
                         {{ $label }} <span class="ms-1 opacity-70">{{ $counts[$key] }}</span>
@@ -46,7 +46,7 @@
         @else
             <ul class="mt-6 space-y-3" x-reveal.stagger>
                 @foreach ($cottages as $cottage)
-                    <li @class(['card group flex flex-col gap-4 p-3 transition-all duration-300 ease-out-soft hover:-translate-y-0.5 hover:shadow-lift sm:flex-row sm:items-center sm:p-4',
+                    <li @class(['card group flex flex-col gap-4 p-3 transition-[transform,box-shadow,border-color] duration-300 ease-out-soft hover:-translate-y-0.5 hover:shadow-lift sm:flex-row sm:items-center sm:p-4',
                                 'opacity-70 hover:opacity-100' => ! $cottage->is_active])>
                         <x-cottage-image :cottage="$cottage" class="h-40 w-full shrink-0 rounded-2xl sm:h-20 sm:w-28" />
 
@@ -66,7 +66,7 @@
 
                         <div class="flex items-center justify-between gap-4 sm:justify-end">
                             <p class="text-right">
-                                <span class="block font-serif text-xl font-semibold text-coral-600">{{ $cottage->formatted_price }}</span>
+                                <span class="block text-xl font-semibold tabular-nums tracking-tight text-lagoon-950">{{ $cottage->formatted_price }}</span>
                                 <span class="block text-xs text-gray-500">per night</span>
                             </p>
 

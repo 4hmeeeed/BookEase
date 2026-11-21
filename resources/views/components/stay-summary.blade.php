@@ -24,7 +24,7 @@
         <div class="mt-5 space-y-2 border-t border-dashed border-sand-300 pt-4 text-sm">
             <div class="flex justify-between text-gray-600">
                 <span>{{ $cottage->formatted_price }} × {{ $nights }} {{ Str::plural('night', $nights) }}</span>
-                <span>{{ \App\Support\Money::format($total) }}</span>
+                <span class="tabular">{{ \App\Support\Money::format($total) }}</span>
             </div>
             @if ($guests)
                 <div class="flex justify-between text-gray-600">
@@ -33,7 +33,7 @@
             @endif
             <div class="flex items-end justify-between pt-2">
                 <span class="font-semibold text-lagoon-950">Total</span>
-                <span class="font-display text-3xl font-semibold text-coral-600">{{ \App\Support\Money::format($total) }}</span>
+                <span class="tabular font-display text-3xl text-lagoon-950">{{ \App\Support\Money::format($total) }}</span>
             </div>
         </div>
 

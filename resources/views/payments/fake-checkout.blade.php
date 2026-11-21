@@ -34,7 +34,7 @@
             </div>
 
             <p class="mt-4 text-center text-xs text-gray-500">
-                "Authorize" sends a signed webhook through the same verification as the real gateway.
+                “Authorize” sends a signed webhook through the same verification as the real gateway.
             </p>
         </div>
     </div>

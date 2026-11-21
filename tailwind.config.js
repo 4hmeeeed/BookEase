@@ -1,5 +1,6 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+import plugin from 'tailwindcss/plugin';
 
 /*
  * BookEase design tokens — Labnasan Resort, Basey, Samar.
@@ -155,5 +156,10 @@ export default {
         },
     },
 
-    plugins: [forms],
+    plugins: [
+        forms,
+        // `short:` — viewports under 720px tall (1366×768 laptops, 1280×720
+        // projectors), so one-screen pages like sign-in can tighten and fit.
+        plugin(({ addVariant }) => addVariant('short', '@media (max-height: 720px)')),
+    ],
 };

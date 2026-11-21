@@ -168,6 +168,60 @@ Alpine.directive('bay', (el, _, { cleanup }) => {
     });
 });
 
+/*
+ * Busy state for ordinary form submits: the button shows a spinner and a second
+ * click or Enter can't send the form twice (Approve, Check in, Sign in, …).
+ * Forms that manage their own state opt out with data-no-busy.
+ */
+document.addEventListener('submit', (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-no-busy') || form.target === '_blank') return;
+
+    if (form.dataset.busy === '1') {
+        event.preventDefault(); // already on its way
+        return;
+    }
+    if (event.defaultPrevented) return; // handled in JS (e.g. the chatbot)
+
+    form.dataset.busy = '1';
+    const button = event.submitter instanceof HTMLButtonElement ? event.submitter : form.querySelector('button[type="submit"], button:not([type])');
+
+    // Next frame, so the clicked button's name/value is still part of the submission.
+    requestAnimationFrame(() => {
+        if (!button) return;
+        button.setAttribute('aria-busy', 'true');
+        button.disabled = true;
+    });
+});
+
+// Coming back with the browser's Back button restores the page as it was: re-arm the forms.
+window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    document.querySelectorAll('form[data-busy]').forEach((form) => delete form.dataset.busy);
+    document.querySelectorAll('button[aria-busy="true"]').forEach((button) => {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+    });
+});
+
+/*
+ * Alpine only boots elements that sit inside an x-data component, so x-tilt,
+ * x-reveal, x-parallax and x-bay on plain sections never ran. Making <body>
+ * the root component lets those directives work anywhere in a view.
+ */
+if (!document.body.hasAttribute('x-data')) {
+    document.body.setAttribute('x-data', '');
+}
+
 window.Alpine = Alpine;
 
 Alpine.start();
+
+// After a failed submit, put the cursor in the first field that needs fixing.
+// (x-text-input marks fields with aria-invalid when the server returned an error.)
+requestAnimationFrame(() => {
+    const invalid = document.querySelector('input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"]');
+    if (!invalid || invalid.closest('[x-cloak], [hidden]') || invalid.offsetParent === null) return;
+    invalid.focus({ preventScroll: true });
+    invalid.scrollIntoView({ block: 'center', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+});

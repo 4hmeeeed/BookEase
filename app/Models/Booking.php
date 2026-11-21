@@ -101,6 +101,12 @@ class Booking extends Model
     }
 
     /** total_price − amount_paid, never below zero. */
+    /** GCash/Maya transfers the guest reported, newest first. */
+    public function paymentProofs(): HasMany
+    {
+        return $this->hasMany(PaymentProof::class)->latest('id');
+    }
+
     public function balance(): string
     {
         return Money::max(Money::sub($this->total_price, $this->amount_paid), '0.00');

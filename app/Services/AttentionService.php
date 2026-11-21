@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\ChatInquiry;
+use App\Enums\PaymentProofStatus;
+use App\Models\PaymentProof;
 use App\Models\User;
 use App\Notifications\Console\PaymentNeedsReview;
 use App\Support\AttentionItem;
@@ -30,6 +32,7 @@ class AttentionService
             $this->pendingRequests(),
             $this->balancesDueSoon(),
             $this->noShows(),
+            $this->transfersToVerify(),
             $this->paymentsToReview($viewer),
             $this->chatbotGaps(),
         ]));
@@ -104,6 +107,28 @@ class AttentionService
     }
 
     /** Counted from the viewer's unread alerts: opening the alert acknowledges it. */
+    private function transfersToVerify(): ?AttentionItem
+    {
+        $pending = PaymentProof::query()->where('status', PaymentProofStatus::Pending);
+        $count = (clone $pending)->count();
+
+        if ($count === 0) {
+            return null;
+        }
+
+        // One waiting: go straight to its booking. Several: the bell lists them.
+        $url = $count === 1
+            ? route('staff.bookings.show', $pending->with('booking')->first()->booking)
+            : route('staff.notifications.index');
+
+        return new AttentionItem(
+            key: 'transfers',
+            tone: 'attention',
+            text: $count.' GCash/Maya '.Str::plural('payment', $count).' to verify',
+            url: $url,
+        );
+    }
+
     private function paymentsToReview(User $viewer): ?AttentionItem
     {
         $count = $viewer->unreadNotifications()->where('type', PaymentNeedsReview::class)->count();

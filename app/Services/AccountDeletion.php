@@ -5,9 +5,11 @@ namespace App\Services;
 use App\Enums\BookingStatus;
 use App\Enums\PaymentRecordStatus;
 use App\Models\Payment;
+use App\Models\PaymentProof;
 use App\Models\User;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Self-service account deletion from the profile page.
@@ -49,6 +51,9 @@ class AccountDeletion
      */
     public function delete(User $user): void
     {
+        // Rows cascade with the user; their screenshot files don't.
+        $screenshots = PaymentProof::query()->where('user_id', $user->id)->pluck('screenshot_path')->all();
+
         DB::transaction(function () use ($user) {
             $references = $user->bookings()->pluck('reference_code')->all();
 
@@ -58,5 +63,9 @@ class AccountDeletion
 
             $user->delete();
         });
+
+        if ($screenshots !== []) {
+            Storage::disk(PaymentProof::DISK)->delete($screenshots);
+        }
     }
 }

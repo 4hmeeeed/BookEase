@@ -47,7 +47,10 @@
                                         <span class="block truncate font-semibold text-gray-800">{{ $booking->user->name }}</span>
                                         <span class="block truncate text-xs tabular-nums text-gray-500">{{ $booking->cottage->name }} · {{ $booking->check_in->format('M j') }}–{{ $booking->check_out->format('M j') }}</span>
                                     </span>
-                                    <span class="shrink-0 ref-code text-xs text-sand-700">{{ $booking->reference_code }}</span>
+                                    <span class="flex shrink-0 flex-col items-end gap-1">
+                                        <span class="ref-code text-xs text-sand-700">{{ $booking->reference_code }}</span>
+                                        <x-no-show :booking="$booking" />
+                                    </span>
                                 </a>
                             </li>
                         @empty

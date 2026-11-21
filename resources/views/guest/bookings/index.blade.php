@@ -3,7 +3,7 @@
         <x-page-header eyebrow="My stays" title="My bookings">
             Track each reservation from request to check-out.
             <x-slot name="actions">
-                <a href="{{ route('cottages.index') }}" class="btn-coral">Book another stay</a>
+                <a href="{{ route('cottages.index') }}" class="btn-coral">{{ $current->isEmpty() && $past->isEmpty() ? 'Book a stay' : 'Book another stay' }}</a>
             </x-slot>
         </x-page-header>
     </x-slot>

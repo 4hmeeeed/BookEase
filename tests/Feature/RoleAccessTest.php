@@ -19,6 +19,7 @@ class RoleAccessTest extends TestCase
             'email' => 'juan@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
+            'privacy_consent' => '1',
             'role' => 'admin', // attempted privilege escalation
         ]);
 

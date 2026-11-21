@@ -7,6 +7,9 @@
  */
 const STORAGE_KEY = 'bookease.chat.v1';
 const MAX_KEPT = 30;
+// The backend may fall back to a lighter model, so answers can take 10–40 s.
+const SLOW_AFTER_MS = 8000; // show "still checking…" after this
+const GIVE_UP_AFTER_MS = 75000; // abort a stalled request (PHP allows 120 s)
 
 const storage = {
     read() {
@@ -38,6 +41,7 @@ export default ({ endpoint, maxLength = 500 }) => ({
     open: false,
     draft: '',
     sending: false,
+    slow: false,
     messages: [],
     maxLength,
     nextId: 1,
@@ -102,6 +106,14 @@ export default ({ endpoint, maxLength = 500 }) => ({
         this.draft = '';
         this.push('user', question);
         this.sending = true;
+        this.slow = false;
+
+        const slowTimer = setTimeout(() => {
+            this.slow = true;
+            this.$nextTick(() => this.scrollToEnd());
+        }, SLOW_AFTER_MS);
+        const controller = new AbortController();
+        const giveUpTimer = setTimeout(() => controller.abort(), GIVE_UP_AFTER_MS);
 
         try {
             const token = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
@@ -115,6 +127,7 @@ export default ({ endpoint, maxLength = 500 }) => ({
                 },
                 credentials: 'same-origin',
                 body: JSON.stringify({ question }),
+                signal: controller.signal,
             });
 
             const data = await response.json().catch(() => ({}));
@@ -130,10 +143,15 @@ export default ({ endpoint, maxLength = 500 }) => ({
             } else {
                 this.push('error', 'Something went wrong. Please try again, or contact the resort directly.');
             }
-        } catch {
-            this.push('error', 'You seem to be offline. Please check your connection and try again.');
+        } catch (error) {
+            this.push('error', error?.name === 'AbortError'
+                ? 'The assistant is taking too long to answer. Please try again in a moment, or contact the resort directly.'
+                : 'You seem to be offline. Please check your connection and try again.');
         } finally {
+            clearTimeout(slowTimer);
+            clearTimeout(giveUpTimer);
             this.sending = false;
+            this.slow = false;
             this.$nextTick(() => this.$refs.input?.focus());
         }
     },
