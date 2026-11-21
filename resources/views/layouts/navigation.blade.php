@@ -67,28 +67,38 @@
          x-transition:enter="transition ease-out-soft duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
          x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
          class="border-t border-lagoon-950/10 lg:hidden">
-        <div class="space-y-1 py-3">
+        {{-- Big serif destinations; a small swell marks the page you're on. --}}
+        <ul class="px-4 py-4">
             @foreach ($links as [$route, $label, $pattern])
-                <x-responsive-nav-link :href="route($route)" :active="request()->routeIs($pattern)">{{ $label }}</x-responsive-nav-link>
+                @php $active = request()->routeIs($pattern); @endphp
+                <li>
+                    <a href="{{ route($route) }}" @if ($active) aria-current="page" @endif
+                       class="group flex items-center justify-between rounded-md px-2 py-2.5 font-serif text-2xl transition-colors duration-200 {{ $active ? 'text-lagoon-950' : 'text-lagoon-900/60 hover:text-lagoon-950' }}">
+                        <span>{{ $label }}</span>
+                        @if ($active)
+                            <svg class="h-3 w-10 text-lagoon-400" viewBox="0 0 40 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M1 6c4.5-5 9-5 13 0s8.5 5 13 0 8.5-5 12 0" /></svg>
+                        @endif
+                    </a>
+                </li>
             @endforeach
+        </ul>
+
+        <div class="mx-4 mb-4 flex items-center gap-3 rounded-lg border border-sand-200 bg-sand-50 p-3">
+            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-b from-ocean-100 to-lagoon-100 text-sm font-semibold text-lagoon-900 ring-1 ring-lagoon-200/70">
+                {{ Str::of($user->name)->explode(' ')->map(fn ($p) => Str::substr($p, 0, 1))->take(2)->implode('') }}
+            </span>
+            <div class="min-w-0 flex-1 leading-tight">
+                <div class="truncate font-medium text-lagoon-950">{{ $user->name }}</div>
+                <div class="truncate text-sm text-gray-500">{{ $user->email }}</div>
+            </div>
         </div>
 
-        <div class="border-t border-lagoon-950/10 pb-3 pt-4">
-            <div class="px-4">
-                <div class="font-medium text-gray-800">{{ $user->name }}</div>
-                <div class="text-sm text-gray-500">{{ $user->email }} · {{ $user->role->label() }}</div>
-            </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">{{ __('Profile') }}</x-responsive-nav-link>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();">
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </form>
-            </div>
+        <div class="grid grid-cols-2 gap-2 px-4 pb-4">
+            <a href="{{ route('profile.edit') }}" class="btn-ghost w-full justify-center">{{ __('Profile') }}</a>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="btn-ghost w-full justify-center">{{ __('Log Out') }}</button>
+            </form>
         </div>
     </div>
 </nav>

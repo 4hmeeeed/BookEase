@@ -1,17 +1,24 @@
-<a href="{{ route('guest.bookings.show', $booking) }}" x-tilt="5"
-   class="card tilt group flex gap-4 overflow-hidden p-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-lagoon-400 sm:p-4">
-    <x-cottage-image :cottage="$booking->cottage" class="h-24 w-24 shrink-0 rounded-2xl sm:h-28 sm:w-32" />
+{{-- A booking as a postcard: the cottage on top, cut along a swell, the stay written below. --}}
+<a href="{{ route('guest.bookings.show', $booking) }}" x-tilt="4"
+   class="card tilt group flex h-full flex-col overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-lagoon-400">
+    <div class="relative h-36 shrink-0 sm:h-40">
+        <x-cottage-image :cottage="$booking->cottage" class="absolute inset-0 h-full w-full" />
+        <x-booking-status :status="$booking->status" class="tilt-pop absolute right-3 top-3 shadow-sm" />
+        <x-wave-edge class="-mb-px h-5 text-white" />
+    </div>
 
-    <div class="min-w-0 flex-1">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="font-mono text-xs font-semibold tracking-wider text-sand-700">{{ $booking->reference_code }}</span>
-            <x-booking-status :status="$booking->status" class="tilt-pop" />
+    <div class="flex flex-1 flex-col px-4 pb-4 pt-1">
+        <div class="flex-1">
+            <h3 class="tilt-pop truncate font-serif text-xl text-lagoon-950">{{ $booking->cottage->name }}</h3>
+            <p class="mt-0.5 text-sm text-gray-600">
+                {{ $booking->check_in->format('M j') }} – {{ $booking->check_out->format('M j, Y') }}
+                · {{ $booking->nights() }} {{ Str::plural('night', $booking->nights()) }}
+            </p>
         </div>
-        <h3 class="tilt-pop mt-1 truncate font-serif text-lg font-semibold text-lagoon-950">{{ $booking->cottage->name }}</h3>
-        <p class="text-sm text-gray-600">
-            {{ $booking->check_in->format('M j') }} – {{ $booking->check_out->format('M j, Y') }}
-            · {{ $booking->nights() }} {{ Str::plural('night', $booking->nights()) }}
-        </p>
-        <p class="mt-1 font-semibold tabular-nums text-lagoon-950">{{ \App\Support\Money::format($booking->total_price) }}</p>
+
+        <div class="mt-4 flex items-end justify-between gap-3 border-t border-dashed border-sand-200 pt-3">
+            <span class="text-xs tracking-wider text-sand-700 tabular-nums">{{ $booking->reference_code }}</span>
+            <span class="font-display text-xl tabular-nums text-lagoon-950">{{ \App\Support\Money::format($booking->total_price) }}</span>
+        </div>
     </div>
 </a>

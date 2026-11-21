@@ -642,6 +642,43 @@
 }
 
 /* ==================================================================
+ | Guest pages — a postcard from the bay: dawn sky, rolling swells.
+ * ================================================================== */
+@layer components {
+    /* Dawn over Basey: pale ocean sky warming to sand at the waterline. */
+    .horizon {
+        background:
+            radial-gradient(120% 70% at 85% 78%, rgb(245 236 220 / 0.95), transparent 60%),
+            linear-gradient(180deg, theme('colors.ocean.100') 0%, #e8f2f4 45%, theme('colors.sand.50') 100%);
+    }
+
+    /* A sun half-set behind the swells. */
+    .horizon-sun {
+        background: radial-gradient(circle at 50% 45%, #f6e4c0 0%, theme('colors.sand.300') 55%, theme('colors.sand.400') 100%);
+        box-shadow: 0 0 60px 18px rgb(223 196 151 / 0.45);
+    }
+
+    /* Each swell layer is twice the screen wide and drifts half its width, so the loop is seamless. */
+    .swell {
+        width: 200%;
+        animation: swell var(--swell-speed, 24s) linear infinite;
+    }
+
+    .swell-reverse {
+        animation-direction: reverse;
+    }
+
+    @keyframes swell {
+        to { transform: translate3d(-50%, 0, 0); }
+    }
+
+    /* Big date numerals on the next-stay postcard. */
+    .stay-day {
+        @apply font-display text-5xl leading-none tabular-nums;
+    }
+}
+
+/* ==================================================================
  | Staff/owner console — sidebar links, counts, phone tab bar.
  * ================================================================== */
 @layer components {

@@ -13,7 +13,7 @@
             <h2 class="font-serif text-2xl font-semibold text-lagoon-950">Upcoming & current</h2>
 
             @forelse ($current as $booking)
-                @if ($loop->first)<ul class="mt-4 grid gap-5 md:grid-cols-2" x-reveal.stagger>@endif
+                @if ($loop->first)<ul class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" x-reveal.stagger>@endif
                     <li>@include('guest.bookings._card', ['booking' => $booking])</li>
                 @if ($loop->last)</ul>@endif
             @empty
@@ -28,7 +28,7 @@
         @if ($past->isNotEmpty())
             <section>
                 <h2 class="font-serif text-2xl font-semibold text-lagoon-950">Past & cancelled</h2>
-                <ul class="mt-4 grid gap-5 md:grid-cols-2" x-reveal.stagger>
+                <ul class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" x-reveal.stagger>
                     @foreach ($past as $booking)
                         <li class="opacity-80 transition hover:opacity-100">@include('guest.bookings._card', ['booking' => $booking])</li>
                     @endforeach
