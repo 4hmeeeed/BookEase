@@ -266,6 +266,18 @@ class WalletTransferTest extends TestCase
             ->assertSee('Verify and send receipt');
     }
 
+    public function test_staff_can_open_the_receipt_screenshot_in_a_viewer(): void
+    {
+        $this->submit();
+        $proof = PaymentProof::sole();
+
+        $this->actingAs($this->staff)->get("/staff/bookings/{$this->booking->reference_code}")
+            ->assertOk()
+            ->assertSee("open-modal', 'proof-image-{$proof->id}'", false)
+            ->assertSee('View screenshot')
+            ->assertSee('Open full size');
+    }
+
     public function test_owner_overview_counts_receipts_to_verify(): void
     {
         $owner = User::factory()->admin()->create();

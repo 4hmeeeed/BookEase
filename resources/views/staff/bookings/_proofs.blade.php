@@ -11,9 +11,13 @@
         <ul class="mt-3 space-y-3">
             @foreach ($booking->paymentProofs as $proof)
                 <li class="flex flex-col gap-3 rounded-lg border border-lagoon-950/10 bg-white p-3 sm:flex-row sm:items-start">
+                    {{-- Opens the viewer below; without JavaScript the link opens the image itself. --}}
                     <a href="{{ route('staff.proofs.screenshot', [$booking, $proof]) }}" target="_blank" rel="noopener"
-                       class="block shrink-0 overflow-hidden rounded-md border border-sand-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lagoon-400">
-                        <img src="{{ route('staff.proofs.screenshot', [$booking, $proof]) }}" alt="Receipt screenshot, reference {{ $proof->reference_no }}" class="h-28 w-20 object-cover" loading="lazy">
+                       @click.prevent="$dispatch('open-modal', 'proof-image-{{ $proof->id }}')"
+                       class="group relative block shrink-0 overflow-hidden rounded-md border border-sand-200 bg-sand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lagoon-400">
+                        <img src="{{ route('staff.proofs.screenshot', [$booking, $proof]) }}" alt="Receipt screenshot, reference {{ $proof->reference_no }}"
+                             class="h-44 w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03] sm:h-28 sm:w-20" loading="lazy">
+                        <span class="absolute inset-x-0 bottom-0 bg-lagoon-950/75 py-1 text-center text-[0.7rem] font-semibold text-cream">View screenshot</span>
                     </a>
 
                     <div class="min-w-0 flex-1 text-sm">
@@ -40,6 +44,31 @@
 
             @endforeach
         </ul>
+
+        {{-- Screenshot viewer: big enough to read the reference number, on phones too. --}}
+        @foreach ($booking->paymentProofs as $proof)
+            <x-modal name="proof-image-{{ $proof->id }}" maxWidth="lg">
+                <div class="p-4 sm:p-5">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 text-sm">
+                            <p class="font-semibold text-lagoon-950">{{ $proof->method->label() }} · <span class="tabular-nums">{{ Money::format($proof->amount) }}</span></p>
+                            <p class="mt-0.5 text-gray-600">Ref <span class="font-mono tracking-wider text-gray-800">{{ $proof->reference_no }}</span></p>
+                        </div>
+                        <button type="button" @click="$dispatch('close')" class="grid h-9 w-9 shrink-0 place-items-center rounded-md text-gray-500 transition-[background-color,color] duration-150 hover:bg-sand-100 hover:text-lagoon-950">
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" /></svg>
+                            <span class="sr-only">Close</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-3 overflow-auto rounded-lg border border-sand-200 bg-sand-50" style="max-height: 70vh">
+                        <img src="{{ route('staff.proofs.screenshot', [$booking, $proof]) }}" alt="Receipt screenshot, reference {{ $proof->reference_no }}" class="mx-auto w-full object-contain" loading="lazy">
+                    </div>
+
+                    <a href="{{ route('staff.proofs.screenshot', [$booking, $proof]) }}" target="_blank" rel="noopener"
+                       class="mt-3 inline-block text-sm font-semibold text-lagoon-900 link-underline">Open full size</a>
+                </div>
+            </x-modal>
+        @endforeach
 
         @foreach ($booking->paymentProofs as $proof)
                 @if ($proof->isPending())
