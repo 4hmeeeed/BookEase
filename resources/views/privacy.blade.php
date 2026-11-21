@@ -1,7 +1,6 @@
 {{--
     Privacy notice (RA 10173, the Data Privacy Act of 2012). What BookEase stores is
-    described from the code; anything only the owner can say is an <x-placeholder>.
-    The owner supplies the final wording before the draft banner comes off.
+    described from the code. Update "Last updated" whenever the wording changes.
 --}}
 @php
     $payOnline = config('bookease.payments.online');
@@ -30,11 +29,6 @@
             </p>
         </header>
 
-        <div role="note" class="mt-8 max-w-3xl rounded-md border border-l-4 border-coral-200 border-l-coral-500 bg-coral-50/60 px-5 py-4 text-sm leading-relaxed text-gray-800">
-            <strong class="font-semibold text-lagoon-950">Draft notice.</strong>
-            The highlighted parts are placeholders: the resort owner reviews this page and supplies the final wording. Until then, please contact the resort with any privacy question.
-        </div>
-
         <div class="mt-12 grid gap-10 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-16">
             <nav aria-label="On this page" class="hidden lg:block">
                 <ol class="sticky top-28 space-y-2.5 border-l border-lagoon-950/10 pl-4 text-sm">
@@ -48,7 +42,7 @@
                 <section id="who" class="scroll-mt-28">
                     <h2 class="{{ $h2 }}"><span class="sounding text-coral-600">01</span>Who we are</h2>
                     <p class="mt-3">
-                        <x-placeholder>the resort’s registered business name</x-placeholder>, operating as Labnasan Resort in Barangay Bacubac, Basey, Samar, decides how the personal data on this site is used. The law calls this the personal information controller. BookEase is the resort’s booking website.
+                        Labnasan Resort, in Barangay Bacubac, Basey, Samar, decides how the personal data on this site is used. The law calls this the personal information controller. BookEase is the resort’s booking website.
                     </p>
                 </section>
 
@@ -77,7 +71,7 @@
                         To take and confirm your reservations, keep the availability calendar accurate, record your payments and issue receipts, email you about your bookings, answer your questions, and keep the site secure.
                     </p>
                     <p class="mt-3">
-                        We rely on your consent, which you give when you create an account; on the need to carry out the booking you ask for; and on our legal duties, such as issuing official receipts. <x-placeholder>confirm these grounds and add any other purpose</x-placeholder>.
+                        We rely on your consent, which you give when you create an account; on the need to carry out the booking you ask for; and on our legal duties, such as issuing official receipts. We do not use your data for advertising, and we do not make decisions about you by automated means alone: every booking request and payment is checked by a person.
                     </p>
                 </section>
 
@@ -87,7 +81,7 @@
                         The resort’s owner and front-desk staff, each through their own account; what an account can see depends on its role. Service providers that run the site process data for the resort:
                     </p>
                     <ul class="mt-3 space-y-2">
-                        <li class="flex gap-3"><span class="{{ $dot }}" aria-hidden="true"></span><span><x-placeholder>the web host and the email provider</x-placeholder></span></li>
+                        <li class="flex gap-3"><span class="{{ $dot }}" aria-hidden="true"></span><span>InfinityFree (iFastNet), which hosts the website and its database, and Brevo, which delivers the resort’s emails</span></li>
                         <li class="flex gap-3"><span class="{{ $dot }}" aria-hidden="true"></span><span>Google, if you sign in with Google</span></li>
                         @if ($payOnline)
                             <li class="flex gap-3"><span class="{{ $dot }}" aria-hidden="true"></span><span>the payment provider, for online payments</span></li>
@@ -100,17 +94,17 @@
                 <section id="keep" class="scroll-mt-28">
                     <h2 class="{{ $h2 }}"><span class="sounding text-coral-600">05</span>How long we keep it</h2>
                     <p class="mt-3">
-                        <x-placeholder>how long booking, payment and chat records are kept, and why</x-placeholder>.
+                        Booking, payment and receipt records are kept for ten (10) years after the stay, because Philippine tax rules require the resort to keep its books and receipts. Receipt screenshots you upload are kept with the payment they prove. Chat assistant questions are kept for one (1) year so the resort can review and improve the answers. Sign-in sessions end when you log out or after a period without activity.
                     </p>
                     <p class="mt-3">
-                        You can delete your account from your profile page. <x-placeholder>what the resort keeps after that, for example records that tax rules require</x-placeholder>.
+                        You can delete your account from your profile page when you have no upcoming stay and no payment on record; your account, your bookings and your uploaded screenshots are then erased. If you have paid the resort, your account stays open because the payment records must be kept: contact the resort and we will remove everything the law does not require us to keep.
                     </p>
                 </section>
 
                 <section id="protect" class="scroll-mt-28">
                     <h2 class="{{ $h2 }}"><span class="sounding text-coral-600">06</span>How we protect it</h2>
                     <p class="mt-3">
-                        Passwords are stored only in hashed form, and every staff member signs in with their own account. <x-placeholder>other safeguards, such as HTTPS on the live site and who can reach backups</x-placeholder>.
+                        Passwords are stored only in hashed form, and every staff member signs in with their own account and sees only what their role needs. The site is served only over an encrypted connection (HTTPS). Receipt screenshots are stored outside the public website and are shown only to you and to resort staff. Database backups are kept by the resort owner only.
                     </p>
                 </section>
 
@@ -136,7 +130,7 @@
                 <section id="contact" class="scroll-mt-28">
                     <h2 class="{{ $h2 }}"><span class="sounding text-coral-600">08</span>Contact us</h2>
                     <p class="mt-3">
-                        For any privacy question or request, contact the resort’s data protection officer: <x-placeholder>their name, email address and phone number</x-placeholder>.
+                        For any privacy question or request, contact the resort’s data protection officer, the resort owner, using the details below. We answer within fifteen (15) working days.
                     </p>
                     @if ($contact)
                         <dl class="mt-4 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
@@ -157,7 +151,7 @@
                 </section>
 
                 <p class="border-t border-lagoon-950/10 pt-6 text-sm text-gray-500">
-                    Last updated: <x-placeholder>date</x-placeholder>. Any change to this notice will be posted on this page.
+                    Last updated: November 22, 2026. Any change to this notice will be posted on this page.
                 </p>
             </div>
         </div>

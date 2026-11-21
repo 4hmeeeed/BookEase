@@ -21,12 +21,14 @@ class PrivacyNoticePageTest extends TestCase
             ->assertSee('National Privacy Commission');
     }
 
-    public function test_the_placeholder_wording_is_clearly_marked(): void
+    public function test_the_notice_is_final_with_no_placeholders_left(): void
     {
         // assertOk first: an error page quotes this file, words and all.
         $this->get('/privacy')->assertOk()
-            ->assertSee('Draft notice')
-            ->assertSee('Owner to supply');
+            ->assertDontSee('Draft notice')
+            ->assertDontSee('Owner to supply')
+            ->assertSee('Last updated: November 22, 2026')
+            ->assertSee('data protection officer');
     }
 
     public function test_it_says_how_guests_pay_in_the_current_mode(): void
