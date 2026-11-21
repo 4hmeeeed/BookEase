@@ -117,3 +117,14 @@ Run it in a normal PowerShell window, with XAMPP's MySQL running. It does four t
 This needs hosting that can receive the payment provider's webhooks (any paid shared hosting with SSH, e.g. Hostinger), plus the owner's **verified PayMongo business account**.
 1. Set `PAYMENT_DRIVER=paymongo`, the `PAYMONGO_*` keys, and in PayMongo a webhook to `https://SITE/webhooks/payments` for `checkout_session.payment.paid`.
 2. Keep `PAYMENT_ALLOW_LIVE_MODE=false` until test payments have been checked end to end. Only then switch to live keys.
+
+## Updating the live site later (no FTP password needed)
+
+1. Put only the changed files in a zip, with their paths from the project root (for example `routes/web.php`, `app/Services/ChatbotService.php`).
+2. InfinityFree → your account → **File Manager** → open `htdocs` → **Upload & Unzip** → choose the zip → **Upload & Extract**. Files are overwritten in place.
+3. Blade views recompile on their own. Nothing is cached for routes or config, so changes are live at once.
+4. If you changed `resources/css` or `resources/js`, run `npm run build` first and include the new `public/build` folder.
+
+**Never put "chat" in a URL path.** InfinityFree answers any address containing it with a 403 before Laravel sees it (that is why the assistant posts to `/ask`). `HostingCompatibilityTest` fails if a route breaks this rule.
+
+**Changing a key (Gemini, Brevo):** File Manager → `htdocs/.env` → Edit → change the line → Save. It takes effect on the next request.
