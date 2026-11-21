@@ -58,7 +58,7 @@ class ChatbotSafetyTest extends TestCase
     {
         $this->geminiReplies('never shown');
 
-        $this->postJson('/chatbot', ['question' => $question])
+        $this->postJson('/ask', ['question' => $question])
             ->assertOk()
             ->assertJson(['fallback' => true])
             ->assertJsonPath('answer', fn ($a) => str_contains($a, 'never ask for them'));
@@ -84,7 +84,7 @@ class ChatbotSafetyTest extends TestCase
     {
         $this->geminiReplies('Happy to help.');
 
-        $this->postJson('/chatbot', ['question' => $question])->assertExactJson(['answer' => 'Happy to help.', 'fallback' => false]);
+        $this->postJson('/ask', ['question' => $question])->assertExactJson(['answer' => 'Happy to help.', 'fallback' => false]);
         Http::assertSentCount(1);
     }
 
@@ -104,7 +104,7 @@ class ChatbotSafetyTest extends TestCase
     {
         $this->geminiReplies($answer);
 
-        $this->postJson('/chatbot', ['question' => 'How do I pay?'])
+        $this->postJson('/ask', ['question' => 'How do I pay?'])
             ->assertOk()
             ->assertJson(['fallback' => true])
             ->assertJsonPath('answer', app(ChatbotService::class)->secretMessage());
@@ -127,7 +127,7 @@ class ChatbotSafetyTest extends TestCase
     {
         $this->geminiReplies('never shown');
 
-        $this->postJson('/chatbot', ['question' => $question])->assertOk()->assertJson(['fallback' => true]);
+        $this->postJson('/ask', ['question' => $question])->assertOk()->assertJson(['fallback' => true]);
         Http::assertNothingSent();
     }
 

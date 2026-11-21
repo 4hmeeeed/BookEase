@@ -46,7 +46,8 @@ Route::middleware('throttle:60,1')->group(function () {
 });
 
 // Inquiry chatbot: open to visitors, CSRF-protected, rate limited, logged.
-Route::post('/chatbot', ChatbotController::class)->middleware('throttle:chatbot')->name('chatbot.ask');
+// The paths avoid the word "chat": InfinityFree answers any URL containing it with a 403.
+Route::post('/ask', ChatbotController::class)->middleware('throttle:chatbot')->name('chatbot.ask');
 
 /*
 |--------------------------------------------------------------------------
@@ -164,8 +165,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         Route::get('reports/bookings.csv', [ReportController::class, 'bookingsCsv'])->name('reports.bookings');
         Route::get('reports/payments.csv', [ReportController::class, 'paymentsCsv'])->name('reports.payments');
 
-        Route::get('chatbot', [ChatInquiryController::class, 'index'])->name('chatbot.index');
-        Route::get('chatbot/{inquiry}', [ChatInquiryController::class, 'show'])->name('chatbot.show');
+        Route::get('inquiries', [ChatInquiryController::class, 'index'])->name('chatbot.index');
+        Route::get('inquiries/{inquiry}', [ChatInquiryController::class, 'show'])->name('chatbot.show');
 
         // Server checks and maintenance (stands in for SSH on InfinityFree).
         Route::get('system', [SystemController::class, 'index'])->name('system');

@@ -56,7 +56,7 @@ class ChatbotTest extends TestCase
 
     private function ask(string $question): TestResponse
     {
-        return $this->postJson('/chatbot', ['question' => $question]);
+        return $this->postJson('/ask', ['question' => $question]);
     }
 
     /** @return array<string, mixed> */
@@ -337,7 +337,7 @@ class ChatbotTest extends TestCase
         $this->ask('')->assertUnprocessable()->assertJsonValidationErrors('question');
         $this->ask("\u{200B}\u{200B}\u{200B}")->assertUnprocessable();
         $this->ask(str_repeat('a', 501))->assertUnprocessable();
-        $this->postJson('/chatbot', ['question' => ['array']])->assertUnprocessable();
+        $this->postJson('/ask', ['question' => ['array']])->assertUnprocessable();
 
         $this->assertDatabaseCount('chat_inquiries', 0);
         Http::assertNothingSent();
@@ -377,14 +377,14 @@ class ChatbotTest extends TestCase
     {
         $inquiry = ChatInquiry::factory()->create(['question' => 'Do you allow pets?', 'context_snapshot' => 'TODAY: secret-context-marker']);
 
-        $this->get('/admin/chatbot')->assertRedirect('/staff/login');
-        $this->actingAs(User::factory()->create())->get('/admin/chatbot')->assertForbidden();
-        $this->actingAs(User::factory()->staff()->create())->get('/admin/chatbot')->assertForbidden();
-        $this->actingAs(User::factory()->staff()->create())->get("/admin/chatbot/{$inquiry->id}")->assertForbidden();
+        $this->get('/admin/inquiries')->assertRedirect('/staff/login');
+        $this->actingAs(User::factory()->create())->get('/admin/inquiries')->assertForbidden();
+        $this->actingAs(User::factory()->staff()->create())->get('/admin/inquiries')->assertForbidden();
+        $this->actingAs(User::factory()->staff()->create())->get("/admin/inquiries/{$inquiry->id}")->assertForbidden();
 
         $admin = User::factory()->admin()->create();
-        $this->actingAs($admin)->get('/admin/chatbot')->assertOk()->assertSee('Do you allow pets?')->assertSee('Visitor');
-        $this->actingAs($admin)->get("/admin/chatbot/{$inquiry->id}")->assertOk()->assertSee('secret-context-marker');
+        $this->actingAs($admin)->get('/admin/inquiries')->assertOk()->assertSee('Do you allow pets?')->assertSee('Visitor');
+        $this->actingAs($admin)->get("/admin/inquiries/{$inquiry->id}")->assertOk()->assertSee('secret-context-marker');
     }
 
     public function test_audit_log_filters_fallbacks_and_searches(): void
@@ -393,10 +393,10 @@ class ChatbotTest extends TestCase
         ChatInquiry::factory()->fallback()->create(['question' => 'Can I bring a dog?']);
         $admin = User::factory()->admin()->create();
 
-        $this->actingAs($admin)->get('/admin/chatbot?filter=fallback')
+        $this->actingAs($admin)->get('/admin/inquiries?filter=fallback')
             ->assertSee('Can I bring a dog?')->assertDontSee('Is there wifi?');
 
-        $this->actingAs($admin)->get('/admin/chatbot?q=wifi')
+        $this->actingAs($admin)->get('/admin/inquiries?q=wifi')
             ->assertSee('Is there wifi?')->assertDontSee('Can I bring a dog?');
     }
 

@@ -37,7 +37,7 @@ class ChatbotAlertsTest extends TestCase
 
     private function ask(): TestResponse
     {
-        return $this->postJson('/chatbot', ['question' => 'Do you allow pets?']);
+        return $this->postJson('/ask', ['question' => 'Do you allow pets?']);
     }
 
     public function test_an_unanswered_question_alerts_the_owner_only(): void
@@ -119,7 +119,7 @@ class ChatbotAlertsTest extends TestCase
             'candidates' => [['content' => ['role' => 'model', 'parts' => [['text' => 'Check-in is at 2:00 PM.']]], 'finishReason' => 'STOP']],
         ])]);
 
-        $this->postJson('/chatbot', ['question' => 'What time is check-in?'])->assertJson(['fallback' => false]);
+        $this->postJson('/ask', ['question' => 'What time is check-in?'])->assertJson(['fallback' => false]);
 
         $this->assertSame(0, $this->owner->notifications()->count());
     }

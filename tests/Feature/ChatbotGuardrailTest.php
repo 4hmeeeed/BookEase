@@ -49,7 +49,7 @@ class ChatbotGuardrailTest extends TestCase
 
     private function ask(string $question): TestResponse
     {
-        return $this->postJson('/chatbot', ['question' => $question]);
+        return $this->postJson('/ask', ['question' => $question]);
     }
 
     // ---------------------------------------------------------------
