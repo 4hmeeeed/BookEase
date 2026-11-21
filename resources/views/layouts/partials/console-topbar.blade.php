@@ -1,4 +1,4 @@
-{{-- Sticky top bar. Desktop: booking search + bell. Phones: brand + a search toggle. --}}
+{{-- Sticky top bar. Desktop: booking search + bell. Phones: brand, a search toggle and the bell. --}}
 <header class="sticky top-0 z-30 border-b border-lagoon-950/10 bg-cream/90 backdrop-blur-md print:hidden" x-data="{ searching: false }">
     <div class="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
         <x-brand :href="route($console['home'])" class="lg:hidden" />

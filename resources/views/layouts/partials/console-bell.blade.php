@@ -1,9 +1,9 @@
 {{--
     The bell: a live count (checked every 30 s by consoleBell) and a dropdown of
-    the latest alerts. On phones it stays hidden but keeps checking, and the
-    "Alerts" tab shows the same count. Without JavaScript it is a plain link.
+    the latest alerts. Shown on every screen size; on phones the "Alerts" tab
+    shows the same count too. Without JavaScript it is a plain link.
 --}}
-<div class="relative hidden lg:block"
+<div class="relative"
      x-data="consoleBell({ pollUrl: '{{ route('staff.notifications.poll') }}', panelUrl: '{{ route('staff.notifications.panel') }}', unread: {{ (int) $console['unread'] }} })"
      @click.outside="open = false" @keydown.escape.window="open = false">
     <a href="{{ route('staff.notifications.index') }}" data-unread="{{ $console['unread'] }}"
@@ -20,7 +20,7 @@
     <div id="console-bell-panel" x-show="open" x-cloak
          x-transition:enter="transition-[opacity,transform] ease-out-soft duration-200" x-transition:enter-start="opacity-0 scale-95 -translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
          x-transition:leave="transition-[opacity,transform] ease-in duration-100" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-         class="absolute right-0 top-full z-50 mt-2 w-96 origin-top-right">
+         class="absolute right-0 top-full z-50 mt-2 w-[calc(100vw-2rem)] max-w-96 origin-top-right">
         <div x-show="loading && ! panelHtml" class="rounded-2xl border border-lagoon-950/10 bg-cream px-4 py-8 text-center text-sm text-gray-500 shadow-lift">Loading…</div>
         <div x-html="panelHtml"></div>
     </div>

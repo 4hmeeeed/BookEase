@@ -9,7 +9,7 @@
 
         @include('layouts.partials.console-sidebar')
 
-        <div class="relative min-h-screen overflow-x-clip lg:pl-64">
+        <div class="relative min-h-screen overflow-x-clip lg:pl-60">
             @include('layouts.partials.console-topbar')
 
             <x-flash />

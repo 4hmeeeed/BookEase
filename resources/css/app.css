@@ -646,18 +646,24 @@
  * ================================================================== */
 @layer components {
     .console-link {
-        @apply relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-cream/75
+        @apply relative flex items-center gap-3 rounded-md px-3 py-1.5 text-sm text-gray-600
                transition-[background-color,color] duration-200
-               hover:bg-cream/5 hover:text-cream
+               hover:bg-sand-100/70 hover:text-lagoon-950
                focus:outline-none focus-visible:ring-2 focus-visible:ring-lagoon-300;
     }
 
+    /* Active: ink text and a hairline marker on the left, no filled pill. */
     .console-link.is-active {
-        @apply bg-cream text-lagoon-950 hover:bg-cream hover:text-lagoon-950;
+        @apply font-medium text-lagoon-950;
+    }
+
+    .console-link.is-active::before {
+        content: '';
+        @apply absolute -left-3 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-lagoon-950;
     }
 
     .console-badge {
-        @apply rounded-md bg-sand-200 px-1.5 text-xs font-semibold tabular-nums text-lagoon-950;
+        @apply text-xs font-medium tabular-nums text-gray-500;
     }
 
     .console-tab {
