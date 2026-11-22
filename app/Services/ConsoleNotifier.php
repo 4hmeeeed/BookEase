@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\UserRole;
 use App\Models\Booking;
+use App\Models\ChatInquiry;
 use App\Models\Payment;
 use App\Models\User;
 use App\Notifications\Console\ChatbotUnanswered;
@@ -60,13 +61,22 @@ class ConsoleNotifier
     }
 
     /**
-     * One unread alert per owner per day carries the day's running count: a
-     * later miss updates it in place and moves it back to the top of the bell.
-     * It keeps its id, so a link to it on a page that is already open still works.
+     * One unread alert per owner per day carries the day's count: a later miss
+     * updates it in place and moves it back to the top of the bell. It keeps
+     * its id, so a link to it on a page that is already open still works.
+     *
+     * The count comes from the day's logged inquiries, not from the alert, so
+     * it stays right after the owner reads the alert and when two misses land
+     * at once. Call it after the inquiry has been logged.
      */
     public function chatbotMissed(): void
     {
         try {
+            $misses = max(1, ChatInquiry::query()
+                ->where('was_fallback', true)
+                ->where('created_at', '>=', today())
+                ->count());
+
             foreach ($this->owners() as $owner) {
                 $today = $owner->unreadNotifications()
                     ->where('type', ChatbotUnanswered::class)
@@ -74,14 +84,15 @@ class ConsoleNotifier
                     ->first();
 
                 if ($today === null) {
-                    $this->send(new Collection([$owner]), new ChatbotUnanswered(1));
+                    $this->send(new Collection([$owner]), new ChatbotUnanswered($misses));
 
                     continue;
                 }
 
-                $misses = 1 + (int) ($today->data['count'] ?? 0);
+                // Never lower it: a request that counted earlier may write last.
+                $count = max($misses, (int) ($today->data['count'] ?? 0));
                 $today->forceFill([
-                    'data' => (new ChatbotUnanswered($misses))->toArray($owner),
+                    'data' => (new ChatbotUnanswered($count))->toArray($owner),
                     'created_at' => now(),
                 ])->save();
             }
