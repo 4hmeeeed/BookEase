@@ -5,6 +5,7 @@ namespace App\View\Composers;
 use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\ChatInquiry;
+use App\Support\ConsoleAlert;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -39,6 +40,7 @@ class ConsoleComposer
             'roleLabel' => $owner ? 'Owner' : 'Front desk',
             'pending' => $pending,
             'unread' => $unread,
+            'newest' => ConsoleAlert::newestMarker($user),
             'groups' => $owner
                 ? [
                     ['label' => null, 'links' => [$overview]],

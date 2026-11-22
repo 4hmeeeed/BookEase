@@ -88,6 +88,16 @@ class NotificationCenterTest extends TestCase
             ->assertExactJson(['unread' => 2, 'newest' => $newest->id.'@'.$newest->created_at->getTimestamp()]);
     }
 
+    public function test_the_bell_starts_from_the_newest_alert_on_the_page(): void
+    {
+        $newest = $this->alert($this->staff);
+
+        // So the first check doesn't ring for an alert that was already showing.
+        $this->actingAs($this->staff)->get('/staff')
+            ->assertOk()
+            ->assertSee("newest: '".$newest->id.'@'.$newest->created_at->getTimestamp()."'", false);
+    }
+
     public function test_opening_an_alert_marks_it_read_and_goes_to_the_booking(): void
     {
         $alert = $this->alert($this->staff);

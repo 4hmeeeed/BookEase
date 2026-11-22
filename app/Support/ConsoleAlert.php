@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Notifications\DatabaseNotification;
 
@@ -58,5 +59,17 @@ final class ConsoleAlert
                 default => route('staff.notifications.index'),
             },
         );
+    }
+
+    /**
+     * "id@unix-time" of the user's newest unread alert, or null. The bell rings
+     * when this moves to a later time: a new alert, or the day's chatbot alert
+     * updated in place.
+     */
+    public static function newestMarker(User $user): ?string
+    {
+        $newest = $user->unreadNotifications()->first(['id', 'created_at']);
+
+        return $newest ? $newest->id.'@'.$newest->created_at->getTimestamp() : null;
     }
 }

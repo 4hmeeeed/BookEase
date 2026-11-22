@@ -4,7 +4,7 @@
     shows the same count too. Without JavaScript it is a plain link.
 --}}
 <div class="relative"
-     x-data="consoleBell({ pollUrl: '{{ route('staff.notifications.poll') }}', panelUrl: '{{ route('staff.notifications.panel') }}', unread: {{ (int) $console['unread'] }} })"
+     x-data="consoleBell({ pollUrl: '{{ route('staff.notifications.poll') }}', panelUrl: '{{ route('staff.notifications.panel') }}', unread: {{ (int) $console['unread'] }}, newest: @js($console['newest']) })"
      @click.outside="open = false" @keydown.escape.window="open = false">
     <a href="{{ route('staff.notifications.index') }}" data-unread="{{ $console['unread'] }}"
        @click.prevent="toggle()" :aria-expanded="open" aria-haspopup="true" aria-controls="console-bell-panel"

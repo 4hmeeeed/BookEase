@@ -3,10 +3,15 @@
  *
  * It only checks while the tab is visible, pauses after 30 minutes without
  * any input (so an unattended screen can still sign itself out), and stops
- * for good once the session has ended (401/419, or a redirect to sign in).
- * Opening the dropdown at that point reloads the page, which goes to sign-in.
+ * for good once the session has ended (401/419, or a redirect to sign in) or
+ * the account may no longer see alerts (403). Opening the dropdown after the
+ * session ended reloads the page, which goes to sign-in.
  *
- *   <div x-data="consoleBell({ pollUrl: '…', panelUrl: '…', unread: 3 })">…</div>
+ * It rings when the newest unread alert is newer than any it has seen (the
+ * server sends it as "id@unix-time"), not when the count rises: an alert read
+ * in another tab must not hide one that arrived in the same 30 seconds.
+ *
+ *   <div x-data="consoleBell({ pollUrl: '…', panelUrl: '…', unread: 3, newest: 'id@1700000000' })">…</div>
  */
 const INPUT_EVENTS = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
 const TITLE_PREFIX = /^\(\d+\+?\)\s/;
@@ -14,13 +19,20 @@ const TITLE_PREFIX = /^\(\d+\+?\)\s/;
 /** fetch() follows redirects, so a sign-in page can come back as a plain 200. */
 const signedOut = (response) => response.status === 401 || response.status === 419 || response.redirected;
 
-export default function consoleBell({ pollUrl, panelUrl, unread = 0, interval = 30000, idleLimit = 1800000 }) {
+/** The time part of an "id@unix-time" marker, or null when there is none. */
+const stampOf = (marker) => {
+    const stamp = Number(String(marker ?? '').split('@')[1]);
+    return Number.isFinite(stamp) ? stamp : null;
+};
+
+export default function consoleBell({ pollUrl, panelUrl, unread = 0, newest = null, interval = 30000, idleLimit = 1800000 }) {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const headers = (accept) => ({ Accept: accept, 'X-Requested-With': 'XMLHttpRequest' });
 
     return {
         unread,
-        newest: null,
+        newest,
+        latestStamp: stampOf(newest) ?? -Infinity, // newest alert time the bell has already rung (or loaded) for
         open: false,
         panelHtml: '',
         loading: false,
@@ -79,7 +91,7 @@ export default function consoleBell({ pollUrl, panelUrl, unread = 0, interval = 
 
             try {
                 const response = await fetch(pollUrl, { credentials: 'same-origin', headers: headers('application/json') });
-                if (signedOut(response)) {
+                if (signedOut(response) || response.status === 403) {
                     this.stop();
                     return;
                 }
@@ -94,11 +106,17 @@ export default function consoleBell({ pollUrl, panelUrl, unread = 0, interval = 
         receive({ unread: count, newest }) {
             const before = this.unread;
             const changed = newest !== this.newest;
+            const stamp = stampOf(newest);
+            // Same second, different alert: still new if the count went up.
+            const arrived = newest !== null && changed && (stamp === null
+                || stamp > this.latestStamp
+                || (stamp === this.latestStamp && count > before));
 
             this.unread = count;
             this.newest = newest;
+            if (stamp !== null) this.latestStamp = Math.max(this.latestStamp, stamp);
 
-            if (count > before) this.ring(count - before);
+            if (arrived) this.ring(Math.max(1, count - before));
             this.updateTitle();
             window.dispatchEvent(new CustomEvent('console-unread', { detail: count }));
 
