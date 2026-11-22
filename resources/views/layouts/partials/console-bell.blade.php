@@ -1,13 +1,14 @@
 {{--
     The bell: a live count (checked every 30 s by consoleBell) and a dropdown of
     the latest alerts. Shown on every screen size; on phones the "Alerts" tab
-    shows the same count too. Without JavaScript it is a plain link.
+    shows the same count too. Without JavaScript it is a plain link to the
+    Notifications page; with it, it acts as a button (Enter or Space toggles).
 --}}
 <div class="relative"
      x-data="consoleBell({ pollUrl: '{{ route('staff.notifications.poll') }}', panelUrl: '{{ route('staff.notifications.panel') }}', unread: {{ (int) $console['unread'] }}, newest: @js($console['newest']) })"
      @click.outside="open = false" @keydown.escape.window="open = false">
     <a href="{{ route('staff.notifications.index') }}" data-unread="{{ $console['unread'] }}"
-       @click.prevent="toggle()" :aria-expanded="open" aria-haspopup="true" aria-controls="console-bell-panel"
+       role="button" @click.prevent="toggle()" @keydown.space.prevent="toggle()" :aria-expanded="open" aria-haspopup="true" aria-controls="console-bell-panel"
        class="relative grid h-10 w-10 place-items-center rounded-md text-lagoon-800 transition-[background-color,color,transform] duration-200 hover:bg-sand-100 hover:text-lagoon-950 active:scale-95">
         <span x-ref="bell" class="grid place-items-center" @animationend="$el.classList.remove('bell-ring')">
             <x-console-icon name="bell" class="h-5 w-5" />

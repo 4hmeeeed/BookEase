@@ -36,7 +36,20 @@
 
     {{-- Account --}}
     <div class="relative border-t border-lagoon-950/10 p-3" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
-        <div x-show="open" x-cloak
+        <button type="button" @click="open = ! open" :aria-expanded="open" aria-haspopup="true" aria-controls="console-account-menu"
+                class="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors duration-200 hover:bg-sand-100/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-lagoon-300">
+            <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-lagoon-950/[0.06] text-[0.65rem] font-semibold text-lagoon-900">
+                {{ Str::of($user->name)->explode(' ')->map(fn ($part) => Str::substr($part, 0, 1))->take(2)->implode('') }}
+            </span>
+            <span class="min-w-0 flex-1 leading-tight">
+                <span class="block truncate text-sm font-medium text-lagoon-950">{{ $user->name }}</span>
+                <span class="block text-xs text-gray-500">{{ $console['roleLabel'] }}</span>
+            </span>
+            <svg class="h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 0 1-1.414 0L10 9.414l-3.293 3.293a1 1 0 0 1-1.414-1.414l4-4a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1 0 1.414Z" clip-rule="evenodd" /></svg>
+        </button>
+
+        {{-- After its button, so Tab moves from the button into the menu. --}}
+        <div id="console-account-menu" x-show="open" x-cloak
              x-transition:enter="transition-[opacity,transform] ease-out-soft duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
              x-transition:leave="transition-opacity ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
              class="absolute inset-x-3 bottom-full mb-2 overflow-hidden rounded-lg border border-lagoon-950/10 bg-white py-1 text-sm text-lagoon-950 shadow-lift">
@@ -50,17 +63,5 @@
                 </button>
             </form>
         </div>
-
-        <button type="button" @click="open = ! open" :aria-expanded="open" aria-haspopup="true"
-                class="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors duration-200 hover:bg-sand-100/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-lagoon-300">
-            <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-lagoon-950/[0.06] text-[0.65rem] font-semibold text-lagoon-900">
-                {{ Str::of($user->name)->explode(' ')->map(fn ($part) => Str::substr($part, 0, 1))->take(2)->implode('') }}
-            </span>
-            <span class="min-w-0 flex-1 leading-tight">
-                <span class="block truncate text-sm font-medium text-lagoon-950">{{ $user->name }}</span>
-                <span class="block text-xs text-gray-500">{{ $console['roleLabel'] }}</span>
-            </span>
-            <svg class="h-4 w-4 shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 0 1-1.414 0L10 9.414l-3.293 3.293a1 1 0 0 1-1.414-1.414l4-4a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1 0 1.414Z" clip-rule="evenodd" /></svg>
-        </button>
     </div>
 </aside>

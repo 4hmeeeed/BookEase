@@ -85,6 +85,28 @@ class ConsoleLayoutTest extends TestCase
             ->assertSeeInOrder(['data-console-tabbar', 'Overview', 'Bookings', 'Alerts', 'More'], false);
     }
 
+    public function test_the_alerts_tab_speaks_its_count(): void
+    {
+        $this->owner->notify(new NewBookingRequest(Booking::factory()->create()));
+
+        $this->actingAs($this->owner)->get('/admin')
+            ->assertSeeInOrder(['data-console-tabbar', 'Alerts', '<span class="sr-only"', ', 1 unread'], false);
+    }
+
+    public function test_keyboard_order_and_roles_of_the_console_controls(): void
+    {
+        $this->actingAs($this->owner)->get('/admin')
+            // The bell's announcement is not inside anything hidden on phones.
+            ->assertSee('<p class="sr-only" aria-live="polite"', false)
+            // The bell link works as a button once JavaScript runs.
+            ->assertSee('role="button" @click.prevent="toggle()" @keydown.space.prevent="toggle()"', false)
+            // The account menu follows its button, so Tab goes from one into the other.
+            ->assertSeeInOrder(['aria-controls="console-account-menu"', 'id="console-account-menu"'], false)
+            // The More sheet keeps focus inside and hands it back to its button.
+            ->assertSee('x-ref="moreButton"', false)
+            ->assertSee('@keydown.tab="trap($event)"', false);
+    }
+
     public function test_the_booking_page_has_a_thumb_reachable_action_bar(): void
     {
         $booking = Booking::factory()->create(); // pending: Approve / Reject / Cancel
