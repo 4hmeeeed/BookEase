@@ -29,28 +29,34 @@ class ConsoleNotifier
 {
     public function bookingRequested(Booking $booking): void
     {
-        $this->send($this->desk(), new NewBookingRequest($booking));
+        $this->guard('booking.requested', fn () => $this->send(
+            $this->desk(),
+            new NewBookingRequest($booking->loadMissing(['user', 'cottage'])),
+        ));
     }
 
     public function paymentReceived(Payment $payment): void
     {
-        $this->send($this->desk(), new OnlinePaymentReceived($payment));
+        $this->guard('payment.received', fn () => $this->send($this->desk(), new OnlinePaymentReceived($payment->loadMissing('booking'))));
     }
 
     public function paymentNeedsReview(Payment $payment): void
     {
-        $this->send($this->desk(), new PaymentNeedsReview($payment));
+        $this->guard('payment.review', fn () => $this->send($this->desk(), new PaymentNeedsReview($payment->loadMissing('booking'))));
     }
 
     /** Cash and refunds are entered by the desk itself, so only the owners hear about them. */
     public function moneyRecorded(Payment $payment, User $actor): void
     {
-        $this->send($this->owners($actor), new MoneyRecordedByStaff($payment));
+        $this->guard('payment.recorded', fn () => $this->send($this->owners($actor), new MoneyRecordedByStaff($payment->loadMissing('booking'))));
     }
 
     public function guestCancelled(Booking $booking): void
     {
-        $this->send($this->desk(), new GuestCancelledBooking($booking));
+        $this->guard('booking.cancelled', fn () => $this->send(
+            $this->desk(),
+            new GuestCancelledBooking($booking->loadMissing(['user', 'cottage'])),
+        ));
     }
 
     /**
@@ -118,21 +124,29 @@ class ConsoleNotifier
     }
 
     /**
+     * Everything an alert needs — finding its recipients, loading what its
+     * text mentions, storing it — runs in here, so a database hiccup is logged
+     * instead of turning a committed booking or payment into an error page.
+     */
+    private function guard(string $kind, callable $work): void
+    {
+        try {
+            $work();
+        } catch (Throwable $e) {
+            Log::error('Could not create a console notification', [
+                'kind' => $kind,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * @param  Collection<int, User>  $to
      */
     private function send(Collection $to, ConsoleNotification $notification): void
     {
-        if ($to->isEmpty()) {
-            return;
-        }
-
-        try {
+        if ($to->isNotEmpty()) {
             Notification::send($to, $notification);
-        } catch (Throwable $e) {
-            Log::error('Could not create a console notification', [
-                'kind' => $notification->kind(),
-                'error' => $e->getMessage(),
-            ]);
         }
     }
 }

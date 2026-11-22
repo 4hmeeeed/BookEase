@@ -69,7 +69,7 @@ class BookingLifecycleService
 
         if ($byGuest) {
             // The guest already knows; the desk needs to, because the dates are open again.
-            $this->notifier->guestCancelled($booking->loadMissing(['user', 'cottage']));
+            $this->notifier->guestCancelled($booking);
 
             return $booking;
         }

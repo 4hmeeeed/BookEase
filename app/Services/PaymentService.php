@@ -453,9 +453,8 @@ class PaymentService
 
     private function notifyGuest(Payment $payment): void
     {
-        $payment->loadMissing('booking.user', 'booking.cottage');
-
         try {
+            $payment->loadMissing('booking.user', 'booking.cottage');
             $payment->booking->user->notify(new PaymentReceived($payment));
         } catch (Throwable $e) {
             // A mail outage must never undo a confirmed payment.
