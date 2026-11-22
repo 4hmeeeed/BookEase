@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\User;
 use App\Notifications\Console\NewBookingRequest;
+use Illuminate\Support\Js;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -124,6 +125,21 @@ class ConsoleLayoutTest extends TestCase
             ->assertOk()
             ->assertSee('My stays')
             ->assertDontSee('data-console-sidebar', false);
+    }
+
+    public function test_guests_keep_the_chatbot_widget(): void
+    {
+        // Spec (admin console design, Testing): guests still get the top nav and the chatbot widget.
+        $widget = 'x-data="chatbot({ endpoint:';
+
+        $this->actingAs(User::factory()->create())->get('/my')
+            ->assertOk()
+            ->assertSee($widget, false)
+            ->assertSee((string) Js::from(route('chatbot.ask')), false);
+
+        // Staff and the owner review its log instead of chatting.
+        $this->actingAs($this->staff)->get('/staff')->assertOk()->assertDontSee($widget, false);
+        $this->actingAs($this->owner)->get('/admin')->assertOk()->assertDontSee($widget, false);
     }
 
     public function test_staff_profile_uses_the_console(): void
