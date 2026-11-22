@@ -131,7 +131,14 @@ class AttentionService
 
     private function paymentsToReview(User $viewer): ?AttentionItem
     {
-        $count = $viewer->unreadNotifications()->where('type', PaymentNeedsReview::class)->count();
+        // Count payments, not alerts. Alerts stored before they carried the
+        // payment's reference count once each.
+        $count = $viewer->unreadNotifications()
+            ->where('type', PaymentNeedsReview::class)
+            ->get(['id', 'data'])
+            ->map(fn ($alert) => $alert->data['payment'] ?? 'alert:'.$alert->id)
+            ->unique()
+            ->count();
 
         if ($count === 0) {
             return null;

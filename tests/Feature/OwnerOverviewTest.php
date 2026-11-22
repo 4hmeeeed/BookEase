@@ -85,6 +85,16 @@ class OwnerOverviewTest extends TestCase
         $this->overview()->assertDontSee('arrived with the wrong amount');
     }
 
+    public function test_wrong_amount_payments_count_payments_not_alerts(): void
+    {
+        $twice = Payment::factory()->create();
+        $this->owner->notify(new PaymentNeedsReview($twice));
+        $this->owner->notify(new PaymentNeedsReview($twice)); // a second wrong-amount event for the same checkout
+        $this->owner->notify(new PaymentNeedsReview(Payment::factory()->create()));
+
+        $this->overview()->assertSee('2 online payments arrived with the wrong amount');
+    }
+
     public function test_unanswered_chatbot_questions_from_the_last_week_are_counted(): void
     {
         ChatInquiry::factory()->fallback()->count(3)->create();

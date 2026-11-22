@@ -15,6 +15,11 @@ abstract class PaymentAlert extends ConsoleNotification
         return $this->payment->booking->reference_code;
     }
 
+    public function paymentReference(): ?string
+    {
+        return $this->payment->reference_no;
+    }
+
     protected function amount(): string
     {
         return Money::format($this->payment->amount);

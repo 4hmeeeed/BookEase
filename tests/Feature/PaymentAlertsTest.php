@@ -106,6 +106,21 @@ class PaymentAlertsTest extends TestCase
         Notification::assertNotSentTo([$this->staff, $this->owner], OnlinePaymentReceived::class);
     }
 
+    public function test_a_replayed_wrong_amount_webhook_alerts_no_one_again(): void
+    {
+        $payment = $this->startCheckout();
+        $webhook = $this->gateway()->makeWebhook($payment, amountCentavos: 100);
+
+        $this->sendWebhook($webhook)->assertJson(['outcome' => 'mismatch']);
+        $this->sendWebhook($webhook)->assertJson(['outcome' => 'duplicate']);
+        $this->sendWebhook($webhook)->assertJson(['outcome' => 'duplicate']);
+
+        Notification::assertSentToTimes($this->staff, PaymentNeedsReview::class, 1);
+        Notification::assertSentToTimes($this->owner, PaymentNeedsReview::class, 1);
+        Notification::assertSentTo($this->owner, PaymentNeedsReview::class, fn (PaymentNeedsReview $n) => $n->toArray($this->owner)['payment'] === $payment->reference_no);
+        $this->assertFalse($payment->fresh()->isPaid());
+    }
+
     public function test_a_failed_online_payment_sends_no_alert(): void
     {
         $payment = $this->startCheckout();

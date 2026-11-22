@@ -31,6 +31,15 @@ abstract class ConsoleNotification extends Notification
     }
 
     /**
+     * Reference number of the payment the alert is about, if any, so the
+     * console can count payments rather than alerts.
+     */
+    public function paymentReference(): ?string
+    {
+        return null;
+    }
+
+    /**
      * @return list<string>
      */
     final public function via(object $notifiable): array
@@ -39,16 +48,22 @@ abstract class ConsoleNotification extends Notification
     }
 
     /**
-     * @return array{kind: string, title: string, body: string, reference: ?string, count: int}
+     * @return array{kind: string, title: string, body: string, reference: ?string, count: int, payment?: string}
      */
     final public function toArray(object $notifiable): array
     {
-        return [
+        $data = [
             'kind' => $this->kind(),
             'title' => $this->title(),
             'body' => $this->body(),
             'reference' => $this->reference(),
             'count' => $this->count(),
         ];
+
+        if (($payment = $this->paymentReference()) !== null) {
+            $data['payment'] = $payment;
+        }
+
+        return $data;
     }
 }
