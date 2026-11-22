@@ -43,6 +43,33 @@ class NotificationPruneTest extends TestCase
         $this->assertModelExists($unread);
     }
 
+    public function test_alerts_left_unread_for_a_year_are_deleted(): void
+    {
+        $this->travelTo('2026-11-01 09:00:00');
+        $staff = User::factory()->staff()->create();
+
+        $alert = function (int $daysOld) use ($staff): DatabaseNotification {
+            $notification = $staff->notifications()->create([
+                'id' => (string) Str::uuid(),
+                'type' => ChatbotUnanswered::class,
+                'data' => ['kind' => 'chatbot.unanswered', 'title' => 'Questions', 'body' => '1 question today', 'reference' => null, 'count' => 1],
+            ]);
+            $notification->forceFill(['created_at' => now()->subDays($daysOld)])->save();
+
+            return $notification;
+        };
+
+        $stale = $alert(366);
+        $waiting = $alert(300);
+
+        $this->artisan('notifications:prune-read')
+            ->expectsOutputToContain('and 1 unread older than a year')
+            ->assertSuccessful();
+
+        $this->assertModelMissing($stale);
+        $this->assertModelExists($waiting);
+    }
+
     public function test_the_cleanup_is_scheduled_daily(): void
     {
         $this->artisan('schedule:list')

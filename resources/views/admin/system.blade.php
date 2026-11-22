@@ -77,7 +77,7 @@
                     ['system.test-email', 'Send a test email', 'Sends a test message to your own address to prove email works.'],
                     ['system.migrate', 'Run database updates', 'Applies database changes that came with an update. Back up the database first.'],
                     ['system.clear-caches', 'Clear caches', 'Use after uploading new files, if pages look out of date.'],
-                    ['system.cleanup', 'Run clean-up now', 'Deletes staff alerts that were read more than 90 days ago.'],
+                    ['system.cleanup', 'Run clean-up now', 'Deletes staff alerts read more than 90 days ago, or left unread for a year.'],
                 ] as [$route, $label, $help])
                     <form method="POST" action="{{ route('admin.'.$route) }}" class="rounded-xl border border-lagoon-950/10 p-4">
                         @csrf

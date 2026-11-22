@@ -54,6 +54,19 @@ class DailyCleanupTest extends TestCase
         $this->assertDatabaseMissing('notifications', ['id' => $second]);
     }
 
+    public function test_a_failing_clean_up_never_reaches_the_visitor(): void
+    {
+        config(['bookease.maintenance.on_requests' => true]);
+        $this->oldReadNotification();
+        DB::listen(function ($query): void {
+            if (str_starts_with(strtolower($query->sql), 'delete from "notifications"')) {
+                throw new \RuntimeException('Simulated database outage');
+            }
+        });
+
+        $this->get('/')->assertOk();
+    }
+
     public function test_hosts_with_cron_leave_it_to_the_scheduler(): void
     {
         config(['bookease.maintenance.on_requests' => false]);
