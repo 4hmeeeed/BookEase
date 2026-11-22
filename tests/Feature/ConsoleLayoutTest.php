@@ -114,6 +114,7 @@ class ConsoleLayoutTest extends TestCase
         $this->actingAs($this->staff)->get(route('staff.bookings.show', $booking))
             ->assertOk()
             ->assertSee('data-action-bar', false)
+            ->assertSee('flex flex-wrap gap-3 print:hidden max-lg:fixed', false) // not on the printout
             ->assertSee('Approve');
     }
 

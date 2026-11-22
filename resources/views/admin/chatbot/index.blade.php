@@ -15,7 +15,7 @@
             ] as [$label, $value, $tone])
                 <div class="card p-5">
                     <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">{{ $label }}</dt>
-                    <dd class="tilt-pop mt-2 font-display text-3xl font-semibold {{ $tone }}">{{ number_format($value) }}</dd>
+                    <dd class="mt-2 font-display text-3xl font-semibold {{ $tone }}">{{ number_format($value) }}</dd>
                 </div>
             @endforeach
         </dl>
