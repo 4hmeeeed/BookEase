@@ -1,7 +1,24 @@
 {{-- Phones and tablets (< lg): bottom tabs, plus a "More" sheet for everything else. --}}
 @php $user = auth()->user(); @endphp
 
-<div x-data="{ more: false, unread: {{ (int) $console['unread'] }} }" @keydown.escape.window="more = false"
+<div x-data="{
+         more: false,
+         unread: {{ (int) $console['unread'] }},
+         close() {
+             if (! this.more) return;
+             this.more = false;
+             this.$nextTick(() => this.$refs.moreButton.focus());
+         },
+         {{-- Tab and Shift+Tab stay inside the open sheet. --}}
+         trap(event) {
+             const items = [...this.$refs.sheet.querySelectorAll('a[href], button:not([disabled]), input:not([type=hidden]), [tabindex]:not([tabindex=\'-1\'])')];
+             if (! items.length) return;
+             const first = items[0], last = items[items.length - 1];
+             if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+             else if (! event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+             else if (! this.$refs.sheet.contains(document.activeElement)) { event.preventDefault(); first.focus(); }
+         },
+     }" @keydown.escape.window="close()"
      @console-unread.window="unread = $event.detail" class="print:hidden lg:hidden">
     <nav data-console-tabbar aria-label="Console"
          class="fixed inset-x-0 bottom-0 z-40 border-t border-lagoon-950/10 bg-cream/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
@@ -21,11 +38,16 @@
                             @endif
                         </span>
                         <span>{{ $tab['label'] }}</span>
+                        @if ($tab['route'] === 'staff.notifications.index')
+                            <span class="sr-only" x-text="unread ? ', ' + unread + ' unread' : ''">{{ $tab['badge'] ? ', '.$tab['badge'].' unread' : '' }}</span>
+                        @elseif ($tab['badge'])
+                            <span class="sr-only">, {{ $tab['badge'] }} waiting</span>
+                        @endif
                     </a>
                 </li>
             @endforeach
             <li>
-                <button type="button" @click="more = true" :aria-expanded="more" aria-controls="console-more" class="console-tab w-full">
+                <button type="button" x-ref="moreButton" @click="more = true" :aria-expanded="more" aria-controls="console-more" class="console-tab w-full">
                     <x-console-icon name="more" class="h-5 w-5" />
                     <span>More</span>
                 </button>
@@ -35,12 +57,12 @@
 
     {{-- Kept outside the blurred bar: a backdrop-filter would trap these fixed layers inside it. --}}
     <div x-show="more" x-cloak class="fixed inset-0 z-50">
-        <div class="absolute inset-0 bg-lagoon-950/40" @click="more = false"
+        <div class="absolute inset-0 bg-lagoon-950/40" @click="close()"
              x-show="more"
              x-transition:enter="transition-opacity ease-out-soft duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
              x-transition:leave="transition-opacity ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
 
-        <div id="console-more" role="dialog" aria-modal="true" aria-label="More"
+        <div id="console-more" x-ref="sheet" role="dialog" aria-modal="true" aria-label="More" @keydown.tab="trap($event)"
              x-show="more" x-effect="more && $nextTick(() => $el.querySelector('a, button')?.focus())"
              x-transition:enter="transition-[transform,opacity] ease-out-soft duration-300" x-transition:enter-start="translate-y-full opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
              x-transition:leave="transition-[transform,opacity] ease-in duration-200" x-transition:leave-start="translate-y-0 opacity-100" x-transition:leave-end="translate-y-full opacity-0"

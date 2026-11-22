@@ -14,7 +14,7 @@
     <x-slot name="header">
         {{-- Non-breaking space keeps the middle dot on the first line when the title wraps on phones. --}}
         <x-page-header eyebrow="Owner console" :title="'Resort overview'.mb_chr(0xA0).'· '.now()->format('F Y')">
-            Today’s front desk, this month’s figures, and quick links to everything you manage.
+            What needs you now, this month’s figures so far, and what has happened lately.
             <x-slot name="actions">
                 <a href="{{ route('admin.reports.index') }}" class="btn-primary">Full reports</a>
             </x-slot>

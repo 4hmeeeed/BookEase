@@ -147,8 +147,8 @@ export default {
                 },
             },
             animation: {
-                'fade-up': 'fade-up .7s cubic-bezier(0.22, 1, 0.36, 1) both',
-                'pop-in': 'pop-in .6s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+                'fade-up': 'fade-up .7s cubic-bezier(0.22, 1, 0.36, 1) backwards',
+                'pop-in': 'pop-in .6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards',
                 drift: 'drift 9s ease-in-out infinite',
                 'drift-slow': 'drift 14s ease-in-out infinite',
                 bob: 'bob 5s ease-in-out infinite',

@@ -77,7 +77,7 @@ class BookingService
         });
 
         // Only after the reservation has committed, so a refused request alerts no one.
-        $this->notifier->bookingRequested($booking->loadMissing(['user', 'cottage']));
+        $this->notifier->bookingRequested($booking);
 
         return $booking;
     }

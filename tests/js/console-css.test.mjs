@@ -21,3 +21,23 @@ test('the console fade-in lets go when it ends, so dialogs open above the sideba
     assert.ok(animation, '.console-enter has no animation');
     assert.doesNotMatch(animation, /\b(both|forwards)\b/);
 });
+
+test('console helpers sit inside @layer components, so utilities can override them', () => {
+    // Outside a layer, `.ref-code` would beat utilities such as `text-sm` or `font-mono`.
+    /** The at-rule heads (e.g. "@layer components") of the blocks enclosing `selector`. */
+    const code = css.replace(/\/\*[\s\S]*?\*\//g, '');
+    const enclosing = (selector) => {
+        const at = code.indexOf(`${selector} {`);
+        assert.notEqual(at, -1, `${selector} is missing from app.css`);
+        const open = [];
+        for (let i = 0; i < at; i++) {
+            if (code[i] === '{') open.push(code.slice(Math.max(code.lastIndexOf('}', i), code.lastIndexOf(';', i), code.lastIndexOf('{', i - 1)) + 1, i).trim());
+            else if (code[i] === '}') open.pop();
+        }
+        return open.filter((head) => head.startsWith('@'));
+    };
+
+    for (const selector of ['.ref-code', '.bell-ring', '.console-enter']) {
+        assert.ok(enclosing(selector).includes('@layer components'), `${selector} is outside @layer components`);
+    }
+});

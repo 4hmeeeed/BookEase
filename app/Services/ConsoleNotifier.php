@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\UserRole;
 use App\Models\Booking;
+use App\Models\ChatInquiry;
 use App\Models\Payment;
 use App\Models\User;
 use App\Notifications\Console\ChatbotUnanswered;
@@ -29,38 +30,53 @@ class ConsoleNotifier
 {
     public function bookingRequested(Booking $booking): void
     {
-        $this->send($this->desk(), new NewBookingRequest($booking));
+        $this->guard('booking.requested', fn () => $this->send(
+            $this->desk(),
+            new NewBookingRequest($booking->loadMissing(['user', 'cottage'])),
+        ));
     }
 
     public function paymentReceived(Payment $payment): void
     {
-        $this->send($this->desk(), new OnlinePaymentReceived($payment));
+        $this->guard('payment.received', fn () => $this->send($this->desk(), new OnlinePaymentReceived($payment->loadMissing('booking'))));
     }
 
     public function paymentNeedsReview(Payment $payment): void
     {
-        $this->send($this->desk(), new PaymentNeedsReview($payment));
+        $this->guard('payment.review', fn () => $this->send($this->desk(), new PaymentNeedsReview($payment->loadMissing('booking'))));
     }
 
     /** Cash and refunds are entered by the desk itself, so only the owners hear about them. */
     public function moneyRecorded(Payment $payment, User $actor): void
     {
-        $this->send($this->owners($actor), new MoneyRecordedByStaff($payment));
+        $this->guard('payment.recorded', fn () => $this->send($this->owners($actor), new MoneyRecordedByStaff($payment->loadMissing('booking'))));
     }
 
     public function guestCancelled(Booking $booking): void
     {
-        $this->send($this->desk(), new GuestCancelledBooking($booking));
+        $this->guard('booking.cancelled', fn () => $this->send(
+            $this->desk(),
+            new GuestCancelledBooking($booking->loadMissing(['user', 'cottage'])),
+        ));
     }
 
     /**
-     * One unread alert per owner per day carries the day's running count: a
-     * later miss updates it in place and moves it back to the top of the bell.
-     * It keeps its id, so a link to it on a page that is already open still works.
+     * One unread alert per owner per day carries the day's count: a later miss
+     * updates it in place and moves it back to the top of the bell. It keeps
+     * its id, so a link to it on a page that is already open still works.
+     *
+     * The count comes from the day's logged inquiries, not from the alert, so
+     * it stays right after the owner reads the alert and when two misses land
+     * at once. Call it after the inquiry has been logged.
      */
     public function chatbotMissed(): void
     {
         try {
+            $misses = max(1, ChatInquiry::query()
+                ->where('was_fallback', true)
+                ->where('created_at', '>=', today())
+                ->count());
+
             foreach ($this->owners() as $owner) {
                 $today = $owner->unreadNotifications()
                     ->where('type', ChatbotUnanswered::class)
@@ -68,14 +84,15 @@ class ConsoleNotifier
                     ->first();
 
                 if ($today === null) {
-                    $this->send(new Collection([$owner]), new ChatbotUnanswered(1));
+                    $this->send(new Collection([$owner]), new ChatbotUnanswered($misses));
 
                     continue;
                 }
 
-                $misses = 1 + (int) ($today->data['count'] ?? 0);
+                // Never lower it: a request that counted earlier may write last.
+                $count = max($misses, (int) ($today->data['count'] ?? 0));
                 $today->forceFill([
-                    'data' => (new ChatbotUnanswered($misses))->toArray($owner),
+                    'data' => (new ChatbotUnanswered($count))->toArray($owner),
                     'created_at' => now(),
                 ])->save();
             }
@@ -118,21 +135,29 @@ class ConsoleNotifier
     }
 
     /**
+     * Everything an alert needs — finding its recipients, loading what its
+     * text mentions, storing it — runs in here, so a database hiccup is logged
+     * instead of turning a committed booking or payment into an error page.
+     */
+    private function guard(string $kind, callable $work): void
+    {
+        try {
+            $work();
+        } catch (Throwable $e) {
+            Log::error('Could not create a console notification', [
+                'kind' => $kind,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * @param  Collection<int, User>  $to
      */
     private function send(Collection $to, ConsoleNotification $notification): void
     {
-        if ($to->isEmpty()) {
-            return;
-        }
-
-        try {
+        if ($to->isNotEmpty()) {
             Notification::send($to, $notification);
-        } catch (Throwable $e) {
-            Log::error('Could not create a console notification', [
-                'kind' => $notification->kind(),
-                'error' => $e->getMessage(),
-            ]);
         }
     }
 }

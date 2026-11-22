@@ -190,3 +190,65 @@ test('refreshes an open dropdown when a newer alert arrives', async () => {
     assert.ok(calls.some((call) => call.url === '/panel'));
     assert.equal(bell.panelHtml, '<ul></ul>');
 });
+
+test('rings for a new alert even when another was read elsewhere in the same check', async () => {
+    // Two unread at page load; one is read in another tab and a new one arrives.
+    responses.push({ body: { unread: 2, newest: 'c@1700000100' } });
+    const bell = makeBell({ unread: 2, newest: 'b@1700000000' });
+
+    mock.timers.tick(30_000);
+    await settle();
+
+    assert.equal(bell.unread, 2);
+    assert.equal(bell.announcement, '1 new notification');
+});
+
+test('stays quiet when the newest alert is read and an older one is now on top', async () => {
+    responses.push({ body: { unread: 1, newest: 'a@1699999000' } });
+    const bell = makeBell({ unread: 2, newest: 'b@1700000000' });
+
+    mock.timers.tick(30_000);
+    await settle();
+
+    assert.equal(bell.unread, 1);
+    assert.equal(bell.announcement, '');
+});
+
+test('rings when the day\'s chatbot alert is updated in place', async () => {
+    responses.push({ body: { unread: 1, newest: 'a@1700000600' } });
+    const bell = makeBell({ unread: 1, newest: 'a@1700000000' });
+
+    mock.timers.tick(30_000);
+    await settle();
+
+    assert.equal(bell.announcement, '1 new notification');
+});
+
+test('does not ring again for an alert it already rang for after a newer one was read', async () => {
+    responses.push({ body: { unread: 2, newest: 'c@1700000100' } });
+    responses.push({ body: { unread: 1, newest: 'b@1700000000' } }); // c read elsewhere
+    const bell = makeBell({ unread: 1, newest: 'b@1700000000' });
+
+    mock.timers.tick(30_000);
+    await settle();
+    assert.equal(bell.announcement, '1 new notification');
+    bell.announcement = '';
+
+    mock.timers.tick(30_000);
+    await settle();
+    assert.equal(bell.announcement, '');
+});
+
+test('stops for good on 403 (the account may no longer see alerts)', async () => {
+    responses.push({ status: 403 });
+    makeBell();
+
+    mock.timers.tick(30_000);
+    await settle();
+    mock.timers.tick(120_000);
+    await settle();
+    fire('window', 'keydown');
+    await settle();
+
+    assert.equal(polls(), 1);
+});

@@ -76,12 +76,12 @@
         <dl class="grid grid-cols-2 gap-4 lg:grid-cols-4" x-reveal.stagger>
             <div class="card p-5">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Occupancy</dt>
-                <dd class="tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ $occupancy['rate'] !== null ? $occupancy['rate'].'%' : '—' }}</dd>
+                <dd class="mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ $occupancy['rate'] !== null ? $occupancy['rate'].'%' : '—' }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">{{ number_format($occupancy['occupied']) }} of {{ number_format($occupancy['available']) }} unit-nights sold</dd>
             </div>
             <div class="card p-5">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Collected (net)</dt>
-                <dd class="tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ Money::format($revenue['net']) }}</dd>
+                <dd class="mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ Money::format($revenue['net']) }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">
                     {{ $revenue['count'] }} {{ Str::plural('payment', $revenue['count']) }}
                     @if (Money::isPositive($revenue['refunded'])) · {{ Money::format($revenue['refunded']) }} refunded @endif
@@ -89,12 +89,12 @@
             </div>
             <div class="card p-5">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Outstanding</dt>
-                <dd @class(['tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl', 'text-coral-700' => $outstanding['count'], 'text-lagoon-900' => ! $outstanding['count']])>{{ Money::format($outstanding['total']) }}</dd>
+                <dd @class(['mt-2 font-display text-2xl font-semibold sm:text-3xl', 'text-coral-700' => $outstanding['count'], 'text-lagoon-900' => ! $outstanding['count']])>{{ Money::format($outstanding['total']) }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">{{ $outstanding['count'] }} {{ Str::plural('booking', $outstanding['count']) }} with a balance</dd>
             </div>
             <div class="card p-5">
                 <dt class="text-xs font-semibold uppercase tracking-wider text-gray-500">Stays starting</dt>
-                <dd class="tilt-pop mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ number_format($bookings['arriving']) }}</dd>
+                <dd class="mt-2 font-display text-2xl font-semibold sm:text-3xl text-lagoon-900">{{ number_format($bookings['arriving']) }}</dd>
                 <dd class="mt-1 text-xs text-gray-600">{{ number_format($bookings['received']) }} new {{ Str::plural('request', $bookings['received']) }} received</dd>
             </div>
         </dl>

@@ -88,6 +88,45 @@ class NotificationCenterTest extends TestCase
             ->assertExactJson(['unread' => 2, 'newest' => $newest->id.'@'.$newest->created_at->getTimestamp()]);
     }
 
+    public function test_the_bell_starts_from_the_newest_alert_on_the_page(): void
+    {
+        $newest = $this->alert($this->staff);
+
+        // So the first check doesn't ring for an alert that was already showing.
+        $this->actingAs($this->staff)->get('/staff')
+            ->assertOk()
+            ->assertSee("newest: '".$newest->id.'@'.$newest->created_at->getTimestamp()."'", false);
+    }
+
+    public function test_the_list_pages_after_twenty_alerts(): void
+    {
+        $this->booking->loadMissing(['user', 'cottage']);
+        foreach (range(1, 23) as $i) {
+            $this->staff->notify(new NewBookingRequest($this->booking));
+            $this->travel(1)->minutes();
+        }
+        $oldest = $this->staff->notifications()->reorder()->oldest()->first();
+        $newest = $this->staff->notifications()->reorder()->latest()->first();
+        $openLink = fn (DatabaseNotification $n) => route('staff.notifications.open', $n->id);
+
+        $this->actingAs($this->staff)->get('/staff/notifications')
+            ->assertOk()
+            ->assertSee($openLink($newest), false)
+            ->assertDontSee($openLink($oldest), false)
+            ->assertSee('page=2', false);
+
+        $this->actingAs($this->staff)->get('/staff/notifications?page=2')
+            ->assertOk()
+            ->assertSee($openLink($oldest), false)
+            ->assertDontSee($openLink($newest), false);
+
+        // The "All" tab keeps its filter on the next page.
+        $this->staff->unreadNotifications->markAsRead();
+        $this->actingAs($this->staff)->get('/staff/notifications?filter=all')
+            ->assertOk()
+            ->assertSee('filter=all&amp;page=2', false);
+    }
+
     public function test_opening_an_alert_marks_it_read_and_goes_to_the_booking(): void
     {
         $alert = $this->alert($this->staff);

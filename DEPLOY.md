@@ -6,7 +6,7 @@ This guide puts BookEase on InfinityFree's free hosting at a free subdomain such
 - **Guests pay by GCash/Maya to the resort's own wallet, or at the front desk.** InfinityFree blocks payment-gateway webhooks, so the gateway is off (`PAYMENT_DRIVER=none`). Guests send money to the resort's GCash/Maya number and upload the receipt; staff and the owner get a bell alert, check the wallet app, and press **Verify** (the guest gets an e-receipt) or **Not received** (the guest is emailed why). Cash, refunds and receipts work as before.
 - **Email goes through Brevo's web API** (`MAIL_MAILER=brevo`), because InfinityFree blocks or times out SMTP ports.
 - **There's no command line.** The owner's **System** page (`/admin/system`) does the few jobs that would need one: test email, database updates, clearing caches and the daily clean-up.
-- **There's no cron.** The daily clean-up runs from the first visit of each day.
+- **There's no cron.** The daily clean-up runs from the first visit of each day (`BOOKEASE_CLEANUP_ON_REQUESTS=true`, already set in `.env.production.example`). It deletes staff alerts read more than 90 days ago and alerts left unread for a year. `/admin/system` shows when it last ran and has a **Run clean-up now** button.
 - **Phones must pass InfinityFree's browser check.** Every visitor's browser has to run InfinityFree's JavaScript check. Most phones pass, but some have been reported to fail. Test on a few phones before launch.
 
 To turn on online payments later, see the last section.

@@ -184,6 +184,11 @@ class PaymentService
             }
 
             if ($event->amountCentavos !== Money::toCentavos($payment->amount) || strtoupper((string) $event->currency) !== 'PHP') {
+                // A redelivery of the event we already flagged: the desk has been told once.
+                if ($payment->provider_payload !== null && hash_equals($payment->provider_payload, $event->rawBody)) {
+                    return ['duplicate', $payment];
+                }
+
                 // Never credit an amount we didn't ask for; leave for staff review.
                 $payment->forceFill(['provider_payload' => $event->rawBody])->save();
                 Log::warning('Payment webhook amount mismatch', [
@@ -453,9 +458,8 @@ class PaymentService
 
     private function notifyGuest(Payment $payment): void
     {
-        $payment->loadMissing('booking.user', 'booking.cottage');
-
         try {
+            $payment->loadMissing('booking.user', 'booking.cottage');
             $payment->booking->user->notify(new PaymentReceived($payment));
         } catch (Throwable $e) {
             // A mail outage must never undo a confirmed payment.

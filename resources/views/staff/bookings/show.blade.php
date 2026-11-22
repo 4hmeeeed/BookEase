@@ -37,7 +37,7 @@
 
                     {{-- On phones the buttons ride in a bar just above the tab bar, within thumb reach. --}}
                     <div data-action-bar
-                         class="mt-4 flex flex-wrap gap-3 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))] max-lg:z-30 max-lg:mt-0 max-lg:flex-nowrap max-lg:overflow-x-auto max-lg:border-t max-lg:border-lagoon-950/10 max-lg:bg-cream/95 max-lg:px-4 max-lg:py-3 max-lg:backdrop-blur-md max-lg:[&>*]:shrink-0">
+                         class="mt-4 flex flex-wrap gap-3 print:hidden max-lg:fixed max-lg:inset-x-0 max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))] max-lg:z-30 max-lg:mt-0 max-lg:flex-nowrap max-lg:overflow-x-auto max-lg:border-t max-lg:border-lagoon-950/10 max-lg:bg-cream/95 max-lg:px-4 max-lg:py-3 max-lg:backdrop-blur-md max-lg:[&>*]:shrink-0">
                         @if ($canApprove)
                             <form method="POST" action="{{ route('staff.bookings.approve', $booking) }}">
                                 @csrf

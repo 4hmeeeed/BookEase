@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\User;
 use App\Notifications\Console\NewBookingRequest;
+use Illuminate\Support\Js;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -85,6 +86,28 @@ class ConsoleLayoutTest extends TestCase
             ->assertSeeInOrder(['data-console-tabbar', 'Overview', 'Bookings', 'Alerts', 'More'], false);
     }
 
+    public function test_the_alerts_tab_speaks_its_count(): void
+    {
+        $this->owner->notify(new NewBookingRequest(Booking::factory()->create()));
+
+        $this->actingAs($this->owner)->get('/admin')
+            ->assertSeeInOrder(['data-console-tabbar', 'Alerts', '<span class="sr-only"', ', 1 unread'], false);
+    }
+
+    public function test_keyboard_order_and_roles_of_the_console_controls(): void
+    {
+        $this->actingAs($this->owner)->get('/admin')
+            // The bell's announcement is not inside anything hidden on phones.
+            ->assertSee('<p class="sr-only" aria-live="polite"', false)
+            // The bell link works as a button once JavaScript runs.
+            ->assertSee('role="button" @click.prevent="toggle()" @keydown.space.prevent="toggle()"', false)
+            // The account menu follows its button, so Tab goes from one into the other.
+            ->assertSeeInOrder(['aria-controls="console-account-menu"', 'id="console-account-menu"'], false)
+            // The More sheet keeps focus inside and hands it back to its button.
+            ->assertSee('x-ref="moreButton"', false)
+            ->assertSee('@keydown.tab="trap($event)"', false);
+    }
+
     public function test_the_booking_page_has_a_thumb_reachable_action_bar(): void
     {
         $booking = Booking::factory()->create(); // pending: Approve / Reject / Cancel
@@ -92,6 +115,7 @@ class ConsoleLayoutTest extends TestCase
         $this->actingAs($this->staff)->get(route('staff.bookings.show', $booking))
             ->assertOk()
             ->assertSee('data-action-bar', false)
+            ->assertSee('flex flex-wrap gap-3 print:hidden max-lg:fixed', false) // not on the printout
             ->assertSee('Approve');
     }
 
@@ -101,6 +125,21 @@ class ConsoleLayoutTest extends TestCase
             ->assertOk()
             ->assertSee('My stays')
             ->assertDontSee('data-console-sidebar', false);
+    }
+
+    public function test_guests_keep_the_chatbot_widget(): void
+    {
+        // Spec (admin console design, Testing): guests still get the top nav and the chatbot widget.
+        $widget = 'x-data="chatbot({ endpoint:';
+
+        $this->actingAs(User::factory()->create())->get('/my')
+            ->assertOk()
+            ->assertSee($widget, false)
+            ->assertSee((string) Js::from(route('chatbot.ask')), false);
+
+        // Staff and the owner review its log instead of chatting.
+        $this->actingAs($this->staff)->get('/staff')->assertOk()->assertDontSee($widget, false);
+        $this->actingAs($this->owner)->get('/admin')->assertOk()->assertDontSee($widget, false);
     }
 
     public function test_staff_profile_uses_the_console(): void

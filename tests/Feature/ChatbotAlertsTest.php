@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\ChatInquiry;
 use App\Models\User;
+use App\Services\ConsoleNotifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
@@ -104,8 +106,34 @@ class ChatbotAlertsTest extends TestCase
 
         $this->ask();
 
-        $this->assertSame(1, $this->owner->unreadNotifications()->sole()->data['count']);
+        // A fresh alert, but still the day's total: reading it doesn't reset the count.
+        $alert = $this->owner->unreadNotifications()->sole();
+        $this->assertSame(2, $alert->data['count']);
+        $this->assertSame("2 questions today the assistant couldn't answer", $alert->data['body']);
         $this->assertSame(2, $this->owner->notifications()->count());
+    }
+
+    public function test_the_count_comes_from_the_days_logged_questions(): void
+    {
+        // Another request logged its miss but hasn't updated the alert yet.
+        ChatInquiry::factory()->fallback()->count(2)->create();
+        ChatInquiry::factory()->fallback()->create(['created_at' => now()->subDay()]);
+        ChatInquiry::factory()->create();
+
+        $this->ask();
+
+        $this->assertSame(3, $this->owner->unreadNotifications()->sole()->data['count']);
+    }
+
+    public function test_a_late_write_never_lowers_the_count(): void
+    {
+        $this->ask();
+        $this->ask();
+        ChatInquiry::query()->latest('id')->first()->delete(); // as if this request counted before the other logged
+
+        app(ConsoleNotifier::class)->chatbotMissed();
+
+        $this->assertSame(2, $this->owner->unreadNotifications()->sole()->data['count']);
     }
 
     public function test_an_answered_question_sends_no_alert(): void
