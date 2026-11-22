@@ -51,6 +51,43 @@ class OwnerOverviewTest extends TestCase
         $this->overview()->assertSee('1 request waiting for approval (oldest 3 days)');
     }
 
+    public function test_a_brand_new_request_does_not_read_zero_hours(): void
+    {
+        Booking::factory()->create(['created_at' => now()->subMinutes(5)]);
+
+        $this->overview()
+            ->assertSee('1 request waiting for approval (oldest under an hour)')
+            ->assertDontSee('oldest 0h');
+    }
+
+    public function test_balances_due_link_to_arrivals_when_someone_arrives_today(): void
+    {
+        Booking::factory()->stay('2026-11-10', '2026-11-12')->status(BookingStatus::Confirmed)
+            ->create(['total_price' => '3000.00']);
+        Booking::factory()->stay('2026-11-12', '2026-11-14')->status(BookingStatus::Confirmed)
+            ->create(['total_price' => '3000.00']);
+
+        $this->overview()
+            ->assertSee('2 guests arriving in the next 3 days still owe ₱6,000.00')
+            ->assertSee(route('staff.bookings.index', ['tab' => 'arrivals']), false)
+            ->assertDontSee(route('staff.bookings.index', ['tab' => 'upcoming']), false);
+    }
+
+    public function test_balances_due_from_later_arrivals_link_to_upcoming(): void
+    {
+        Booking::factory()->stay('2026-11-12', '2026-11-14')->status(BookingStatus::Confirmed)
+            ->create(['total_price' => '3000.00']);
+
+        $this->overview()->assertSee(route('staff.bookings.index', ['tab' => 'upcoming']), false);
+    }
+
+    public function test_the_header_describes_what_the_page_shows(): void
+    {
+        $this->overview()
+            ->assertSee('What needs you now')
+            ->assertDontSee('quick links');
+    }
+
     public function test_guests_arriving_soon_with_a_balance_are_listed(): void
     {
         $owing = Booking::factory()->stay('2026-11-12', '2026-11-14')->status(BookingStatus::Confirmed)

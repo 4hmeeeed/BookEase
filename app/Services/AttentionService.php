@@ -48,7 +48,11 @@ class AttentionService
         }
 
         $hours = (int) CarbonImmutable::parse($pending->min('created_at'))->diffInHours(now(), true);
-        $age = $hours < 48 ? "{$hours}h" : intdiv($hours, 24).' days';
+        $age = match (true) {
+            $hours < 1 => 'under an hour',
+            $hours < 48 => "{$hours}h",
+            default => intdiv($hours, 24).' days',
+        };
 
         return new AttentionItem(
             key: 'pending',
@@ -77,12 +81,15 @@ class AttentionService
         $count = $owing->count();
         $total = $owing->reduce(fn (string $sum, Booking $booking) => Money::add($sum, $booking->balance()), '0.00');
 
+        // Today's arrivals sit on the Arrivals tab; Upcoming starts tomorrow.
+        $arrivingToday = $owing->contains(fn (Booking $booking) => $booking->check_in->isSameDay($today));
+
         return new AttentionItem(
             key: 'due_soon',
             tone: 'money',
             text: $count.' '.Str::plural('guest', $count).' arriving in the next '.self::SOON_DAYS.' days still '
                 .($count === 1 ? 'owes' : 'owe').' '.Money::format($total),
-            url: route('staff.bookings.index', ['tab' => 'upcoming']),
+            url: route('staff.bookings.index', ['tab' => $arrivingToday ? 'arrivals' : 'upcoming']),
             bookings: $owing->take(3)->all(),
         );
     }
