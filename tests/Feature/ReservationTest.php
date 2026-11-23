@@ -24,6 +24,9 @@ class ReservationTest extends TestCase
         parent::setUp();
 
         $this->travelTo('2026-11-01 09:00:00');
+        // These tests check overlaps on dates weeks ahead, so they widen the
+        // resort's booking limits (2 nights, 5 days ahead) for their fixtures.
+        config(['bookease.max_nights' => 30, 'bookease.booking_window_days' => 365]);
         $this->guest = User::factory()->create(['phone' => null]);
         $this->cottage = Cottage::factory()->create(['name' => 'Seaside Cottage', 'capacity' => 4, 'price_per_night' => '2500.50']);
     }

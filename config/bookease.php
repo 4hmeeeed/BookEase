@@ -16,10 +16,10 @@ return [
     'check_out_time' => env('BOOKEASE_CHECK_OUT_TIME', '12:00'),
 
     // Longest stay accepted in one online booking.
-    'max_nights' => (int) env('BOOKEASE_MAX_NIGHTS', 30),
+    'max_nights' => (int) env('BOOKEASE_MAX_NIGHTS', 2),
 
     // How far ahead (in days) a check-in date may be booked.
-    'booking_window_days' => (int) env('BOOKEASE_BOOKING_WINDOW_DAYS', 365),
+    'booking_window_days' => (int) env('BOOKEASE_BOOKING_WINDOW_DAYS', 5),
 
     /*
     |--------------------------------------------------------------------------

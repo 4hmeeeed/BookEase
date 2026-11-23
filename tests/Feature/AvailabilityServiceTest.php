@@ -285,8 +285,8 @@ class AvailabilityServiceTest extends TestCase
             'past check-in' => ['2026-10-31', '2026-11-02', 'past'],
             'same day' => ['2026-12-10', '2026-12-10', 'at least one day'],
             'reversed' => ['2026-12-12', '2026-12-10', 'at least one day'],
-            'too long' => ['2026-12-01', '2027-01-15', 'limited to 30 nights'],
-            'beyond window' => ['2027-11-05', '2027-11-06', '365 days'],
+            'too long' => ['2026-11-02', '2026-11-05', 'limited to 2 nights'],
+            'beyond window' => ['2026-11-07', '2026-11-08', '5 days'],
             'impossible date' => ['2027-02-30', '2027-03-02', 'valid'],
             'garbage' => ['tomorrow-ish', '2026-12-10', 'valid'],
         ];
