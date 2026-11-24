@@ -32,6 +32,12 @@ class AvailabilityServiceTest extends TestCase
         parent::setUp();
 
         $this->travelTo('2026-11-01 09:00:00');
+        // Pin the owner's booking rules so the tests do not depend on a local .env.
+        config([
+            'bookease.max_nights' => 2,
+            'bookease.booking_window_days' => 5,
+            'bookease.min_advance_days' => 3,
+        ]);
         $this->service = app(AvailabilityService::class);
         $this->cottage = Cottage::factory()->create(['capacity' => 4, 'price_per_night' => '2500.50']);
     }
