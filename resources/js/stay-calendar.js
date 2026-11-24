@@ -31,6 +31,7 @@ export default (config) => ({
     today: config.today,
     maxNights: config.maxNights,
     lastCheckIn: addDays(config.today, config.windowDays),
+    firstCheckIn: addDays(config.today, config.minAdvanceDays || 0),
 
     month: monthKey(config.checkIn || config.today),
     direction: 1,
@@ -155,7 +156,7 @@ export default (config) => ({
         return this.checkIn && !this.checkOut;
     },
     canCheckIn(d) {
-        return !this.isPast(d) && !this.isBooked(d) && d <= this.lastCheckIn;
+        return !this.isPast(d) && !this.isBooked(d) && d >= this.firstCheckIn && d <= this.lastCheckIn;
     },
     canCheckOut(d) {
         return this.checkIn && d > this.checkIn && d <= this.maxCheckOut;

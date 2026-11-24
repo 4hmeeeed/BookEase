@@ -167,6 +167,11 @@ class AvailabilityService
             throw new InvalidStayException('Check-in can’t be in the past.');
         }
 
+        $minAdvance = (int) config('bookease.min_advance_days');
+        if ($minAdvance > 0 && $in->lt($today->addDays($minAdvance))) {
+            throw new InvalidStayException("Reservations must be made at least {$minAdvance} days before arrival.");
+        }
+
         if ($out->lte($in)) {
             throw new InvalidStayException('Check-out must be at least one day after check-in.');
         }

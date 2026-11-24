@@ -21,6 +21,9 @@ return [
     // How far ahead (in days) a check-in date may be booked.
     'booking_window_days' => (int) env('BOOKEASE_BOOKING_WINDOW_DAYS', 5),
 
+    // Owner's rule (IRG, Nov 2026): reservations are made 3 to 5 days before arrival.
+    'min_advance_days' => (int) env('BOOKEASE_MIN_ADVANCE_DAYS', 3),
+
     /*
     |--------------------------------------------------------------------------
     | Payments

@@ -82,6 +82,7 @@ class CottageController extends Controller
                 'today' => CarbonImmutable::today()->toDateString(),
                 'maxNights' => (int) config('bookease.max_nights'),
                 'windowDays' => (int) config('bookease.booking_window_days'),
+                'minAdvanceDays' => (int) config('bookease.min_advance_days'),
                 'checkIn' => $this->dateParam($request->query('check_in')),
                 'checkOut' => $this->dateParam($request->query('check_out')),
             ],

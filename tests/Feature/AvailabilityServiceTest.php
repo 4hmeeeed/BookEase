@@ -269,6 +269,7 @@ class AvailabilityServiceTest extends TestCase
 
     public function test_validate_stay_accepts_today_and_returns_dates(): void
     {
+        config(['bookease.min_advance_days' => 0]);
         [$in, $out] = $this->service->validateStay('2026-11-01', '2026-11-02');
 
         $this->assertSame('2026-11-01', $in->toDateString());
@@ -285,8 +286,9 @@ class AvailabilityServiceTest extends TestCase
             'past check-in' => ['2026-10-31', '2026-11-02', 'past'],
             'same day' => ['2026-12-10', '2026-12-10', 'at least one day'],
             'reversed' => ['2026-12-12', '2026-12-10', 'at least one day'],
-            'too long' => ['2026-11-02', '2026-11-05', 'limited to 2 nights'],
+            'too long' => ['2026-11-04', '2026-11-07', 'limited to 2 nights'],
             'beyond window' => ['2026-11-07', '2026-11-08', '5 days'],
+            'too soon' => ['2026-11-03', '2026-11-04', 'at least 3 days before arrival'],
             'impossible date' => ['2027-02-30', '2027-03-02', 'valid'],
             'garbage' => ['tomorrow-ish', '2026-12-10', 'valid'],
         ];
@@ -299,6 +301,15 @@ class AvailabilityServiceTest extends TestCase
         $this->expectExceptionMessageMatches('/'.preg_quote($messageFragment, '/').'/i');
 
         $this->service->validateStay($in, $out);
+    }
+
+    public function test_validate_stay_accepts_three_to_five_days_ahead(): void
+    {
+        [$in] = $this->service->validateStay('2026-11-04', '2026-11-06');
+        $this->assertSame('2026-11-04', $in->toDateString());
+
+        [$in] = $this->service->validateStay('2026-11-06', '2026-11-07');
+        $this->assertSame('2026-11-06', $in->toDateString());
     }
 
     // ------------------------------------------------------------------

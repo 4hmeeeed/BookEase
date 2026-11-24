@@ -21,7 +21,7 @@ class AvailabilityEndpointsTest extends TestCase
         $this->travelTo('2026-11-01 09:00:00');
         // These tests check overlaps on dates weeks ahead, so they widen the
         // resort's booking limits (2 nights, 5 days ahead) for their fixtures.
-        config(['bookease.max_nights' => 30, 'bookease.booking_window_days' => 365]);
+        config(['bookease.max_nights' => 30, 'bookease.booking_window_days' => 365, 'bookease.min_advance_days' => 0]);
         $this->cottage = Cottage::factory()->create(['name' => 'Seaside Cottage', 'price_per_night' => '2500.00', 'capacity' => 4]);
 
         Booking::factory()->for($this->cottage)->stay('2026-12-10', '2026-12-13')->status(BookingStatus::Confirmed)->create();
